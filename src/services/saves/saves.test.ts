@@ -183,3 +183,90 @@ describe('save schema guards', () => {
     expect(saveDoc.safeParse(doc).success).toBe(false);
   });
 });
+
+describe('phase 2 progression survives a save round-trip', () => {
+  it('keeps decks, skill levels, ascension grade and gear enhancement', async () => {
+    const storage = createMemoryStorageService();
+    const { service } = makeService(storage);
+    const fresh = (await service.load(1)).save;
+
+    const rich = {
+      ...fresh,
+      player: {
+        ...fresh.player,
+        currencies: { ...fresh.player.currencies, tome: 12 },
+        cards: [
+          {
+            uid: 'c1',
+            defId: 'card.ember_drake',
+            level: 24,
+            xp: 40,
+            stars: 5,
+            skillLevels: [3, 2, 1, 1, 1],
+            equippedGear: { weapon: 'g1', boots: 'g2' },
+            favorite: true,
+          },
+        ],
+        gear: [
+          { uid: 'g1', defId: 'gear.coral_edge', enhanceLevel: 7, substats: [] },
+          {
+            uid: 'g2',
+            defId: 'gear.tidewalkers',
+            enhanceLevel: 2,
+            substats: [{ stat: 'speed' as const, value: 4, isPercent: true }],
+          },
+        ],
+        decks: [
+          {
+            name: 'Front Line',
+            heroUid: 'c1',
+            unitUids: [null, 'c1', null, null, null, null, null, null],
+          },
+        ],
+        activeDeckIndex: 0,
+      },
+    };
+
+    await service.save(rich);
+    const reloaded = await new SaveService({
+      storage,
+      clock: createFixedClock(1),
+      energyCap: ENERGY_CAP,
+    }).load(1);
+
+    expect(reloaded.status).toBe('loaded');
+    const card = reloaded.save.player.cards[0];
+    expect(card.stars).toBe(5);
+    expect(card.skillLevels).toEqual([3, 2, 1, 1, 1]);
+    expect(card.favorite).toBe(true);
+    expect(card.equippedGear.weapon).toBe('g1');
+    expect(reloaded.save.player.gear[0].enhanceLevel).toBe(7);
+    expect(reloaded.save.player.gear[1].substats[0]).toEqual({
+      stat: 'speed',
+      value: 4,
+      isPercent: true,
+    });
+    expect(reloaded.save.player.decks[0].name).toBe('Front Line');
+    expect(reloaded.save.player.currencies.tome).toBe(12);
+  });
+
+  it('accepts a deck with all eight unit slots filled', () => {
+    const doc = createNewSave(0, 1, ENERGY_CAP);
+    doc.player.decks = [
+      {
+        name: 'Full',
+        heroUid: 'h',
+        unitUids: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h2'],
+      },
+    ];
+    expect(saveDoc.safeParse(doc).success).toBe(true);
+  });
+
+  it('rejects a ninth unit slot', () => {
+    const doc = createNewSave(0, 1, ENERGY_CAP);
+    doc.player.decks = [
+      { name: 'Too big', heroUid: null, unitUids: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] },
+    ];
+    expect(saveDoc.safeParse(doc).success).toBe(false);
+  });
+});

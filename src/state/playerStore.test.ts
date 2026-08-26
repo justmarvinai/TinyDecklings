@@ -151,3 +151,156 @@ describe('rewards and records', () => {
     expect(store().spendCurrency('gold', 5)).toBe(false);
   });
 });
+
+describe('ascension (Q8)', () => {
+  it('needs fodder of the same grade plus gold', () => {
+    const uid = store().grantCard('card.ember_drake'); // rare -> 3 stars
+    expect(store().canAscend(uid)).toBe(false);
+
+    store().addCurrency('gold', 1_000_000);
+    for (let i = 0; i < 3; i++) store().grantCard('card.ember_drake');
+    expect(store().ascensionFodder(uid)).toHaveLength(3);
+    expect(store().canAscend(uid)).toBe(true);
+  });
+
+  it('consumes exactly the fodder required and raises the grade', () => {
+    const uid = store().grantCard('card.ember_drake');
+    store().addCurrency('gold', 1_000_000);
+    const fodder = [0, 1, 2, 3].map(() => store().grantCard('card.ember_drake'));
+
+    expect(store().ascend(uid, fodder)).toBe(true);
+    expect(store().card(uid)?.stars).toBe(4);
+    // Three consumed, one spare left over.
+    expect(store().cards()).toHaveLength(2);
+  });
+
+  it('never eats a favourite or a card that sits in a deck', () => {
+    const uid = store().grantCard('card.ember_drake');
+    const favourite = store().grantCard('card.ember_drake');
+    usePlayerStore.setState((s) => ({
+      save: s.save && {
+        ...s.save,
+        player: {
+          ...s.save.player,
+          cards: s.save.player.cards.map((c) =>
+            c.uid === favourite ? { ...c, favorite: true } : c,
+          ),
+          decks: [{ name: 'Deck 1', heroUid: null, unitUids: [] }],
+        },
+      },
+    }));
+    expect(
+      store()
+        .ascensionFodder(uid)
+        .map((c) => c.uid),
+    ).not.toContain(favourite);
+  });
+
+  it('stops at six stars', () => {
+    const uid = store().grantCard('card.tide_tyrant'); // legendary -> 5 stars
+    store().addCurrency('gold', 10_000_000);
+    for (let i = 0; i < 12; i++) store().grantCard('card.tide_tyrant');
+
+    store().ascend(
+      uid,
+      store()
+        .ascensionFodder(uid)
+        .map((c) => c.uid),
+    );
+    expect(store().card(uid)?.stars).toBe(6);
+    expect(store().canAscend(uid)).toBe(false);
+  });
+
+  it('raises stats and the level cap', () => {
+    const uid = store().grantCard('card.ember_drake');
+    const before = store().statsFor(uid).strength;
+    store().addCurrency('gold', 1_000_000);
+    for (let i = 0; i < 3; i++) store().grantCard('card.ember_drake');
+    store().ascend(
+      uid,
+      store()
+        .ascensionFodder(uid)
+        .map((c) => c.uid),
+    );
+    expect(store().statsFor(uid).strength).toBeGreaterThan(before);
+  });
+
+  it('refuses when the fodder offered is not eligible', () => {
+    const uid = store().grantCard('card.ember_drake');
+    store().addCurrency('gold', 1_000_000);
+    const wrongGrade = store().grantCard('card.thorn_sprout'); // common -> 1 star
+    expect(store().ascend(uid, [wrongGrade])).toBe(false);
+    expect(store().card(uid)?.stars).toBe(3);
+  });
+});
+
+describe('skill ladder (Q18)', () => {
+  it('unlocks one slot per star', () => {
+    const rare = store().grantCard('card.ember_drake'); // 3 stars
+    const common = store().grantCard('card.thorn_sprout'); // 1 star
+    expect(store().skillSlots(rare)).toBe(3);
+    expect(store().skillSlots(common)).toBe(1);
+  });
+
+  it('needs gold and tomes to upgrade', () => {
+    const uid = store().grantCard('card.ember_drake');
+    expect(store().canUpgradeSkill(uid, 0)).toBe(false);
+    store().addCurrency('gold', 100_000);
+    store().addCurrency('tome', 50);
+    expect(store().canUpgradeSkill(uid, 0)).toBe(true);
+    expect(store().upgradeSkill(uid, 0)).toBe(true);
+    expect(store().card(uid)?.skillLevels[0]).toBe(2);
+  });
+
+  it('refuses a slot the card has not unlocked yet', () => {
+    const uid = store().grantCard('card.thorn_sprout'); // 1 slot
+    store().addCurrency('gold', 100_000);
+    store().addCurrency('tome', 50);
+    expect(store().canUpgradeSkill(uid, 2)).toBe(false);
+    expect(store().upgradeSkill(uid, 2)).toBe(false);
+  });
+
+  it('spends both currencies, never just one', () => {
+    const uid = store().grantCard('card.ember_drake');
+    store().addCurrency('gold', 100_000);
+    store().addCurrency('tome', 50);
+    const gold = store().currency('gold');
+    const tomes = store().currency('tome');
+    store().upgradeSkill(uid, 0);
+    expect(store().currency('gold')).toBeLessThan(gold);
+    expect(store().currency('tome')).toBeLessThan(tomes);
+  });
+});
+
+describe('gear enhancement (Q11)', () => {
+  it('needs gold and raises the stat it grants', () => {
+    const cardUid = store().grantCard('card.stone_sentry');
+    const gearUid = store().grantGear({ defId: 'gear.reefguard_crown', substats: [] });
+    store().equip(cardUid, gearUid);
+
+    const before = store().statsFor(cardUid).strength;
+    expect(store().canEnhance(gearUid)).toBe(false);
+
+    store().addCurrency('gold', 100_000);
+    expect(store().canEnhance(gearUid)).toBe(true);
+    expect(store().enhance(gearUid)).toBe(true);
+    expect(store().gearItem(gearUid)?.enhanceLevel).toBe(1);
+    expect(store().statsFor(cardUid).strength).toBeGreaterThan(before);
+  });
+
+  it('stops at the rarity cap', () => {
+    const gearUid = store().grantGear({ defId: 'gear.chipped_cutlass', substats: [] }); // worn -> cap 3
+    store().addCurrency('gold', 10_000_000);
+    for (let i = 0; i < 10; i++) store().enhance(gearUid);
+    expect(store().gearItem(gearUid)?.enhanceLevel).toBe(3);
+    expect(store().canEnhance(gearUid)).toBe(false);
+  });
+
+  it('charges more for each level', () => {
+    const gearUid = store().grantGear({ defId: 'gear.tidewalkers', substats: [] });
+    store().addCurrency('gold', 10_000_000);
+    const first = store().enhanceCostFor(gearUid);
+    store().enhance(gearUid);
+    expect(store().enhanceCostFor(gearUid)).toBeGreaterThan(first);
+  });
+});

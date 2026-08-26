@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
+import { CONTENT, CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useScreenStore, type TabId } from '@/state/screenStore';
@@ -126,6 +126,30 @@ export function DevPanel() {
           </Button>
           <Button variant="info" onClick={() => player.grantStarterCollection()}>
             Starter cards
+          </Button>
+          <Button
+            variant="info"
+            onClick={() => {
+              // Enough duplicates to actually exercise ascension.
+              for (let i = 0; i < 4; i++) player.grantStarterCollection();
+              player.addCurrency('tome', 50);
+            }}
+          >
+            Fodder + tomes
+          </Button>
+          <Button
+            variant="info"
+            onClick={() => {
+              // One item per slot so every gear surface can be exercised.
+              const seen = new Set<string>();
+              for (const def of CONTENT.gear.values()) {
+                if (seen.has(def.slot)) continue;
+                seen.add(def.slot);
+                player.grantGear({ defId: def.id, substats: [] });
+              }
+            }}
+          >
+            Gear set
           </Button>
         </div>
       </div>

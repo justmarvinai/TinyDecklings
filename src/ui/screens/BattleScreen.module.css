@@ -130,8 +130,19 @@
   padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
+/* One button per unlocked skill; they share the bar and stay tappable at 48px. */
+.skillRow {
+  flex: 1;
+  display: flex;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 .skillButton {
   flex: 1;
+  min-width: 0;
+  padding-left: var(--space-1);
+  padding-right: var(--space-1);
 }
 
 /* A card lunges toward its target when it strikes. */

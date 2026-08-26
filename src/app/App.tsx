@@ -15,6 +15,7 @@ import { BattleScreen } from '@/ui/screens/BattleScreen';
 import { CardsScreen } from '@/ui/screens/CardsScreen';
 import { KitchenSinkScreen } from '@/ui/screens/KitchenSinkScreen';
 import { MapScreen } from '@/ui/screens/MapScreen';
+import { SettingsScreen } from '@/ui/screens/SettingsScreen';
 import { createGameServices } from './gameServices';
 import { useAutosaveLifecycle } from './useAutosaveLifecycle';
 import { useBackButton } from './useBackButton';
@@ -120,8 +121,10 @@ export function App() {
           <ComingSoon title="Summon" phase="Phase 3" />
         ) : screen.kind === 'shop' ? (
           <ComingSoon title="Shop" phase="Phase 3" />
+        ) : screen.kind === 'settings' || screen.kind === 'more' ? (
+          <SettingsScreen />
         ) : (
-          <ComingSoon title="More" phase="Phase 2" />
+          <ComingSoon title="Profile" phase="Phase 5" />
         )}
 
         {canGoBack && screen.kind !== 'battle' ? (

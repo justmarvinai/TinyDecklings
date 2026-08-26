@@ -5,11 +5,30 @@
  * them, so balance tuning never touches logic (CONTENT_SCHEMA.md §11).
  */
 import type { GrowthCurveDef } from '@/content/schemas';
+import { starMultiplier } from './ascension';
+
+export * from './ascension';
 
 /** A stat at a given level: compounding growth from the level-1 base. */
 export function statAt(base: number, level: number, curve: GrowthCurveDef): number {
   if (level <= 1) return Math.round(base);
   return Math.round(base * Math.pow(curve.statPerLevel, level - 1));
+}
+
+/**
+ * A stat at a given level AND star grade.
+ *
+ * Ascension is worth doing on its own, not just for the higher level cap: every
+ * star above the card's base grade multiplies its stats (Q8).
+ */
+export function statAtGrade(
+  base: number,
+  level: number,
+  stars: number,
+  baseStars: number,
+  curve: GrowthCurveDef,
+): number {
+  return Math.round(statAt(base, level, curve) * starMultiplier(stars, baseStars));
 }
 
 /** XP needed to go from `level` to `level + 1`. */

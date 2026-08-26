@@ -3,8 +3,7 @@
 > **Gate status:** Q1–Q30 **answered on 2026-08-26** — the owner accepted **all recommendations, except
 > Q14 → option (b)** (energy pacing system). All docs are updated to the decided state.
 >
-> ⛔ **Implementation still requires the owner's explicit "start development" instruction** (owner directive).
-> When it arrives, work begins with Phase 0 of `IMPLEMENTATION_PLAN.md`.
+> Development started the same day; see `ROADMAP.md` for what has shipped since.
 >
 > This file remains the intake for **future** owner decisions: new ambiguities get appended under
 > "Open questions" instead of being silently decided (see `CLAUDE.md` workflow).

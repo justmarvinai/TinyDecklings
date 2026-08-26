@@ -28,7 +28,8 @@ export function BattleScreen({ stage }: { stage: number }) {
   const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [animating, setAnimating] = useState(false);
   const [effectOn, setEffectOn] = useState<{ uid: string; kind: 'lunge' | 'hit' } | null>(null);
-  const [selectedSkill, setSelectedSkill] = useState(false);
+  /** Index of the armed skill, or null when a tap means a basic attack. */
+  const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const result = useBattleStore((s) => s.result);
 
   const buildSetup = useBattleSetupFactory();
@@ -198,18 +199,17 @@ export function BattleScreen({ stage }: { stage: number }) {
     return slots;
   };
 
-  const readySkill = activeCard?.skills[0];
-  const canCast = Boolean(readySkill && readySkill.cooldownRemaining === 0 && !animating && !auto);
-  const skillDef = readySkill ? CONTENT.skills.get(readySkill.skillId) : undefined;
+  const armedSkill = selectedSkill !== null ? activeCard?.skills[selectedSkill] : undefined;
+  const armedSkillDef = armedSkill ? CONTENT.skills.get(armedSkill.skillId) : undefined;
 
   const onTarget = (uid: string) => {
     if (!legalTargets.includes(uid)) return;
-    if (selectedSkill && canCast) {
-      battle.submit({ kind: 'skill', skillIndex: 0, targetUid: uid });
-      setSelectedSkill(false);
+    if (selectedSkill !== null && armedSkill?.cooldownRemaining === 0) {
+      battle.submit({ kind: 'skill', skillIndex: selectedSkill, targetUid: uid });
     } else {
       battle.submit({ kind: 'attack', targetUid: uid });
     }
+    setSelectedSkill(null);
   };
 
   const renderSide = (side: 'player' | 'enemy') => (
@@ -301,8 +301,8 @@ export function BattleScreen({ stage }: { stage: number }) {
             : auto
               ? 'Auto battling…'
               : state.turn === 'player' && activeCard
-                ? selectedSkill
-                  ? `Pick a target for ${skillDef?.name ?? 'the skill'}`
+                ? armedSkillDef
+                  ? `Pick a target for ${armedSkillDef.name}`
                   : `${activeCard.name} — pick a target`
                 : ''}
       </div>
@@ -311,20 +311,27 @@ export function BattleScreen({ stage }: { stage: number }) {
         <div className={styles.counters}>
           <span className={styles.counter}>{state.queue.player.length}</span>
         </div>
-        {skillDef ? (
-          <Button
-            variant={selectedSkill ? 'warning' : 'info'}
-            className={styles.skillButton}
-            disabled={!canCast}
-            locked={!canCast && readySkill!.cooldownRemaining > 0}
-            lockHint={
-              readySkill!.cooldownRemaining > 0 ? `${readySkill!.cooldownRemaining}` : undefined
-            }
-            onClick={() => setSelectedSkill((v) => !v)}
-          >
-            {skillDef.name}
-          </Button>
-        ) : null}
+        <div className={styles.skillRow}>
+          {(activeCard?.skills ?? []).map((skill, index) => {
+            const skillDef = CONTENT.skills.get(skill.skillId);
+            if (!skillDef) return null;
+            const ready = skill.cooldownRemaining === 0 && !animating && !auto;
+            const armed = selectedSkill === index;
+            return (
+              <Button
+                key={skill.skillId + index}
+                variant={armed ? 'warning' : 'info'}
+                className={styles.skillButton}
+                disabled={!ready}
+                locked={!ready && skill.cooldownRemaining > 0}
+                lockHint={skill.cooldownRemaining > 0 ? `${skill.cooldownRemaining}` : undefined}
+                icon={skillDef.iconKey}
+                onClick={() => setSelectedSkill((current) => (current === index ? null : index))}
+                aria-label={`${skillDef.name}${skill.cooldownRemaining > 0 ? `, ready in ${skill.cooldownRemaining} rounds` : ', ready'}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {result ? (

@@ -228,3 +228,136 @@
   line-height: 1.45;
   font-size: var(--fs-label);
 }
+
+/* ---- collection controls ---- */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.controlsSpacer {
+  flex: 1;
+}
+
+.deckPane {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: var(--space-6);
+}
+
+.deckStrip {
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-bottom: var(--outline-width-thin) solid var(--outline-dark);
+  background: rgb(0 0 0 / 0.25);
+}
+
+.favouriteMark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  color: var(--accent-warning);
+  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.7));
+}
+
+.tileWrap {
+  position: relative;
+}
+
+/* ---- skills ---- */
+
+.skillList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skillRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+  text-align: left;
+  width: 100%;
+}
+
+.skillLocked {
+  opacity: 0.5;
+}
+
+.skillBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.skillName {
+  display: block;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+}
+
+.skillDesc {
+  display: block;
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  text-transform: none;
+  line-height: 1.35;
+}
+
+.skillLevel {
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-slot);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+}
+
+/* ---- gear detail ---- */
+
+.gearDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gearHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.substats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.substatRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+}
+
+.enhanceLevel {
+  color: var(--accent-warning);
+  font-weight: var(--fw-black);
+}
+
+.fodderGrid {
+  max-height: 40svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

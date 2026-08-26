@@ -6,9 +6,9 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0 and 1 are complete** — the vertical
-slice is playable end to end and deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 2
-(collection & progression depth) is next.
+Questions answered and development started **2026-08-26**. **Phases 0, 1 and 2 are complete** — the game is
+playable end to end with full collection depth, and deployable to Vercel for live review
+(`DEPLOYMENT.md`). Phase 3 (economy, summon & energy) is next.
 
 ---
 
@@ -49,7 +49,7 @@ verified in Chromium at 390×844 and 360×640.
 Verified at 390×844 and 360×640 with no overflow; 153 tests green, including a balance guard proving the
 region is completable (stage 1 winnable at level 1, the boss needs roughly level 20).
 
-## Phase 2 — Collection & progression depth
+## Phase 2 — Collection & progression depth ✅ COMPLETE
 
 - Full gear system: all 8+1 slots active, 6 gear rarities, substats, gold enhancement (Q10/Q11)
 - Ascension/EVOLVE (duplicates → stars, up to 6★), level caps by stars, skill slot unlocks (Q8)
@@ -57,7 +57,12 @@ region is completable (stage 1 winnable at level 1, the boss needs roughly level
 - Deck builder: 6 decks, leader + 8, auto-equip/auto-build, deck power (Q6)
 - Full card detail sheet — RANK/TRAIT/FOIL/artifact-set buttons **visible but locked** (Q22)
 - Settings screen (audio toggles, speed, language stub)
-- Collection QoL: filter/sort, favorites, notification dots
+- Collection QoL: sort, favourites filter
+
+**Exit:** ✅ every gear slot is live with substats and gold enhancement; cards ascend to 6★ by consuming
+same-grade fodder (favourites and deck members protected); five skill slots unlock one per star and upgrade
+with gold + tomes; six decks of 1 hero + 8 units drive battles; settings and collection QoL shipped.
+207 tests green; verified at 390×844 and 360×640.
 
 ## Phase 3 — Economy, summon & energy
 

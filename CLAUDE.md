@@ -2,13 +2,13 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## Current project status: Phase 1 complete — the vertical slice is playable
+## Current project status: Phase 2 complete — collection & progression depth
 
 `USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
-the energy pacing system). **Phase 0 (Foundation)** and **Phase 1 (Vertical slice)** are both done: the core
-loop — Map → Battle → Rewards → Progression → Continue — runs end to end on a phone, and the app deploys to
-Vercel for live review (`DEPLOYMENT.md`). Next up is **Phase 2 — collection & progression depth** in
-`IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into `USER_QUESTIONS.md` → "Open questions"
+the energy pacing system). **Phases 0–2 are done**: the core loop — Map → Battle → Rewards → Progression →
+Continue — runs end to end on a phone, cards ascend and equip across all eight gear slots, decks are built
+by hand, and the app deploys to Vercel for live review (`DEPLOYMENT.md`). Next up is **Phase 3 — economy,
+summon & energy** in `IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into `USER_QUESTIONS.md` → "Open questions"
 instead of being silently decided.
 
 **This is a single-player game.** There is no multiplayer, no PvP, no server and no accounts — anywhere.
@@ -73,6 +73,9 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 - Components: PascalCase in `ui/`; stores `xxxStore.ts`; one Zustand store per domain slice.
 - Styling: CSS Modules + tokens from `ui/design/tokens.css`; no inline hex values — tokens only.
 - Tests colocated `*.test.ts`; engine changes ship with tests (goldens for battle/map determinism).
+- **Never pass a store method that builds a fresh object/array to a Zustand selector** (e.g. `statsFor`,
+  `ascensionFodder`) — it re-renders forever. Subscribe to `save` and use the pure helpers
+  (`computeCardStats`, `ascensionFodderFor`) inside `useMemo`.
 - Commits: imperative subject, scope prefix when useful (`engine: add burn tick`), update `CHANGELOG.md` for user-visible changes. Do not mention AI models in commit messages or code.
 - User-facing strings live centralized (future i18n), never scattered literals.
 

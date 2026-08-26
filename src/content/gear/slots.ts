@@ -5,8 +5,9 @@
  * icon, everywhere (owner directive / CLAUDE.md rule 5). The registry asserts the
  * key always matches the slot, so a bespoke per-item icon cannot sneak in.
  *
- * `active` gates which slots the current phase switches on. The vertical slice uses
- * four; Phase 2 activates the rest, and locked slots render with a padlock.
+ * `active` gates which slots the game has switched on. Phase 2 activates all eight;
+ * the Artifact slot stays gated behind a 6-star card, which is a progression lock
+ * rather than a phase lock, so it renders with a padlock and its requirement.
  */
 import type { GearSlotDef } from '../schemas';
 
@@ -49,7 +50,7 @@ export const GEAR_SLOT_DEFS: readonly GearSlotDef[] = [
     iconKey: 'gear.shield',
     mainStat: 'strength',
     unlockStars: 1,
-    active: false,
+    active: true,
   },
   {
     id: 'gauntlets',
@@ -57,7 +58,7 @@ export const GEAR_SLOT_DEFS: readonly GearSlotDef[] = [
     iconKey: 'gear.gauntlets',
     mainStat: 'attack',
     unlockStars: 1,
-    active: false,
+    active: true,
   },
   {
     id: 'ring',
@@ -65,7 +66,7 @@ export const GEAR_SLOT_DEFS: readonly GearSlotDef[] = [
     iconKey: 'gear.ring',
     mainStat: 'attack',
     unlockStars: 1,
-    active: false,
+    active: true,
   },
   {
     id: 'amulet',
@@ -73,7 +74,7 @@ export const GEAR_SLOT_DEFS: readonly GearSlotDef[] = [
     iconKey: 'gear.amulet',
     mainStat: 'strength',
     unlockStars: 1,
-    active: false,
+    active: true,
   },
   {
     id: 'artifact',
@@ -81,6 +82,6 @@ export const GEAR_SLOT_DEFS: readonly GearSlotDef[] = [
     iconKey: 'gear.artifact',
     mainStat: 'attack',
     unlockStars: 6,
-    active: false,
+    active: true,
   },
 ];
