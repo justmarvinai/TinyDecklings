@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { CONTENT } from '@/content';
+import { CONTENT, ENERGY_CONFIG } from '@/content';
 import type { GeneratedStage } from '@/content/schemas';
 import { regionForStage } from '@/engine/map/generate';
+import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useScreenStore } from '@/state/screenStore';
 import { PLACEHOLDER_AVATAR } from '@/ui/art/artManifest';
-import { Button, IconChip, Modal, StarRow } from '@/ui/design/primitives';
+import { formatDuration } from '@/engine/economy/energy';
+import { Button, IconChip, Modal, Panel, StarRow } from '@/ui/design/primitives';
 import styles from './MapScreen.module.css';
 
 const STAGE_KIND_ICON = {
@@ -116,6 +118,9 @@ export function MapScreen() {
           stars={bestStars(selected.number)}
           onClose={() => setSelected(null)}
           onFight={() => {
+            // Energy is spent on entry, not on victory: a lost fight still costs
+            // the attempt (Q14b).
+            if (!useEconomyStore.getState().spendForStage(selected.kind)) return;
             setSelected(null);
             push({ kind: 'battle', stage: selected.number });
           }}
@@ -138,6 +143,13 @@ function StageSheet({
 }) {
   const group = CONTENT.enemies.get(stage.encounterRef);
   const deckSize = usePlayerStore((s) => s.cards().length);
+  const save = usePlayerStore((s) => s.save);
+  const economy = useEconomyStore.getState();
+  void save; // re-read energy whenever the save changes
+
+  const cost = ENERGY_CONFIG.costs[stage.kind] ?? 0;
+  const energy = economy.energy();
+  const affordable = economy.canEnterStage(stage.kind);
 
   return (
     <Modal title={`${stage.number}. ${stage.name}`} onClose={onClose}>
@@ -166,8 +178,30 @@ function StageSheet({
             : 'Clear every enemy to win. Lose no cards at all for three stars.'}
         </p>
 
-        <Button variant="positive" block onClick={onFight} disabled={deckSize === 0}>
-          {stars > 0 ? 'Fight again' : 'Fight'}
+        {cost > 0 ? (
+          <div className={styles.sheetRow}>
+            <span className={styles.muted}>Costs</span>
+            <span className={styles.costPill}>
+              <IconChip name="currency.energy" size={20} background="var(--accent-info)" />
+              {cost}
+            </span>
+          </div>
+        ) : null}
+
+        {!affordable && cost > 0 ? (
+          <Panel tone="raised">
+            <p className={styles.muted}>
+              Not enough energy — you have {energy.current} of {cost}.{' '}
+              {energy.msToNext !== null
+                ? `The next point arrives in ${formatDuration(energy.msToNext)}.`
+                : ''}{' '}
+              Energy refills on its own, or you can trade gems for a flask in the shop.
+            </p>
+          </Panel>
+        ) : null}
+
+        <Button variant="positive" block onClick={onFight} disabled={deckSize === 0 || !affordable}>
+          {!affordable ? 'Not enough energy' : stars > 0 ? 'Fight again' : 'Fight'}
         </Button>
       </div>
     </Modal>

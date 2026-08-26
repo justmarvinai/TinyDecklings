@@ -129,9 +129,82 @@ describe('migrations', () => {
   });
 
   it('explains itself when a migration step is missing', () => {
-    expect(() => migrate({ saveVersion: CURRENT_SAVE_VERSION - 1 }, CURRENT_SAVE_VERSION)).toThrow(
-      /add one in migrations\.ts/,
-    );
+    // An empty table stands in for a version nobody wrote a migration for.
+    expect(() => migrate({ saveVersion: 1 }, 2, {})).toThrow(/add one in migrations\.ts/);
+  });
+
+  it('migrates a real v1 save forward to v2, gaining the shop', () => {
+    const v1 = {
+      saveVersion: 1,
+      createdAtMs: 0,
+      updatedAtMs: 0,
+      player: {
+        profile: { name: 'Deckling', avatarKey: 'placeholder', level: 3, xp: 40 },
+        currencies: {
+          gold: 1234,
+          gems: 20,
+          energy: 0,
+          token_unit_t1: 2,
+          token_unit_t2: 0,
+          token_unit_t3: 0,
+          token_hero: 0,
+          fragment: 0,
+          tome: 5,
+        },
+        energy: { current: 12, regenAnchorMs: 0 },
+        cards: [
+          {
+            uid: 'c1',
+            defId: 'card.ember_drake',
+            level: 8,
+            xp: 3,
+            stars: 3,
+            skillLevels: [2],
+            equippedGear: {},
+            favorite: false,
+          },
+        ],
+        gear: [],
+        decks: [{ name: 'Deck 1', heroUid: null, unitUids: ['c1'] }],
+        activeDeckIndex: 0,
+        stageRecords: { '4': { bestStars: 2, clears: 3 } },
+        unlocks: [],
+        pity: {},
+      },
+      run: { seed: 99, currentStage: 5, generatedWindow: [], pendingBattle: null },
+      settings: { sfx: true, music: false, battleSpeed: 2, reducedMotion: false, language: 'en' },
+    };
+
+    const migrated = saveDoc.parse(migrate(v1, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(2);
+    // Everything the player had is untouched...
+    expect(migrated.player.currencies.gold).toBe(1234);
+    expect(migrated.player.cards[0].skillLevels).toEqual([2]);
+    expect(migrated.player.stageRecords['4']).toEqual({ bestStars: 2, clears: 3 });
+    expect(migrated.run.currentStage).toBe(5);
+    expect(migrated.settings.battleSpeed).toBe(2);
+    // ...and the new shop state is present and empty.
+    expect(migrated.player.shop).toEqual({ dayKey: '', purchased: {} });
+    expect(migrated.player.summonCounts).toEqual({});
+  });
+
+  it('loads a stored v1 save through the service without losing progress', async () => {
+    const storage = createMemoryStorageService();
+    const v1 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 1,
+    } as Record<string, unknown>;
+    delete (v1.player as Record<string, unknown>).shop;
+    delete (v1.player as Record<string, unknown>).summonCounts;
+    await storage.write(SAVE_KEY, JSON.stringify(v1));
+
+    const { service } = makeService(storage);
+    const result = await service.load(7);
+
+    expect(result.status).toBe('loaded');
+    expect(result.save.saveVersion).toBe(CURRENT_SAVE_VERSION);
+    expect(result.save.player.shop.purchased).toEqual({});
   });
 
   it('walks a fixture forward through a chain of migrations', () => {

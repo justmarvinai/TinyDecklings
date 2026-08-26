@@ -23,6 +23,7 @@ const emptySource = {
   lootTables: [],
   summonPools: [],
   growthCurves: [],
+  shopOffers: [],
 };
 
 const validCard = {

@@ -6,9 +6,9 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0, 1 and 2 are complete** — the game is
-playable end to end with full collection depth, and deployable to Vercel for live review
-(`DEPLOYMENT.md`). Phase 3 (economy, summon & energy) is next.
+Questions answered and development started **2026-08-26**. **Phases 0–3 are complete** — the game is
+playable end to end with full collection depth and a live economy, and deployable to Vercel for live review
+(`DEPLOYMENT.md`). Phase 4 (the endless road) is next.
 
 ---
 
@@ -64,13 +64,18 @@ same-grade fodder (favourites and deck members protected); five skill slots unlo
 with gold + tomes; six decks of 1 hero + 8 units drive battles; settings and collection QoL shipped.
 207 tests green; verified at 390×844 and 360×640.
 
-## Phase 3 — Economy, summon & energy
+## Phase 3 — Economy, summon & energy ✅ COMPLETE
 
 - Summon screen: pools, tokens, pity counters, single/×10, reveal ceremony — fully earnable, **no IAP** (Q13)
 - Fragments & pity conversion; currency sinks/sources balanced pass 1
 - **Energy system (Q14b):** cap 30, 1/2min regen (lazy, clock-injected), costs battle 5 / elite 6 / boss 8, vignettes free, overflow from rewards, out-of-energy sheet, HUD pill wiring
 - Shop v1 (soft-currency offers, daily rotation; style per `Shop.png`; gem energy refills — still no real money)
 - Red-swords HUD counter stays cut (Q15)
+
+**Exit:** ✅ four summon pools with working pity meters and a ×10 discount; duplicates pay fragments and
+fragments buy a chosen card; energy gates combat stages with a clear out-of-energy sheet and refills on its
+own; a daily shop trades earned currency for energy, tomes and tokens. Save migrated v1 → v2 with a fixture
+test. 277 tests green; verified at 390×844 and 360×640.
 
 ## Phase 4 — The endless road
 

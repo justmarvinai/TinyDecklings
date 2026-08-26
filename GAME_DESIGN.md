@@ -271,7 +271,7 @@ Currencies and their roles:
 | **Player XP**     | —                             | Account level (avatar badge) gating features                                                      |
 | ~~Battle tokens~~ | ~~Red swords (10/10)~~        | **Cut for v1 [DECIDED — Q15]** — HUD slot removed _(conscious divergence from the reference HUD)_ |
 
-### 10.1 Energy pacing **[DECIDED — Q14 → option (b); system lands Phase 3]**
+### 10.1 Energy pacing **[DECIDED — Q14 → option (b); shipped Phase 3]**
 
 A **generous, fast-refilling energy system** for session pacing (mobile-typical), matching the HUD's 30/30 bolt:
 
@@ -280,7 +280,8 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 - Defeat does **not** refund the attempt — the generous regen is the cushion.
 - Energy from rewards/level-ups may **overflow the cap** (regen pauses while above cap).
 - Out-of-energy → a friendly sheet showing time-to-next-attempt (and later, shop refill options — gems only, still no real money).
-- Until the system lands in Phase 3, dev builds run with energy off; the dev panel can grant/toggle it.
+- Regen is **derived, never ticked**: the save stores the value plus the moment it was settled, so closing
+  the app loses nothing and no timer runs. The dev panel can grant or drain energy for testing.
 
 **Summon** (reference `Card_Summon.png`): token-gated pools, single & ×10 (discounted), **pity counters** per Epic/Legendary, reveal ceremony. **[DECIDED — Q13]:** the gacha is an _earnable reward cadence_ — tokens/gems come from play; **zero real-money IAP; the game is fully offline.**
 

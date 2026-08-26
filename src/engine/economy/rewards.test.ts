@@ -19,16 +19,24 @@ describe('loot rolls', () => {
     );
   });
 
-  it('drops gear at roughly the table weight', () => {
+  it('drops gear at roughly the rate the table describes', () => {
+    // Derived from the table rather than hardcoded, so retuning loot does not
+    // silently invalidate this test.
+    const totalWeight = battleTable.entries.reduce((sum, e) => sum + e.weight, 0);
+    const gearWeight = battleTable.entries
+      .filter((e) => e.reward.kind === 'gearDrop')
+      .reduce((sum, e) => sum + e.weight, 0);
+    const perRoll = gearWeight / totalWeight;
+    const expected = 1 - Math.pow(1 - perRoll, battleTable.rolls);
+
     const rng = createRng(2024);
+    const runs = 5000;
     let withGear = 0;
-    const runs = 4000;
     for (let i = 0; i < runs; i++) {
       if (rollLoot(CONTENT, battleTable, rng).gear.length > 0) withGear++;
     }
-    // The table's single roll gives gear 25/100 of the weight.
-    expect(withGear / runs).toBeGreaterThan(0.2);
-    expect(withGear / runs).toBeLessThan(0.3);
+    expect(withGear / runs).toBeGreaterThan(expected - 0.04);
+    expect(withGear / runs).toBeLessThan(expected + 0.04);
   });
 
   it('only ever drops gear that exists in the registry', () => {

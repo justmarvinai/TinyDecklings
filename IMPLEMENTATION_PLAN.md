@@ -2,8 +2,8 @@
 
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
-> Development started **2026-08-26**. **Phases 0, 1 and 2 are complete** (tasks 0.1–0.10, 1.1–1.18 and
-> 2.1–2.7 shipped, plus Vercel deployment); work continues at Phase 3.
+> Development started **2026-08-26**. **Phases 0–3 are complete** (tasks 0.1–0.10, 1.1–1.18, 2.1–2.7 and
+> 3.1–3.6 shipped, plus Vercel deployment); work continues at Phase 4.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -72,7 +72,7 @@ RANK/TRAIT/FOIL/artifact sets **deferred, shown locked** (Q22).
 
 2.1 Gear full slot set + substats + enhancement · 2.2 Ascension/EVOLVE + level caps + skill slot unlocks · 2.3 Skill upgrade UI + tome resource · 2.4 Deck builder (6 decks, leader+8, auto-build, power; no defense deck — Q6) · 2.5 Full card detail action bar with locked-system facades · 2.6 Settings screen · 2.7 Collection filter/sort/favorites/badges.
 
-## Phase 3 — Economy, summon & energy
+## Phase 3 — Economy, summon & energy ✅ COMPLETE
 
 Scope decided: gacha fully earnable, zero IAP (Q13) · energy system per Q14(b) · red-swords counter stays cut (Q15).
 
@@ -136,4 +136,9 @@ Phase 6 & 7 follow the last content phase shipped.
   six-deck builder driving battles, multi-skill battle bar, settings screen, collection sort/favourites.
   `npm run verify` green; 207 tests. No save migration was needed — the Phase 2 fields already existed in
   save v1, and a round-trip test now guards them.
-- **Phase 3 — next.** Summon pools with pity, fragments, the energy system (Q14b), shop v1.
+- **Phase 3 — complete (2026-08-26).** Four summon pools with pity counters and a ×10 discount, duplicate
+  fragments and a fragment exchange, the energy system (Q14b) gating combat stages, a daily shop, an
+  economy tuning pass so tokens and tomes actually drop, and **save v2 with a real v1 → v2 migration**.
+  Screens are code-split, cutting the initial bundle from 160 KB to 84 KB gzip. 277 tests green.
+- **Phase 4 — next.** Region biomes, elites, boss modifiers, event/treasure/camp nodes, fork nodes, and the
+  light elemental affinity system.
