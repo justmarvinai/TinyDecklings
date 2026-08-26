@@ -2,14 +2,18 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## Current project status: Phase 0 complete — building the vertical slice (Phase 1)
+## Current project status: Phase 1 complete — the vertical slice is playable
 
 `USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
-the energy pacing system), and the owner started development the same day. **Phase 0 (Foundation) is done**:
-scaffold, design tokens and primitives, icon/art manifest, Zod content pipeline, seeded RNG, screen stack,
-versioned saves, audio service and dev panel. Next up is **Phase 1 — the vertical slice** in
-`IMPLEMENTATION_PLAN.md`, starting at task 1.1. New owner-preference ambiguities go into `USER_QUESTIONS.md`
-→ "Open questions" instead of being silently decided.
+the energy pacing system). **Phase 0 (Foundation)** and **Phase 1 (Vertical slice)** are both done: the core
+loop — Map → Battle → Rewards → Progression → Continue — runs end to end on a phone, and the app deploys to
+Vercel for live review (`DEPLOYMENT.md`). Next up is **Phase 2 — collection & progression depth** in
+`IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into `USER_QUESTIONS.md` → "Open questions"
+instead of being silently decided.
+
+**This is a single-player game.** There is no multiplayer, no PvP, no server and no accounts — anywhere.
+Reference screenshots contain multiplayer furniture (defense decks, leaderboards); those are deliberately
+cut, and nothing multiplayer-shaped should be added without an owner decision.
 
 ## What this project is
 
@@ -29,6 +33,8 @@ endless stage map. Full vision: `GAME_DESIGN.md`.
 | `ROADMAP.md` / `IMPLEMENTATION_PLAN.md` | Phases; concrete tasks + acceptance criteria                                                              |
 | `USER_QUESTIONS.md`                     | Owner decision log (Q1–Q30 answered 2026-08-26) + intake for future questions — **the development gate**  |
 | `CHANGELOG.md`                          | Keep-a-Changelog history; update with every meaningful change                                             |
+| `DEPLOYMENT.md`                         | Vercel setup, preview URLs, what is deliberately not deployed                                             |
+| `CREDITS.md`                            | Placeholder art/font attribution (CC BY 3.0 icons, SIL font)                                              |
 
 ## Commands
 
@@ -58,6 +64,7 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 8. **Saves are sacred.** Any save-shape change ⇒ version bump + migration + fixture test in the same commit.
 9. **Typography:** Saira, ALL CAPS for UI labels/titles; normal case where caps hurt readability (lore, prose).
 10. **Capacitor later, never now.** Keep platform concerns behind `services/` interfaces; no Capacitor work until the owner schedules it.
+11. **Single-player only.** No multiplayer, PvP, accounts, servers or online leaderboards. Saves are local.
 
 ## Conventions
 

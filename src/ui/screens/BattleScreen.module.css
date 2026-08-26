@@ -1,0 +1,256 @@
+/**
+ * Battle layout: enemy grid on top, TURN divider, player grid below — the
+ * arrangement from Battle.png, in portrait.
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  background:
+    radial-gradient(circle at 50% 8%, rgb(120 30 25 / 0.75), transparent 55%),
+    radial-gradient(circle at 50% 95%, rgb(60 20 60 / 0.6), transparent 55%), var(--bg-app-deep);
+  overflow: hidden;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.counters {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.counter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 var(--space-2);
+  border: var(--outline-width-thin) solid var(--accent-warning);
+  border-radius: 6px;
+  background: var(--surface-pill);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  color: var(--accent-warning);
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.side {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+}
+
+/* Each cell is a height-constrained box; the card centres inside it. */
+.cell {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Front row first for the enemy (nearest the divider), reversed for the player. */
+.playerGrid {
+  direction: ltr;
+}
+
+.divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) 0;
+}
+
+.dividerLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.turnPill {
+  position: relative;
+  padding: var(--space-1) var(--space-5);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--surface-pill);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  box-shadow: var(--shadow-drop-sm);
+}
+
+.enemyTurn {
+  background: var(--accent-danger);
+}
+
+.prompt {
+  padding: var(--space-1) var(--space-3);
+  text-align: center;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-warning);
+  min-height: 26px;
+  text-shadow: var(--text-shadow-hard);
+}
+
+.actionBar {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+.skillButton {
+  flex: 1;
+}
+
+/* A card lunges toward its target when it strikes. */
+.lungeUp {
+  animation: lungeUp 320ms var(--ease-out);
+}
+
+.lungeDown {
+  animation: lungeDown 320ms var(--ease-out);
+}
+
+.hitShake {
+  animation: hitShake 240ms var(--ease-out);
+}
+
+@keyframes lungeUp {
+  40% {
+    transform: translateY(-14px) scale(1.06);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes lungeDown {
+  40% {
+    transform: translateY(14px) scale(1.06);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes hitShake {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lungeUp,
+  .lungeDown,
+  .hitShake {
+    animation: none;
+  }
+}
+
+.resultBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  text-align: center;
+}
+
+.resultTitle {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  paint-order: stroke fill;
+  -webkit-text-stroke: 5px var(--outline-dark);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.victory {
+  color: var(--accent-positive-bright);
+}
+
+.defeat {
+  color: var(--accent-danger-bright);
+}
+
+.rewardList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.rewardRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+  font-weight: var(--fw-bold);
+}
+
+.rewardValue {
+  margin-left: auto;
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+}
+
+.gearRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.gearTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--bevel);
+}

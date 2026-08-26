@@ -6,8 +6,9 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phase 0 is complete**; Phase 1 (the vertical
-slice) is next.
+Questions answered and development started **2026-08-26**. **Phases 0 and 1 are complete** — the vertical
+slice is playable end to end and deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 2
+(collection & progression depth) is next.
 
 ---
 
@@ -28,7 +29,7 @@ Everything later phases stand on; no gameplay yet.
 **Exit:** ✅ the game boots to a styled, navigable shell; `npm run verify` (typecheck + lint + 60 tests) green;
 verified in Chromium at 390×844 and 360×640.
 
-## Phase 1 — Vertical slice ⭐ (prove the loop)
+## Phase 1 — Vertical slice ⭐ (prove the loop) ✅ COMPLETE
 
 **Map → Encounter → Combat → Reward → Progression → Continue** — small, complete, juicy.
 
@@ -42,7 +43,11 @@ verified in Chromium at 390×844 and 360×640.
 - Placeholder SFX hooks (tap, hit, victory) behind audio service
 - _(Energy system intentionally NOT here — lands Phase 3; slice plays ungated)_
 
-**Exit:** a stranger can play stages 1–10 on a phone browser, level a card, equip gear, and _want_ stage 11.
+- **Vercel deployment** so the current state of development is always viewable on a real phone
+
+**Exit:** ✅ a stranger can play stages 1–10 on a phone browser, level a card, equip gear, and want stage 11.
+Verified at 390×844 and 360×640 with no overflow; 153 tests green, including a balance guard proving the
+region is completable (stage 1 winnable at level 1, the boss needs roughly level 20).
 
 ## Phase 2 — Collection & progression depth
 

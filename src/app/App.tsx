@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { CONTENT, ENERGY_CONFIG } from '@/content';
-import type { SaveDoc } from '@/services/saves';
+import { useEffect, useMemo } from 'react';
+import { ENERGY_CONFIG } from '@/content';
 import {
   activeTab,
   currentEntry,
@@ -8,14 +7,18 @@ import {
   useScreenStore,
   type TabId,
 } from '@/state/screenStore';
-import { useSettingsStore } from '@/state/settingsStore';
+import { usePlayerStore } from '@/state/playerStore';
 import { TabBar, type TabBarItem } from '@/ui/components/TabBar';
 import { TopHud, type HudResource } from '@/ui/components/TopHud';
 import { Button } from '@/ui/design/primitives';
+import { BattleScreen } from '@/ui/screens/BattleScreen';
+import { CardsScreen } from '@/ui/screens/CardsScreen';
 import { KitchenSinkScreen } from '@/ui/screens/KitchenSinkScreen';
+import { MapScreen } from '@/ui/screens/MapScreen';
 import { createGameServices } from './gameServices';
 import { useAutosaveLifecycle } from './useAutosaveLifecycle';
 import { useBackButton } from './useBackButton';
+import { useGameBootstrap } from './useGameBootstrap';
 import { DevPanel } from './DevPanel';
 import styles from './App.module.css';
 
@@ -42,40 +45,14 @@ function ComingSoon({ title, phase }: { title: string; phase: string }) {
 
 export function App() {
   const services = useMemo(() => createGameServices(), []);
-  const [save, setSave] = useState<SaveDoc | null>(null);
   const stack = useScreenStore((s) => s.stack);
   const switchTab = useScreenStore((s) => s.switchTab);
   const pop = useScreenStore((s) => s.pop);
-  const hydrateSettings = useSettingsStore((s) => s.hydrate);
+  const save = usePlayerStore((s) => s.save);
 
   useBackButton();
   useAutosaveLifecycle(services.saves);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      // Seeded from the clock once, then persisted: the run's randomness is
-      // reproducible from the save alone (ARCHITECTURE.md §4).
-      const result = await services.saves.load(services.clock.now() >>> 0);
-      if (cancelled) return;
-      if (result.status === 'corrupt') {
-        console.warn(
-          `[TinyDecklings] save unreadable, kept a backup at ${result.backupKey}`,
-          result.reason,
-        );
-      }
-      hydrateSettings(result.save.settings);
-      services.audio.setSettings({
-        sfx: result.save.settings.sfx,
-        music: result.save.settings.music,
-      });
-      setSave(result.save);
-      if (result.status === 'new') await services.saves.save(result.save);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [services, hydrateSettings]);
+  useGameBootstrap(services);
 
   // Mobile browsers only allow audio to start from a gesture.
   useEffect(() => {
@@ -98,6 +75,8 @@ export function App() {
 
   const resources: HudResource[] = [
     {
+      // Energy is wired up in Phase 3 (Q14b); until then the slot shows the cap so
+      // the HUD matches its final shape.
       key: 'energy',
       icon: 'currency.energy',
       value: `${Math.floor(save.player.energy.current)}/${ENERGY_CONFIG.cap}`,
@@ -120,17 +99,23 @@ export function App() {
     },
   ];
 
+  // Battle is fullscreen: the reference gives the board the entire viewport, and on
+  // a phone the HUD and tab bar are 120px the battlefield needs more.
+  const immersive = screen.kind === 'battle';
+
   return (
     <div className={styles.app}>
-      <TopHud playerLevel={save.player.profile.level} resources={resources} />
+      {immersive ? null : <TopHud playerLevel={save.player.profile.level} resources={resources} />}
 
       <main className={styles.content}>
         {screen.kind === 'devKitchenSink' ? (
           <KitchenSinkScreen />
+        ) : screen.kind === 'battle' ? (
+          <BattleScreen stage={screen.stage} />
         ) : screen.kind === 'map' ? (
-          <ComingSoon title="Map" phase="Phase 1" />
+          <MapScreen />
         ) : screen.kind === 'cards' ? (
-          <ComingSoon title="Cards" phase="Phase 1" />
+          <CardsScreen />
         ) : screen.kind === 'summon' ? (
           <ComingSoon title="Summon" phase="Phase 3" />
         ) : screen.kind === 'shop' ? (
@@ -139,7 +124,7 @@ export function App() {
           <ComingSoon title="More" phase="Phase 2" />
         )}
 
-        {canGoBack ? (
+        {canGoBack && screen.kind !== 'battle' ? (
           <Button
             variant="header"
             icon="ui.back"
@@ -151,16 +136,9 @@ export function App() {
         ) : null}
       </main>
 
-      <TabBar items={TAB_ITEMS} value={tab} onChange={switchTab} />
+      {immersive ? null : <TabBar items={TAB_ITEMS} value={tab} onChange={switchTab} />}
       {import.meta.env.DEV ? <DevPanel /> : null}
     </div>
-  );
-}
-
-/** Content validation runs at import time; surface the count once in dev. */
-if (import.meta.env.DEV) {
-  console.warn(
-    `[TinyDecklings] content ok — ${CONTENT.gearSlots.size} gear slots, ${CONTENT.statuses.size} statuses, ${CONTENT.patterns.size} patterns`,
   );
 }
 

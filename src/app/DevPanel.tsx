@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
+import { usePlayerStore } from '@/state/playerStore';
+import { useRunStore } from '@/state/runStore';
 import { useScreenStore, type TabId } from '@/state/screenStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { Button } from '@/ui/design/primitives';
@@ -18,6 +20,8 @@ export function DevPanel() {
   const [output, setOutput] = useState<{ ok: boolean; text: string } | null>(null);
   const screen = useScreenStore();
   const settings = useSettingsStore();
+  const player = usePlayerStore();
+  const run = useRunStore();
 
   if (!open) {
     return (
@@ -51,6 +55,10 @@ export function DevPanel() {
         {
           stack: screen.stack.map((e) => e.screen.kind),
           settings: settings.toSave(),
+          run: { seed: run.seed, currentStage: run.currentStage },
+          collection: player.cards().length,
+          gear: player.gear().length,
+          gold: player.currency('gold'),
           energyConfig: ENERGY_CONFIG,
         },
         null,
@@ -104,6 +112,42 @@ export function DevPanel() {
           <Button variant="neutral" onClick={() => settings.setSfx(!settings.sfx)}>
             SFX: {settings.sfx ? 'on' : 'off'}
           </Button>
+        </div>
+      </div>
+
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>Grant</div>
+        <div className={styles.row}>
+          <Button variant="warning" onClick={() => player.addCurrency('gold', 10_000)}>
+            +10k gold
+          </Button>
+          <Button variant="warning" onClick={() => player.addCurrency('gems', 500)}>
+            +500 gems
+          </Button>
+          <Button variant="info" onClick={() => player.grantStarterCollection()}>
+            Starter cards
+          </Button>
+        </div>
+      </div>
+
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>Jump to stage</div>
+        <div className={styles.row}>
+          {[1, 5, 9, 10, 20].map((stage) => (
+            <Button
+              key={stage}
+              variant="neutral"
+              onClick={() => {
+                // Unlock everything up to here so the stage is actually enterable.
+                for (let n = 1; n < stage; n++) player.recordStage(n, 1);
+                run.advanceTo(stage);
+                screen.switchTab('map');
+              }}
+            >
+              {stage}
+              {stage === 10 ? ' (boss)' : ''}
+            </Button>
+          ))}
         </div>
       </div>
 

@@ -2,8 +2,8 @@
 
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
-> Development started **2026-08-26**. **Phase 0 is complete** (all tasks 0.1–0.10 shipped); work continues at
-> task 1.1.
+> Development started **2026-08-26**. **Phases 0 and 1 are complete** (tasks 0.1–0.10 and 1.1–1.18 shipped,
+> plus Vercel deployment); work continues at Phase 2.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -29,7 +29,7 @@
 | 0.9  | `services/audio.ts` Howler wrapper (channels, mute persistence, unlock-on-gesture)                                                                                             | AC: no-op safe before first gesture                                                         |
 | 0.10 | Dev panel (dev-only route): grant currency, add cards/gear, jump stage, seed override, validate content button, energy toggle/grant (for Phase 3+)                             | AC: hidden in prod build                                                                    |
 
-## Phase 1 — Vertical slice
+## Phase 1 — Vertical slice ✅ COMPLETE
 
 **Content first (data before features):**
 
@@ -126,6 +126,10 @@ Phase 6 & 7 follow the last content phase shipped.
 ## Progress
 
 - **Phase 0 — complete (2026-08-26).** Scaffold, tokens, primitives, icon/art manifest, content pipeline,
-  seeded RNG, screen stack, versioned saves, audio service, dev panel. `npm run verify` green; 60 tests.
-- **Phase 1 — next.** Start at task 1.1 (author slice content), then engine (1.2–1.9), then state/UI
-  (1.10–1.18).
+  seeded RNG, screen stack, versioned saves, audio service, dev panel. 60 tests.
+- **Phase 1 — complete (2026-08-26).** Slice content, battle engine (turn loop, targeting, effects,
+  outcomes), map generator, progression math, AI, player/run/battle stores, Map and Battle and Cards
+  screens, canvas FX, reward ceremony, mid-battle resume. Plus **Vercel deployment** (`DEPLOYMENT.md`) so
+  the live state of development is always viewable. `npm run verify` green; 153 tests.
+- **Phase 2 — next.** Full gear slots and substats, ascension, skill ladder, deck builder, settings screen,
+  collection QoL.
