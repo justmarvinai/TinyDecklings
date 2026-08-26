@@ -1,17 +1,17 @@
 # TinyDecklings — Roadmap
 
-> Status: **DECISIONS LOCKED (2026-08-26)** — all `USER_QUESTIONS.md` items answered (all recommendations;
-> Q14 → energy system). Detailed tasks, dependencies, and acceptance criteria live in `IMPLEMENTATION_PLAN.md`.
-> Phases ship in order; each ends in a playable, committed state.
+> All `USER_QUESTIONS.md` items answered 2026-08-26 (all recommendations; Q14 → energy system). Detailed
+> tasks, dependencies and acceptance criteria live in `IMPLEMENTATION_PLAN.md`. Phases ship in order; each
+> ends in a playable, committed state.
 
-## Phase gate ⛔
+## Status
 
-Questions are answered, docs are reconciled — but **implementation starts only on the owner's explicit
-"start development" instruction** (owner directive). When it arrives: begin Phase 0, top to bottom.
+Questions answered and development started **2026-08-26**. **Phase 0 is complete**; Phase 1 (the vertical
+slice) is next.
 
 ---
 
-## Phase 0 — Foundation (engineering scaffold)
+## Phase 0 — Foundation (engineering scaffold) ✅ COMPLETE
 
 Everything later phases stand on; no gameplay yet.
 
@@ -25,7 +25,8 @@ Everything later phases stand on; no gameplay yet.
 - Storage service + versioned save/load with migration harness
 - Dev panel (grant resources incl. energy toggle, jump stage, seed override)
 
-**Exit:** empty "game" boots to a styled shell; CI-grade `typecheck + lint + test` green.
+**Exit:** ✅ the game boots to a styled, navigable shell; `npm run verify` (typecheck + lint + 60 tests) green;
+verified in Chromium at 390×844 and 360×640.
 
 ## Phase 1 — Vertical slice ⭐ (prove the loop)
 
@@ -39,9 +40,9 @@ Everything later phases stand on; no gameplay yet.
 - Content: ~10 player cards (incl. 2 heroes), ~8 enemies + 1 boss, ~12 gear items, 1 region theme
 - Autosave/resume everywhere (incl. mid-battle intent-log resume)
 - Placeholder SFX hooks (tap, hit, victory) behind audio service
-- *(Energy system intentionally NOT here — lands Phase 3; slice plays ungated)*
+- _(Energy system intentionally NOT here — lands Phase 3; slice plays ungated)_
 
-**Exit:** a stranger can play stages 1–10 on a phone browser, level a card, equip gear, and *want* stage 11.
+**Exit:** a stranger can play stages 1–10 on a phone browser, level a card, equip gear, and _want_ stage 11.
 
 ## Phase 2 — Collection & progression depth
 

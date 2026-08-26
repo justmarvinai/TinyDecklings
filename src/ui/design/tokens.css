@@ -1,0 +1,149 @@
+/**
+ * TinyDecklings design tokens — the single source of colour, type, shape and motion.
+ * Derived from assets/examples/ per UI_STYLE_GUIDE.md. Components must never inline
+ * hex values (CLAUDE.md conventions); add a token here instead.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- chrome */
+  --bg-app: #3b0f12;
+  --bg-app-deep: #24090c;
+  --bg-app-warm: #571d18;
+  --bg-hud: #141417;
+  --surface-panel: #221f26;
+  --surface-panel-raised: #2c2833;
+  --surface-pill: #0f0f12;
+  --surface-slot: #3a3740;
+  --surface-slot-deep: #2a2831;
+  --outline-dark: #0a0a0c;
+
+  --text-primary: #ffffff;
+  --text-secondary: #b9b4c2;
+  --text-muted: #7d7789;
+  --text-on-light: #1a1520;
+
+  /* ------------------------------------------------------- brand & feedback */
+  --accent-header: #8a2bd9;
+  --accent-header-bright: #a93bff;
+  --accent-positive: #3dc81e;
+  --accent-positive-bright: #57e838;
+  --accent-info: #2e9bf0;
+  --accent-info-bright: #4fb4ff;
+  --accent-warning: #ffc21c;
+  --accent-warning-bright: #ffd75c;
+  --accent-danger: #e8281e;
+  --accent-danger-bright: #ff4a3d;
+  --accent-xp: #5fe01d;
+  --badge-notify: #ff2d1f;
+
+  --number-damage: #ff5347;
+  --number-heal: #5fe01d;
+  --number-gold: #ffc21c;
+
+  /* -------------------------------------------- CARD rarity (frames) --------
+   * Cards and Gear have deliberately separate rarity systems (owner directive).
+   * These tokens are for card frames ONLY — never reuse them for gear.
+   */
+  --rarity-card-common: #9aa0a8;
+  --rarity-card-uncommon: #4fbf3a;
+  --rarity-card-rare: #3d9bea;
+  --rarity-card-epic: #e93cac;
+  --rarity-card-legendary: #ffb300;
+  --rarity-card-legendary-glow: #ffd970;
+
+  /* ------------------------------------- GEAR rarity (tile backgrounds) -----
+   * Gear ONLY. Six tiers vs the cards' five keeps the two systems unmistakable.
+   */
+  --rarity-gear-worn: #8e8e96;
+  --rarity-gear-sturdy: #59b84c;
+  --rarity-gear-refined: #3e8fe0;
+  --rarity-gear-ornate: #d84bc0;
+  --rarity-gear-exalted: #f08a1d;
+  --rarity-gear-mythic: #e23327;
+
+  /* ------------------------------------------------------------ typography */
+  --font-display: 'Saira', 'Saira Fallback', system-ui, sans-serif;
+  --font-ui: 'Saira', 'Saira Fallback', system-ui, sans-serif;
+
+  --fs-display: clamp(24px, 7.2vw, 30px);
+  --fs-title: clamp(19px, 5.6vw, 24px);
+  --fs-section: clamp(16px, 4.6vw, 19px);
+  --fs-body: clamp(14px, 3.9vw, 16px);
+  --fs-label: clamp(12px, 3.3vw, 14px);
+  --fs-micro: clamp(11px, 2.9vw, 12px);
+
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+
+  --tracking-caps: 0.04em;
+  --tracking-number: -0.01em;
+
+  /* ---------------------------------------------------------------- shape */
+  --radius-pill: 999px;
+  --radius-button: 12px;
+  --radius-card: 14px;
+  --radius-panel: 18px;
+  --radius-tile: 10px;
+
+  --outline-width: 3px;
+  --outline-width-thin: 2px;
+
+  --skew-tab: -7deg;
+
+  /* --------------------------------------------------------------- depth --
+   * The signature look: hard near-black outline + top bevel highlight +
+   * bottom inner shade + short hard drop shadow. No soft blurry shadows.
+   */
+  --bevel-top: inset 0 2px 0 rgb(255 255 255 / 0.28);
+  --bevel-bottom: inset 0 -3px 0 rgb(0 0 0 / 0.3);
+  --bevel: var(--bevel-top), var(--bevel-bottom);
+  --shadow-drop: 0 3px 0 rgb(0 0 0 / 0.55);
+  --shadow-drop-sm: 0 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-panel: 0 5px 0 rgb(0 0 0 / 0.45), 0 8px 18px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 8px 24px rgb(0 0 0 / 0.5);
+  --text-shadow-hard: 0 2px 0 rgb(0 0 0 / 0.75);
+
+  /* --------------------------------------------------------------- spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Touch floor — every interactive element (CLAUDE.md rule 1, Q28). */
+  --touch-min: 48px;
+
+  /* ---------------------------------------------------------------- motion */
+  --dur-micro: 120ms;
+  --dur-standard: 220ms;
+  --dur-screen: 320ms;
+  --dur-ceremony: 800ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------------------------------------------------------------- layout */
+  --hud-height: 56px;
+  --tabbar-height: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --z-content: 1;
+  --z-hud: 20;
+  --z-tabbar: 20;
+  --z-modal: 40;
+  --z-fx: 60;
+  --z-dev: 90;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro: 1ms;
+    --dur-standard: 1ms;
+    --dur-screen: 1ms;
+    --dur-ceremony: 1ms;
+    --ease-spring: linear;
+  }
+}

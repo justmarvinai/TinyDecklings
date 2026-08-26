@@ -2,7 +2,7 @@
 
 > Status: **DECISIONS LOCKED (2026-08-26).** The owner answered `USER_QUESTIONS.md`: **all recommendations
 > accepted, except Q14 → option (b)** (energy pacing system). Tags read **[DECIDED — Qn]** with the question
-> as provenance. Concrete numbers (costs, curves, percentages) are *initial tunables* living in
+> as provenance. Concrete numbers (costs, curves, percentages) are _initial tunables_ living in
 > `content/economy` — tuning them is balancing, not a design change, and needs no new owner decision.
 
 ---
@@ -59,7 +59,7 @@ TinyDecklings is a **persistent-collection game**:
 - The **collection is permanent**: cards, levels, stars, gear, and currencies are never lost.
 - The **map is the endless "run"**: the journey itself is the roguelike — procedurally extended stages, escalating danger, encounter variety, and choice events.
 - **Defeat is soft**: losing a battle costs only the attempt (the Energy spent on it, §10.1); the player retunes their deck and retries.
-- Roguelike *texture* comes from procedural stage generation, encounter modifiers, and risk/reward choice events. A rotating **Expedition mode** (drafted runs with temporary buffs) is a post-first-release backlog candidate (`ROADMAP.md` §Future).
+- Roguelike _texture_ comes from procedural stage generation, encounter modifiers, and risk/reward choice events. A rotating **Expedition mode** (drafted runs with temporary buffs) is a post-first-release backlog candidate (`ROADMAP.md` §Future).
 
 ---
 
@@ -67,17 +67,17 @@ TinyDecklings is a **persistent-collection game**:
 
 ### 4.1 Card classes **[DECIDED — Q12]**
 
-| Class | Role | Notes |
-|---|---|---|
-| **Unit** | Standard combat card | Bulk of the collection (reference: "UNITS 42/70") |
-| **Hero** | Leader-class card | One per deck; fights on the battlefield **and** provides a passive **Leader Skill** that buffs the deck (reference: leader card with "Buffs all other Melee allies by 12% of this card's max Strength"); own summon pool |
+| Class    | Role                 | Notes                                                                                                                                                                                                                    |
+| -------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Unit** | Standard combat card | Bulk of the collection (reference: "UNITS 42/70")                                                                                                                                                                        |
+| **Hero** | Leader-class card    | One per deck; fights on the battlefield **and** provides a passive **Leader Skill** that buffs the deck (reference: leader card with "Buffs all other Melee allies by 12% of this card's max Strength"); own summon pool |
 
 ### 4.2 Card anatomy **[DECIDED — visible in references]**
 
 Every card shows, at minimum:
 
 - **Art** (single reusable placeholder avatar until final per-card art arrives — see §11)
-- **Strength** — max Hit Points; the big number on the card in battle shows *current* HP
+- **Strength** — max Hit Points; the big number on the card in battle shows _current_ HP
 - **Attack type** — **Melee** or **Ranged** (icon badge, bottom-right)
 - **Rarity** — expressed by frame color + banner (see §4.3)
 - **Stars** — ascension grade (see §6.2)
@@ -90,13 +90,13 @@ Detail view adds: **Power** (computed rating), XP bar, attack pattern, gear grid
 
 Cards and Gear use **separate, independent rarity systems** (owner directive). Card rarity:
 
-| Rarity | Base stars | Frame color | Summon feel |
-|---|---|---|---|
-| Common | 1★ | Gray | Filler / fodder |
-| Uncommon | 2★ | Green | Early workhorses |
-| Rare | 3★ | Blue | Solid, buildable |
-| Epic | 4★ | Magenta/Pink | Exciting pull (pity counter exists) |
-| Legendary | 5★ | Gold/Orange | Jackpot (pity counter, "LEGENDARY" banner) |
+| Rarity    | Base stars | Frame color  | Summon feel                                |
+| --------- | ---------- | ------------ | ------------------------------------------ |
+| Common    | 1★         | Gray         | Filler / fodder                            |
+| Uncommon  | 2★         | Green        | Early workhorses                           |
+| Rare      | 3★         | Blue         | Solid, buildable                           |
+| Epic      | 4★         | Magenta/Pink | Exciting pull (pity counter exists)        |
+| Legendary | 5★         | Gold/Orange  | Jackpot (pity counter, "LEGENDARY" banner) |
 
 - Rarity fixes the card's **base star grade** and stat/skill budget; ascension can raise any card up to **6★** (§6.2).
 - Reference: summon pools "Unit 1–3★ / 3–5★ / 4–5★", pity counters "Legendary 18/55", "Epic 1/15".
@@ -105,12 +105,12 @@ Cards and Gear use **separate, independent rarity systems** (owner directive). C
 
 One visible pool, simple internals:
 
-| Stat | Visibility | Meaning |
-|---|---|---|
-| **Strength** | Primary (heart icon) | Max HP. The battle card shows current HP. |
-| **Attack** | Detail view — a first-class, visible stat | Damage per basic attack |
-| **Speed** | Detail view (post-slice) | Acting order within a side's turn *(slice: fixed slot order)* |
-| **Power** | Detail view (fist icon) | Computed rating from level, stars, gear, skills — a comparison number, never used by the simulation |
+| Stat         | Visibility                                | Meaning                                                                                             |
+| ------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Strength** | Primary (heart icon)                      | Max HP. The battle card shows current HP.                                                           |
+| **Attack**   | Detail view — a first-class, visible stat | Damage per basic attack                                                                             |
+| **Speed**    | Detail view (post-slice)                  | Acting order within a side's turn _(slice: fixed slot order)_                                       |
+| **Power**    | Detail view (fist icon)                   | Computed rating from level, stars, gear, skills — a comparison number, never used by the simulation |
 
 No defense/armor/dodge/crit stat in v1; mitigation comes from effects (Shield, Weaken, buffs).
 
@@ -121,7 +121,7 @@ No defense/armor/dodge/crit stat in v1; mitigation comes from effects (Shield, W
 - A deck = **1 Hero + 8 Units** (reference: large leader card + 8 slots).
 - **No duplicate cards** within a deck; duplicates in the collection feed ascension (§6.2).
 - Up to **6 saved decks** (page dots in reference).
-- The reference's **"Defense deck" toggle is cut** — it is multiplayer-flavored and single-player TinyDecklings has no defense battles. *(Conscious divergence from `Decks.png`.)*
+- The reference's **"Defense deck" toggle is cut** — it is multiplayer-flavored and single-player TinyDecklings has no defense battles. _(Conscious divergence from `Decks.png`.)_
 - **Deck Power** = sum of member Power, shown in the header.
 - **Auto-equip / auto-build** helpers fill slots with the strongest available cards.
 
@@ -158,7 +158,7 @@ visible but locked (matching the reference's locked-state language) so the sheet
 
 ## 7. Combat **[DECIDED — Q3, Q4, Q7]**
 
-Combat must be readable at phone size, one-handed, and distinctly *not* Hearthstone's rules.
+Combat must be readable at phone size, one-handed, and distinctly _not_ Hearthstone's rules.
 
 ### 7.1 Battlefield
 
@@ -202,7 +202,7 @@ deck-variety pressure — no full advantage wheel.
 
 The reference map (`assets/examples/Map.png`) shows a **linear, numbered, endless stage path** (28 → 34…) winding upward through themed terrain (ocean → ice → volcano), each node a portrait medallion with a name plate, an element badge, and a 3-star rating.
 
-- **Structure:** linear endless chain of **stages**, generated in themed **regions** (~10 stages each) with escalating difficulty. Occasional **fork nodes** offer a 2-way choice (risk/reward) that rejoins the main path after 1–3 stages — roguelike texture without abandoning the reference's linear look. *(Forks land in Phase 4; the slice is linear.)*
+- **Structure:** linear endless chain of **stages**, generated in themed **regions** (~10 stages each) with escalating difficulty. Occasional **fork nodes** offer a 2-way choice (risk/reward) that rejoins the main path after 1–3 stages — roguelike texture without abandoning the reference's linear look. _(Forks land in Phase 4; the slice is linear.)_
 - **Node types:** Battle, **Elite** (~every 5th), **Boss** (~every 10th, gold "BOSS" card frame in battle), **Event** (choice vignette), **Treasure**, **Camp** (heal/buff vignette before hard fights). Slice ships Battle + Boss.
 - **Stars & replay [DECIDED — Q17]:** each stage stores its best star rating; replaying beaten stages for farming is allowed (costs Energy like any attempt, §10.1); star records are permanent.
 - Completed path behind, current node highlighted, next nodes preview with grayed stars.
@@ -223,22 +223,22 @@ The vertical slice activates **4 slots** (Weapon, Helmet, Armor, Boots); the res
 
 ### 9.2 Iconography — fixed per slot **[DECIDED — owner directive]**
 
-> **Every gear piece of a given slot type always uses the same icon.** All boots use *the* Boots icon, all helmets *the* Helmet icon — in the inventory, on the equipment grid, everywhere. Individual items differ by name, stats, rarity color, and stars — **never** by icon. Empty slots show the same icon as a gray silhouette with a "+" affordance (as in the reference).
+> **Every gear piece of a given slot type always uses the same icon.** All boots use _the_ Boots icon, all helmets _the_ Helmet icon — in the inventory, on the equipment grid, everywhere. Individual items differ by name, stats, rarity color, and stars — **never** by icon. Empty slots show the same icon as a gray silhouette with a "+" affordance (as in the reference).
 
 This is enforced structurally: the icon is looked up from the **slot type**, and gear content data has no per-item icon field (see `CONTENT_SCHEMA.md`).
 
-### 9.3 Gear rarity **[DECIDED — Q9]** — *independent from card rarity* **[DECIDED — owner directive]**
+### 9.3 Gear rarity **[DECIDED — Q9]** — _independent from card rarity_ **[DECIDED — owner directive]**
 
 Gear uses its **own tier names and color scale**, deliberately distinct from card rarity:
 
-| Gear rarity | Color | Notes |
-|---|---|---|
-| Worn | Gray | Vendor trash / early drops |
-| Sturdy | Green | |
-| Refined | Blue | |
-| Ornate | Magenta/Pink | |
-| Exalted | Orange | |
-| Mythic | Red | Top tier (reference shows red-background gear) |
+| Gear rarity | Color        | Notes                                          |
+| ----------- | ------------ | ---------------------------------------------- |
+| Worn        | Gray         | Vendor trash / early drops                     |
+| Sturdy      | Green        |                                                |
+| Refined     | Blue         |                                                |
+| Ornate      | Magenta/Pink |                                                |
+| Exalted     | Orange       |                                                |
+| Mythic      | Red          | Top tier (reference shows red-background gear) |
 
 6 gear tiers vs 5 card tiers keeps the systems visually and mechanically unmistakable.
 
@@ -258,15 +258,15 @@ Battle drops (stage/region-scaled loot tables), event rewards, later shop. Auto-
 
 Currencies and their roles:
 
-| Currency | Icon | Role |
-|---|---|---|
-| **Gold** | Coin | Soft currency: level-ups, enhancement, shop |
-| **Gems** | Pink gem | Premium-feel currency, **fully earnable in-game**; summons, refreshes |
-| **Summon tokens** | Tiered medals | Gacha entry per pool (Unit 1–3★ / 3–5★ / 4–5★ / Hero) |
-| **Fragments** | Shards | Pity/dust: assemble specific cards |
-| **Energy** | Lightning bolt (30/30 in HUD) | Per-attempt cost for combat stages — §10.1 |
-| **Player XP** | — | Account level (avatar badge) gating features |
-| ~~Battle tokens~~ | ~~Red swords (10/10)~~ | **Cut for v1 [DECIDED — Q15]** — HUD slot removed *(conscious divergence from the reference HUD)* |
+| Currency          | Icon                          | Role                                                                                              |
+| ----------------- | ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Gold**          | Coin                          | Soft currency: level-ups, enhancement, shop                                                       |
+| **Gems**          | Pink gem                      | Premium-feel currency, **fully earnable in-game**; summons, refreshes                             |
+| **Summon tokens** | Tiered medals                 | Gacha entry per pool (Unit 1–3★ / 3–5★ / 4–5★ / Hero)                                             |
+| **Fragments**     | Shards                        | Pity/dust: assemble specific cards                                                                |
+| **Energy**        | Lightning bolt (30/30 in HUD) | Per-attempt cost for combat stages — §10.1                                                        |
+| **Player XP**     | —                             | Account level (avatar badge) gating features                                                      |
+| ~~Battle tokens~~ | ~~Red swords (10/10)~~        | **Cut for v1 [DECIDED — Q15]** — HUD slot removed _(conscious divergence from the reference HUD)_ |
 
 ### 10.1 Energy pacing **[DECIDED — Q14 → option (b); system lands Phase 3]**
 
@@ -279,13 +279,13 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 - Out-of-energy → a friendly sheet showing time-to-next-attempt (and later, shop refill options — gems only, still no real money).
 - Until the system lands in Phase 3, dev builds run with energy off; the dev panel can grant/toggle it.
 
-**Summon** (reference `Card_Summon.png`): token-gated pools, single & ×10 (discounted), **pity counters** per Epic/Legendary, reveal ceremony. **[DECIDED — Q13]:** the gacha is an *earnable reward cadence* — tokens/gems come from play; **zero real-money IAP; the game is fully offline.**
+**Summon** (reference `Card_Summon.png`): token-gated pools, single & ×10 (discounted), **pity counters** per Epic/Legendary, reveal ceremony. **[DECIDED — Q13]:** the gacha is an _earnable reward cadence_ — tokens/gems come from play; **zero real-money IAP; the game is fully offline.**
 
 ---
 
 ## 11. Art & placeholder policy **[DECIDED — owner directive]**
 
-- **One reusable placeholder avatar** stands in for *every* card's art. Final art will be supplied **per individual card** by the owner later.
+- **One reusable placeholder avatar** stands in for _every_ card's art. Final art will be supplied **per individual card** by the owner later.
 - **All interface icons** are placeholders from **Open Game Icons** (fork of game-icons.net; CC-BY attribution honored) and will also be replaced by the owner's own icon art later.
 - Therefore **every art reference is a swappable key**: content data references `artKey` / semantic icon names resolved through a single manifest. Swapping placeholder → final art is an asset drop + manifest entry, **never** a code or data-schema change (see `ARCHITECTURE.md` §Assets).
 - Gear icons are additionally constrained by §9.2 (slot-type icon, no per-item icons).
@@ -294,19 +294,19 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 
 ## 12. Screens & navigation **[DECIDED — Q23, Q24]**
 
-| Screen | Reference | Phase |
-|---|---|---|
-| **Map** (home) | `Map.png` | Slice |
-| **Battle** | `Battle.png` | Slice |
-| **Cards** (collection + decks) | `Decks.png` | Slice (collection), Phase 2 (full decks) |
-| **Card detail** | `Card_Unit_Detail.png` | Slice (level/equip subset) |
-| **Summon** | `Card_Summon.png` | Phase 3 |
-| **Shop** | `Shop.png` (style ref) | Phase 3 (soft-currency v1) |
-| **Settings** | `Settings.png` (style ref) | Phase 2 (minimal early) |
-| **Profile** | `Player_Profile_Page.png` (style ref) | Phase 5 |
-| **Events hub** | `Events.png` (style ref) | **Post-first-release backlog** |
-| **Season pass** | `Battlepass.png` (style ref) | **Post-first-release backlog** |
-| **Leaderboard** | `Leaderboard.png` (style ref) | **Cut for first release** (offline game, no backend); local records are a backlog candidate |
+| Screen                         | Reference                             | Phase                                                                                       |
+| ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Map** (home)                 | `Map.png`                             | Slice                                                                                       |
+| **Battle**                     | `Battle.png`                          | Slice                                                                                       |
+| **Cards** (collection + decks) | `Decks.png`                           | Slice (collection), Phase 2 (full decks)                                                    |
+| **Card detail**                | `Card_Unit_Detail.png`                | Slice (level/equip subset)                                                                  |
+| **Summon**                     | `Card_Summon.png`                     | Phase 3                                                                                     |
+| **Shop**                       | `Shop.png` (style ref)                | Phase 3 (soft-currency v1)                                                                  |
+| **Settings**                   | `Settings.png` (style ref)            | Phase 2 (minimal early)                                                                     |
+| **Profile**                    | `Player_Profile_Page.png` (style ref) | Phase 5                                                                                     |
+| **Events hub**                 | `Events.png` (style ref)              | **Post-first-release backlog**                                                              |
+| **Season pass**                | `Battlepass.png` (style ref)          | **Post-first-release backlog**                                                              |
+| **Leaderboard**                | `Leaderboard.png` (style ref)         | **Cut for first release** (offline game, no backend); local records are a backlog candidate |
 
 **Navigation [DECIDED — Q24]:** persistent **top HUD** (avatar/level, currencies, add button) + **bottom tab bar**
 (MAP · CARDS · SUMMON · SHOP · MORE), modals for detail views, purple back button inside stacked screens.
@@ -333,21 +333,21 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 
 ## 15. Glossary
 
-| Term | Meaning |
-|---|---|
-| Card | Collectible entity; class Unit or Hero |
-| Hero | Leader-class card; one per deck; has a Leader Skill |
-| Unit | Standard combat card |
-| Deck | 1 Hero + 8 Units |
-| Gear | Equippable item; slot-typed; own rarity scale |
-| Strength | Max HP stat |
-| Attack | Damage per basic attack |
-| Power | Computed rating (display only) |
-| Energy | Per-attempt cost for combat stages; fast-refilling (cap 30) |
-| Stage | Numbered node on the endless map |
-| Region | Themed span of ~10 stages |
-| Encounter | Content of a stage (battle, elite, boss, event…) |
-| Reinforcement Queue | Undeployed deck cards that refill empty slots |
-| Ascension | Raising a card's star grade ("EVOLVE") |
-| Round | One player turn + one enemy turn |
-| Tome | Skill-upgrade resource from elites/events |
+| Term                | Meaning                                                     |
+| ------------------- | ----------------------------------------------------------- |
+| Card                | Collectible entity; class Unit or Hero                      |
+| Hero                | Leader-class card; one per deck; has a Leader Skill         |
+| Unit                | Standard combat card                                        |
+| Deck                | 1 Hero + 8 Units                                            |
+| Gear                | Equippable item; slot-typed; own rarity scale               |
+| Strength            | Max HP stat                                                 |
+| Attack              | Damage per basic attack                                     |
+| Power               | Computed rating (display only)                              |
+| Energy              | Per-attempt cost for combat stages; fast-refilling (cap 30) |
+| Stage               | Numbered node on the endless map                            |
+| Region              | Themed span of ~10 stages                                   |
+| Encounter           | Content of a stage (battle, elite, boss, event…)            |
+| Reinforcement Queue | Undeployed deck cards that refill empty slots               |
+| Ascension           | Raising a card's star grade ("EVOLVE")                      |
+| Round               | One player turn + one enemy turn                            |
+| Tome                | Skill-upgrade resource from elites/events                   |

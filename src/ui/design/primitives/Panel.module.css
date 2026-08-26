@@ -1,0 +1,22 @@
+.panel {
+  position: relative;
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+  box-shadow: var(--bevel-top), var(--shadow-panel);
+  padding: var(--space-4);
+}
+
+.raised {
+  background: var(--surface-panel-raised);
+}
+
+.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.slot {
+  background: var(--surface-slot-deep);
+  box-shadow: var(--bevel-bottom);
+}

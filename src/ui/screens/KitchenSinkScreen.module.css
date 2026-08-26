@@ -1,0 +1,169 @@
+.screen {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  padding-bottom: var(--space-7);
+  background: radial-gradient(
+    circle at 50% 0%,
+    var(--bg-app-warm),
+    var(--bg-app) 45%,
+    var(--bg-app-deep)
+  );
+}
+
+.section {
+  margin-bottom: var(--space-5);
+}
+
+.heading {
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-warning);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.chipBox {
+  width: 100%;
+  aspect-ratio: 1;
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  box-shadow: var(--bevel), var(--shadow-drop-sm);
+}
+
+/* Card frame demo: rarity lives on the frame for CARDS. */
+.cardFrame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border: 4px solid var(--frame);
+  border-radius: var(--radius-card);
+  background: var(--surface-panel);
+  overflow: hidden;
+  box-shadow:
+    var(--shadow-drop),
+    0 0 0 3px var(--outline-dark);
+}
+
+.cardArt {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardHp {
+  position: absolute;
+  left: var(--space-1);
+  bottom: var(--space-1);
+  font-size: var(--fs-section);
+}
+
+.cardType {
+  position: absolute;
+  right: var(--space-1);
+  bottom: var(--space-1);
+}
+
+.cardCooldown {
+  position: absolute;
+  left: var(--space-1);
+  top: var(--space-1);
+  min-width: 22px;
+  padding: 0 4px;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: 6px;
+  background: var(--surface-pill);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  text-align: center;
+}
+
+.cardCaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--space-1);
+}
+
+/* Gear tile demo: rarity is the TILE BACKGROUND for GEAR, behind the fixed slot icon. */
+.gearTile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--tile);
+  box-shadow: var(--bevel), var(--shadow-drop-sm);
+  color: var(--text-primary);
+}
+
+.gearEmpty {
+  background: var(--surface-slot-deep);
+  color: var(--text-muted);
+}
+
+.gearStars {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.gearLabel {
+  margin-top: var(--space-1);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.note {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-micro);
+  text-transform: none;
+  line-height: 1.4;
+}
+
+/* Ribbons sit on card corners in real use; the demo needs headroom so they do not
+   cover the paragraph below them. */
+.ribbonDemo {
+  position: relative;
+  padding-top: var(--space-6);
+}

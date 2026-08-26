@@ -1,0 +1,56 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+  background: rgb(0 0 0 / 0.62);
+  animation: fade var(--dur-standard) var(--ease-out);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 88svh;
+  display: flex;
+  flex-direction: column;
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+  animation: rise var(--dur-standard) var(--ease-spring);
+}
+
+.centered {
+  align-items: center;
+}
+
+.body {
+  padding: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(24px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .sheet {
+    animation: none;
+  }
+}

@@ -1,0 +1,20 @@
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 0;
+}
+
+.star {
+  color: var(--star-empty, var(--surface-slot));
+  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.6));
+}
+
+.filled {
+  color: var(--star-filled, var(--accent-warning));
+}
+
+/* Ascension stars on the card sheet are magenta, not the gold used elsewhere. */
+.ascension .filled {
+  --star-filled: var(--rarity-card-epic);
+}

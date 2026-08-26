@@ -1,0 +1,26 @@
+.dot {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--badge-notify);
+  color: var(--text-primary);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  line-height: 1;
+  box-shadow: var(--shadow-drop-sm);
+  pointer-events: none;
+}
+
+.bare {
+  min-width: 12px;
+  height: 12px;
+  padding: 0;
+}

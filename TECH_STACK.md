@@ -1,6 +1,7 @@
 # TinyDecklings — Tech Stack & Rationale
 
-> Status: **DECIDED** (planning phase). No code exists yet; versions are pinned when the scaffold is created.
+> Status: **DECIDED and implemented** (Phase 0 landed 2026-08-26). Installed versions below reflect what the
+> scaffold actually pins; see `package.json` for exact ranges.
 
 ## 1. Constraints that drive the choice
 
@@ -12,16 +13,16 @@ From the project brief:
 - Roguelike map navigation (long scrolling illustrated path)
 - Scalable, **data-driven** card/effect systems
 - Maintainable game state, local save/progression, testability
-- **Future packaging via Capacitor** (Android/iOS) — *not in the current plan, but the stack must not block it*
+- **Future packaging via Capacitor** (Android/iOS) — _not in the current plan, but the stack must not block it_
 
-The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps a web app in a native WebView). The real decision is *which* web stack.
+The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps a web app in a native WebView). The real decision is _which_ web stack.
 
 ## 2. Options considered
 
 ### Option A — TypeScript + React (DOM-first) + targeted canvas FX layer ✅ CHOSEN
 
 - ~90% of this game **is UI**: HUD, card grids, detail sheets, deck builder, shop, map medallions, modals. DOM/CSS is the strongest tool ever built for exactly that: text layout, flex/grid, scrolling with momentum, safe-area insets, accessibility, responsive units.
-- Battle presentation (two 2×3 grids of cards + numbers + badges) is *also* structured UI; only projectiles/impacts/particles want a free-form layer — solvable with **one absolutely-positioned `<canvas>` overlay** driven by the animation queue.
+- Battle presentation (two 2×3 grids of cards + numbers + badges) is _also_ structured UI; only projectiles/impacts/particles want a free-form layer — solvable with **one absolutely-positioned `<canvas>` overlay** driven by the animation queue.
 - CSS transforms + [Motion](https://motion.dev) (Framer Motion) deliver the springy, overshooting "juice" the references show, with excellent developer ergonomics.
 - First-class testing (Vitest/Playwright), TypeScript end-to-end, enormous hiring/AI-assist familiarity.
 
@@ -29,7 +30,7 @@ The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps 
 
 - Great for sprite/particle-heavy scenes; **painful for UI**: text wrapping, scroll views, modals, input fields and lists all become hand-rolled. A card-collection game would spend most of its code fighting the engine.
 - Hybrid "Phaser scene + DOM overlay" splits the UI across two layout systems and two input models — a persistent complexity tax.
-- **Rejected**: wrong center of gravity for a UI-dominant game. (PixiJS remains a *documented escape hatch* if battle VFX ever outgrow the canvas overlay.)
+- **Rejected**: wrong center of gravity for a UI-dominant game. (PixiJS remains a _documented escape hatch_ if battle VFX ever outgrow the canvas overlay.)
 
 ### Option C — Godot / Unity (native engine, web export)
 
@@ -42,25 +43,25 @@ The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps 
 
 ## 3. The chosen stack
 
-| Concern | Choice | Why |
-|---|---|---|
-| Language | **TypeScript (strict)** | Content schemas, engine determinism, refactor safety |
-| Build | **Vite** | Instant dev loop, first-class TS/asset handling, static output Capacitor can wrap |
-| UI | **React 18** | Component model for the design system; concurrent features unneeded but harmless |
-| Animation | **Motion (framer-motion)** + CSS transitions | Springs/overshoot for game feel; layout animations for lists |
-| Battle VFX | **Single `<canvas>` overlay**, custom mini particle system | Projectiles/impacts; avoids a full engine dependency (PixiJS documented as escape hatch) |
-| State | **Zustand** (slice pattern) | Tiny, unopinionated, selector-based renders; stores stay serializable |
-| Game rules | **Pure TS engine package** (`src/engine`) — zero React/DOM imports | Deterministic, unit-testable simulation; UI is a projection of engine events |
-| RNG | Custom seeded PRNG (mulberry32) with **named streams** | Reproducible map generation & battles; replayable bugs |
-| Styling | **CSS Modules + design tokens as CSS custom properties** | Hand-crafted cartoon UI (bevels, outlines, skews) needs real CSS, not utility soup; tokens defined once in `UI_STYLE_GUIDE.md` |
-| Font | **Saira** via `@fontsource/saira` (self-hosted) | Brief-mandated; self-hosting keeps the app offline-capable and Capacitor-ready (no runtime Google Fonts fetch) |
-| Icons | Vendored SVGs from **Open Game Icons** behind a semantic manifest | Placeholder policy: every icon swappable by key; per-artist CC-BY attribution kept in `CREDITS` |
-| Audio | **Howler.js** | Battle-tested mobile WebAudio handling (unlock-on-gesture, sprites) |
-| Persistence | Versioned JSON snapshots via a **storage service interface**; `localStorage` now | Sync API, ample for save sizes; interface swaps to Capacitor Preferences/Filesystem later without touching game code |
-| Validation | **Zod** schemas for all content data | Content is data; validation runs in dev/build and in tests |
-| Testing | **Vitest** (engine + content), **@testing-library/react** (key components), **Playwright** (later, smoke) | Engine logic is where correctness lives; test it headlessly |
-| Lint/format | **ESLint + Prettier** | Standard |
-| Runtime targets | Evergreen mobile browsers; Android WebView / iOS WKWebView (Capacitor later) | See performance budget in `ARCHITECTURE.md` |
+| Concern         | Choice                                                                                                                                                          | Why                                                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Language        | **TypeScript (strict)**                                                                                                                                         | Content schemas, engine determinism, refactor safety                                                                           |
+| Build           | **Vite**                                                                                                                                                        | Instant dev loop, first-class TS/asset handling, static output Capacitor can wrap                                              |
+| UI              | **React 19**                                                                                                                                                    | Component model for the design system; concurrent features unneeded but harmless                                               |
+| Animation       | **Motion (framer-motion)** + CSS transitions                                                                                                                    | Springs/overshoot for game feel; layout animations for lists                                                                   |
+| Battle VFX      | **Single `<canvas>` overlay**, custom mini particle system                                                                                                      | Projectiles/impacts; avoids a full engine dependency (PixiJS documented as escape hatch)                                       |
+| State           | **Zustand** (slice pattern)                                                                                                                                     | Tiny, unopinionated, selector-based renders; stores stay serializable                                                          |
+| Game rules      | **Pure TS engine package** (`src/engine`) — zero React/DOM imports                                                                                              | Deterministic, unit-testable simulation; UI is a projection of engine events                                                   |
+| RNG             | Custom seeded PRNG (mulberry32) with **named streams**                                                                                                          | Reproducible map generation & battles; replayable bugs                                                                         |
+| Styling         | **CSS Modules + design tokens as CSS custom properties**                                                                                                        | Hand-crafted cartoon UI (bevels, outlines, skews) needs real CSS, not utility soup; tokens defined once in `UI_STYLE_GUIDE.md` |
+| Font            | **Saira** via `@fontsource/saira` (self-hosted)                                                                                                                 | Brief-mandated; self-hosting keeps the app offline-capable and Capacitor-ready (no runtime Google Fonts fetch)                 |
+| Icons           | Vendored SVGs from **Open Game Icons** behind a semantic manifest                                                                                               | Placeholder policy: every icon swappable by key; per-artist CC-BY attribution kept in `CREDITS`                                |
+| Audio           | **Howler.js**                                                                                                                                                   | Battle-tested mobile WebAudio handling (unlock-on-gesture, sprites)                                                            |
+| Persistence     | Versioned JSON snapshots via a **storage service interface**; `localStorage` now                                                                                | Sync API, ample for save sizes; interface swaps to Capacitor Preferences/Filesystem later without touching game code           |
+| Validation      | **Zod** schemas for all content data                                                                                                                            | Content is data; validation runs in dev/build and in tests                                                                     |
+| Testing         | **Vitest** (engine + content), **@testing-library/react** (key components), **Playwright** (installed in Phase 0 for viewport verification; smoke suites later) | Engine logic is where correctness lives; test it headlessly                                                                    |
+| Lint/format     | **ESLint + Prettier**                                                                                                                                           | Standard                                                                                                                       |
+| Runtime targets | Evergreen mobile browsers; Android WebView / iOS WKWebView (Capacitor later)                                                                                    | See performance budget in `ARCHITECTURE.md`                                                                                    |
 
 **No backend. Fully offline.** All content ships with the app; saves are local; manual export/import lands in Phase 7 (Q27 decided).
 
@@ -72,9 +73,19 @@ The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps 
 - Self-hosted fonts/icons/audio → zero network dependency at runtime.
 - Viewport/safe-area handling via CSS `env(safe-area-inset-*)` from day one.
 
+## 4a. As-built notes (Phase 0)
+
+- Actual majors installed: React 19, Vite 8, TypeScript 6, Zod 4, Vitest 4, ESLint 10, Motion 13, Zustand 5.
+- **Engine purity is lint-enforced**, not just documented: `eslint.config.js` blocks React/DOM/store/service
+  imports plus `Math.random`, `Date.now` and `new Date()` inside `src/engine` and `src/content`.
+- Placeholder icons are vendored from the Game Icons collection through the `@iconify-json/game-icons`
+  package (CC BY 3.0) rather than fetched from GitHub, so the set is pinned and reproducible offline.
+  `npm run vendor:icons` never overwrites an existing file, so the owner's replacement art survives re-runs.
+- Path alias `@/*` → `src/*` is configured in both `tsconfig.json` and `vite.config.ts`.
+
 ## 5. Notable non-goals / deferred tech
 
 - **PixiJS/WebGL renderer** — only if canvas-overlay VFX provably hits perf limits.
-- **i18n framework** — English-only first release (Q30 decided), but *all user-facing strings centralized* so i18n is a bolt-on later.
+- **i18n framework** — English-only first release (Q30 decided), but _all user-facing strings centralized_ so i18n is a bolt-on later.
 - **Service worker / PWA install** — nice-to-have after the slice; trivially compatible.
 - **React Router** — screens are a game state machine, not URLs; a tiny screen-stack store replaces routing (see `ARCHITECTURE.md`).

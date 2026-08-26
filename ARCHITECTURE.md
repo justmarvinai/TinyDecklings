@@ -1,6 +1,7 @@
 # TinyDecklings — Architecture
 
-> Status: **PLANNING** — this is the blueprint the scaffold will implement. Stack rationale: `TECH_STACK.md`.
+> Status: **Phase 0 implemented (2026-08-26).** The layering, RNG, save and asset sections below are live in
+> code; the battle pipeline (§3) is the blueprint Phase 1 implements. Stack rationale: `TECH_STACK.md`.
 
 ## 1. Layering (the prime directive)
 
@@ -32,7 +33,7 @@ Dependency rules:
 - `content` depends on nothing (data + schemas).
 - `engine` depends on `content` only. **Deterministic, side-effect-free, no `Date.now`/`Math.random`** — time and RNG are injected.
 - `state` orchestrates: calls engine, holds serializable snapshots, invokes `services` for persistence.
-- `ui` renders `state` and dispatches intents. No game rules in components — a component may *format* but never *decide*.
+- `ui` renders `state` and dispatches intents. No game rules in components — a component may _format_ but never _decide_.
 - `services` are interfaces with web implementations; Capacitor later swaps implementations, not call sites.
 
 ## 2. Directory layout (target)
@@ -69,16 +70,22 @@ src/
     fx/               # canvas overlay, particle presets, floating numbers
     icons/            # vendored SVGs + iconManifest.ts (semantic key → asset)
   services/
-    storage.ts        # StorageService interface + LocalStorageImpl
-    saves.ts          # versioned save schema, migrations, autosave policy
+    storage.ts        # StorageService interface + localStorage/memory impls
+    clock.ts          # Clock seam — injected time (energy regen, save stamps)
+    saves/            # versioned save schema, migrations, SaveService
     audio.ts          # Howler wrapper: sfx/music channels, settings-aware
-    platform.ts       # haptics/share/etc. no-op web impls (Capacitor seam)
-  app/                # bootstrap, providers, error boundary, dev tools
+    platform.ts       # haptics/share/etc. no-op web impls (Capacitor seam) — Phase 6
+  app/                # bootstrap, composition root, error boundary, dev panel
 ```
+
+**As built after Phase 0:** `content/` (schemas + gear/battle/economy system data), `engine/rng.ts`,
+`state/` (screenStore, settingsStore), `services/` (storage, clock, saves, audio), `ui/` (design tokens,
+primitives, icons, art, components, kitchen-sink screen) and `app/` all exist. The engine's battle, map,
+progression and economy modules plus the remaining stores and screens arrive with Phase 1.
 
 ## 3. The battle pipeline (engine ↔ presentation)
 
-The battle engine is a **pure reducer emitting an event log**; the UI is an *animator of events*, never a rules authority.
+The battle engine is a **pure reducer emitting an event log**; the UI is an _animator of events_, never a rules authority.
 
 ```
 intent (tap target / cast / auto-step)
@@ -111,7 +118,7 @@ Why: deterministic tests ("given seed + intents, expect events"), replayability,
 
 - **Zod schemas in `content/schemas` are the single source of truth**; TS types are `z.infer<>` of them. Shapes documented in `CONTENT_SCHEMA.md`.
 - Content lives as TS modules (typed literals) registered in `content/index.ts`; a dev-mode + test-time validation pass fails loudly on any invalid entry.
-- **Adding a card/gear/enemy/encounter = adding a data entry.** If a feature needs engine code, it becomes a *reusable effect primitive*, not a card special-case. A registry of scripted effects (keyed by id) is the escape hatch for truly unique behaviors — used sparingly, documented per entry.
+- **Adding a card/gear/enemy/encounter = adding a data entry.** If a feature needs engine code, it becomes a _reusable effect primitive_, not a card special-case. A registry of scripted effects (keyed by id) is the escape hatch for truly unique behaviors — used sparingly, documented per entry.
 - Balance values (curves, costs, drop rates) live in `content/economy`, not inline in engine code.
 
 ## 6. Assets & the placeholder policy
@@ -146,24 +153,24 @@ Game screens are a **state machine, not URLs**: `screenStore` holds a stack (`pu
 
 ## 11. Testing strategy
 
-| Layer | How |
-|---|---|
-| `content` | Schema validation over *all* entries; referential integrity (skills exist, loot tables sum, icon keys resolve) |
-| `engine` | Vitest: golden-seed battle tests (seed + intents → expected events/outcome), map generation properties (difficulty monotonic, region composition), progression math tables |
-| `state` | Store logic tests incl. save/load round-trips + migration fixtures |
-| `ui` | Testing Library for critical widgets (CardFrame states, StatBar); visual/manual pass against `UI_STYLE_GUIDE.md`; Playwright smoke (slice loop) later |
+| Layer     | How                                                                                                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content` | Schema validation over _all_ entries; referential integrity (skills exist, loot tables sum, icon keys resolve)                                                             |
+| `engine`  | Vitest: golden-seed battle tests (seed + intents → expected events/outcome), map generation properties (difficulty monotonic, region composition), progression math tables |
+| `state`   | Store logic tests incl. save/load round-trips + migration fixtures                                                                                                         |
+| `ui`      | Testing Library for critical widgets (CardFrame states, StatBar); visual/manual pass against `UI_STYLE_GUIDE.md`; Playwright smoke (slice loop) later                      |
 
 CI recommendation (when repo has code): typecheck + lint + vitest on push.
 
 ## 12. Architectural decisions record
 
-| # | Decision | Why (short) |
-|---|---|---|
-| AD-1 | DOM-first React, canvas only for FX | UI-dominant game; see `TECH_STACK.md` |
-| AD-2 | Pure engine + event log | Determinism, tests, animation sequencing, AUTO mode |
-| AD-3 | Zod-validated TS content modules | Data-driven mandate with compile-time + runtime safety |
-| AD-4 | Screen-stack store instead of router | Screens are game states; URLs meaningless in a wrapped app |
-| AD-5 | Seeded named-stream RNG | Reproducibility across systems |
-| AD-6 | Storage/platform behind service interfaces | Clean Capacitor seam without doing Capacitor now |
-| AD-7 | Semantic asset manifest; gear icons keyed by slot type | Owner's placeholder-swap plan + fixed gear iconography |
-| AD-8 | Versioned saves with pure migrations | Endless meta progression must survive every update |
+| #    | Decision                                               | Why (short)                                                |
+| ---- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| AD-1 | DOM-first React, canvas only for FX                    | UI-dominant game; see `TECH_STACK.md`                      |
+| AD-2 | Pure engine + event log                                | Determinism, tests, animation sequencing, AUTO mode        |
+| AD-3 | Zod-validated TS content modules                       | Data-driven mandate with compile-time + runtime safety     |
+| AD-4 | Screen-stack store instead of router                   | Screens are game states; URLs meaningless in a wrapped app |
+| AD-5 | Seeded named-stream RNG                                | Reproducibility across systems                             |
+| AD-6 | Storage/platform behind service interfaces             | Clean Capacitor seam without doing Capacitor now           |
+| AD-7 | Semantic asset manifest; gear icons keyed by slot type | Owner's placeholder-swap plan + fixed gear iconography     |
+| AD-8 | Versioned saves with pure migrations                   | Endless meta progression must survive every update         |

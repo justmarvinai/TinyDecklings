@@ -10,21 +10,21 @@
 ```ts
 // Cards and Gear DELIBERATELY use separate enums; they never mix,
 // compare, or share color tokens.
-type CardRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';        // decided (Q8)
+type CardRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'; // decided (Q8)
 type GearRarity = 'worn' | 'sturdy' | 'refined' | 'ornate' | 'exalted' | 'mythic'; // decided (Q9)
 
 interface CardRarityDef {
   id: CardRarity;
-  baseStars: 1 | 2 | 3 | 4 | 5;    // rarity fixes base star grade
-  frameToken: string;               // css token, e.g. '--rarity-card-epic'
-  statBudget: number;               // balance multiplier
-  summonWeight: number;             // relative pull weight per pool
+  baseStars: 1 | 2 | 3 | 4 | 5; // rarity fixes base star grade
+  frameToken: string; // css token, e.g. '--rarity-card-epic'
+  statBudget: number; // balance multiplier
+  summonWeight: number; // relative pull weight per pool
 }
 
 interface GearRarityDef {
   id: GearRarity;
-  colorToken: string;               // css token, e.g. '--rarity-gear-mythic'
-  substatCount: number;             // rarity-scaled (Q11a)
+  colorToken: string; // css token, e.g. '--rarity-gear-mythic'
+  substatCount: number; // rarity-scaled (Q11a)
   mainStatMultiplier: number;
   dropWeight: number;
 }
@@ -33,9 +33,13 @@ interface GearRarityDef {
 ## 2. Stats
 
 ```ts
-type StatKey = 'strength' | 'attack' | 'speed';   // decided (Q5a); speed dormant until post-slice
+type StatKey = 'strength' | 'attack' | 'speed'; // decided (Q5a); speed dormant until post-slice
 
-interface StatBlock { strength: number; attack: number; speed: number; }
+interface StatBlock {
+  strength: number;
+  attack: number;
+  speed: number;
+}
 
 // Power is DERIVED for display only — never stored, never read by the engine.
 // power = f(level, stars, statBlock, gearBonuses, skillLevels)  — progression/power.ts
@@ -48,27 +52,31 @@ type CardClass = 'unit' | 'hero';
 type AttackType = 'melee' | 'ranged';
 
 interface CardDef {
-  id: string;                     // 'card.ember_drake'
-  name: string;                   // display name (rendered ALL CAPS by UI)
+  id: string; // 'card.ember_drake'
+  name: string; // display name (rendered ALL CAPS by UI)
   cardClass: CardClass;
   rarity: CardRarity;
   attackType: AttackType;
-  element?: ElementId;            // light stage-affinity system, lands Phase 4 (Q21a)
-  baseStats: StatBlock;           // at level 1, base stars
-  growth: GrowthCurveId;          // per-rarity level scaling curve (content/economy)
+  element?: ElementId; // light stage-affinity system, lands Phase 4 (Q21a)
+  baseStats: StatBlock; // at level 1, base stars
+  growth: GrowthCurveId; // per-rarity level scaling curve (content/economy)
   attackPattern: AttackPatternId; // 'single' default
-  skills: SkillRef[];             // slot-ordered; slots unlock by stars
-  leaderSkill?: LeaderSkillDef;   // heroes only (validated)
-  artKey: string;                 // resolves via asset manifest; ALL cards may
-                                  // point at the shared placeholder avatar now —
-                                  // per-card final art swaps in later (owner)
+  skills: SkillRef[]; // slot-ordered; slots unlock by stars
+  leaderSkill?: LeaderSkillDef; // heroes only (validated)
+  artKey: string; // resolves via asset manifest; ALL cards may
+  // point at the shared placeholder avatar now —
+  // per-card final art swaps in later (owner)
   lore?: string;
 }
 
-interface SkillRef { skillId: string; unlockStars: number; }
+interface SkillRef {
+  skillId: string;
+  unlockStars: number;
+}
 
-interface LeaderSkillDef {        // e.g. "+12% Strength to all Melee allies"
-  target: TargetFilter;           // reuses effect targeting (see §6)
+interface LeaderSkillDef {
+  // e.g. "+12% Strength to all Melee allies"
+  target: TargetFilter; // reuses effect targeting (see §6)
   modifier: StatModifier;
 }
 ```
@@ -79,8 +87,8 @@ interface LeaderSkillDef {        // e.g. "+12% Strength to all Melee allies"
 interface EnemyGroupDef {
   id: string;
   members: { cardId: string; slot: SlotIndex; levelOffset?: number }[];
-  reinforcements?: string[];      // queue card ids
-  bossCardId?: string;            // gets BOSS frame treatment
+  reinforcements?: string[]; // queue card ids
+  bossCardId?: string; // gets BOSS frame treatment
 }
 ```
 
@@ -88,26 +96,25 @@ interface EnemyGroupDef {
 
 ```ts
 type GearSlot =
-  | 'weapon' | 'helmet' | 'shield' | 'gauntlets'
-  | 'armor' | 'boots' | 'ring' | 'amulet' | 'artifact';   // full set decided (Q10a);
-                                                          // slice activates weapon/helmet/armor/boots
+  'weapon' | 'helmet' | 'shield' | 'gauntlets' | 'armor' | 'boots' | 'ring' | 'amulet' | 'artifact'; // full set decided (Q10a);
+// slice activates weapon/helmet/armor/boots
 
 interface GearSlotDef {
   id: GearSlot;
-  iconKey: string;           // ← THE icon for every item of this slot
-  mainStat: StatKey;         // slot determines main stat family
-  unlock?: { stars: number };// e.g. artifact slot at 6★
+  iconKey: string; // ← THE icon for every item of this slot
+  mainStat: StatKey; // slot determines main stat family
+  unlock?: { stars: number }; // e.g. artifact slot at 6★
 }
 
 interface GearDef {
-  id: string;                // 'gear.springstep_boots'
+  id: string; // 'gear.springstep_boots'
   name: string;
   slot: GearSlot;
   rarity: GearRarity;
-  stars: 1 | 2 | 3 | 4 | 5;  // item grade (reference shows starred gear)
-  mainStatBase: number;      // scaled by rarity/stars/enhancement
-  substats?: SubstatRoll[];  // rolled on drop per rarity (Q11a); no rerolls
-  setId?: string;            // artifact sets — later phase (Q22)
+  stars: 1 | 2 | 3 | 4 | 5; // item grade (reference shows starred gear)
+  mainStatBase: number; // scaled by rarity/stars/enhancement
+  substats?: SubstatRoll[]; // rolled on drop per rarity (Q11a); no rerolls
+  setId?: string; // artifact sets — later phase (Q22)
   // ⚠ NO icon field, NO art field — icon ALWAYS resolves from slot
   //   (owner directive: every Boots shows THE boots icon, etc.)
 }
@@ -117,11 +124,11 @@ interface GearDef {
 
 ```ts
 interface OwnedGear {
-  uid: string;               // instance id
+  uid: string; // instance id
   defId: string;
-  enhanceLevel: number;      // gold enhancement (Q11a)
-  substats: SubstatRoll[];   // as rolled
-  equippedBy?: string;       // owned-card uid
+  enhanceLevel: number; // gold enhancement (Q11a)
+  substats: SubstatRoll[]; // as rolled
+  equippedBy?: string; // owned-card uid
 }
 ```
 
@@ -131,10 +138,10 @@ interface OwnedGear {
 interface SkillDef {
   id: string;
   name: string;
-  iconKey: string;               // placeholder now, owner art later
-  cooldown: number;              // rounds; battle badge shows rounds-until-ready (Q4a)
+  iconKey: string; // placeholder now, owner art later
+  cooldown: number; // rounds; battle badge shows rounds-until-ready (Q4a)
   maxLevel: number;
-  effects: EffectDef[];          // what it does — see §6
+  effects: EffectDef[]; // what it does — see §6
   levelScaling: Partial<Record<EffectParam, PerLevelCurve>>;
   attackPattern?: AttackPatternId; // overrides card pattern for this skill
 }
@@ -146,28 +153,33 @@ Effects are **interpreted primitives**, composed in data. New cards should combi
 
 ```ts
 type EffectTrigger =
-  | 'onCast'        // active skill use
-  | 'onAttack' | 'onHit' | 'onKill'
-  | 'onDamaged' | 'onDeath' | 'onDeploy'
-  | 'onRoundStart' | 'onRoundEnd'
-  | 'passive';      // constant while alive (auras, leader skills)
+  | 'onCast' // active skill use
+  | 'onAttack'
+  | 'onHit'
+  | 'onKill'
+  | 'onDamaged'
+  | 'onDeath'
+  | 'onDeploy'
+  | 'onRoundStart'
+  | 'onRoundEnd'
+  | 'passive'; // constant while alive (auras, leader skills)
 
 interface TargetFilter {
   side: 'ally' | 'enemy' | 'self';
   scope: 'single' | 'row' | 'column' | 'all' | 'random' | 'lowestHp' | 'highestHp' | 'pattern';
-  pattern?: AttackPatternId;      // when scope = 'pattern'
+  pattern?: AttackPatternId; // when scope = 'pattern'
   where?: { attackType?: AttackType; element?: ElementId; hasStatus?: StatusId };
 }
 
 type EffectAction =
-  | { kind: 'damage';      amount: Magnitude }
-  | { kind: 'heal';        amount: Magnitude }
-  | { kind: 'shield';      amount: Magnitude; duration: Rounds }
+  | { kind: 'damage'; amount: Magnitude }
+  | { kind: 'heal'; amount: Magnitude }
+  | { kind: 'shield'; amount: Magnitude; duration: Rounds }
   | { kind: 'applyStatus'; status: StatusId; duration: Rounds; potency?: Magnitude }
-  | { kind: 'cleanse';     statuses: StatusId[] | 'all' }
-  | { kind: 'modifyStat';  stat: StatKey; percent: number; duration: Rounds | 'battle' }
-  | { kind: 'summon';      cardId: string; slotPreference: 'front' | 'back' }
-  | { kind: 'taunt';       duration: Rounds };
+  | { kind: 'cleanse'; statuses: StatusId[] | 'all' }
+  | { kind: 'modifyStat'; stat: StatKey; percent: number; duration: Rounds | 'battle' }
+  | { kind: 'summon'; cardId: string; slotPreference: 'front' | 'back' }
+  | { kind: 'taunt'; duration: Rounds };
 
 // Magnitude is expressive but data-only:
 type Magnitude =
@@ -179,15 +191,15 @@ interface EffectDef {
   trigger: EffectTrigger;
   target: TargetFilter;
   action: EffectAction;
-  chance?: number;               // 0..1, rolled on rng.battle
+  chance?: number; // 0..1, rolled on rng.battle
 }
 ```
 
 **Status effects** (initial set, `Q20`): each a `StatusDef` with stacking rule + tick behavior:
 
 ```ts
-type StatusId = 'burn' | 'poison' | 'freeze' | 'stun' | 'taunt'
-              | 'weaken' | 'strengthen' | 'regen' | 'shield';
+type StatusId =
+  'burn' | 'poison' | 'freeze' | 'stun' | 'taunt' | 'weaken' | 'strengthen' | 'regen' | 'shield';
 
 interface StatusDef {
   id: StatusId;
@@ -195,7 +207,7 @@ interface StatusDef {
   stacking: 'refresh' | 'stack' | 'ignore';
   maxStacks?: number;
   tick?: { on: 'roundStart' | 'roundEnd'; action: EffectAction };
-  blocksAction?: boolean;        // freeze/stun
+  blocksAction?: boolean; // freeze/stun
 }
 ```
 
@@ -207,9 +219,9 @@ typed registry in `engine/battle/scripts.ts` — used sparingly, every entry doc
 ```ts
 // Grid shapes over the 2×3 enemy board, anchored at the chosen target.
 interface AttackPatternDef {
-  id: AttackPatternId;           // 'single' | 'row' | 'column' | 'cross' | 'all' | …
-  cells: [dx, dy][];             // offsets from anchor; clipped to board
-  falloff?: number;              // damage multiplier for non-anchor cells
+  id: AttackPatternId; // 'single' | 'row' | 'column' | 'cross' | 'all' | …
+  cells: [dx, dy][]; // offsets from anchor; clipped to board
+  falloff?: number; // damage multiplier for non-anchor cells
 }
 ```
 
@@ -217,37 +229,39 @@ interface AttackPatternDef {
 
 ```ts
 interface RegionDef {
-  id: string;                    // 'region.frostfjord'
+  id: string; // 'region.frostfjord'
   name: string;
-  themeToken: string;            // background/palette set
-  stageCount: number;            // ~10 (Q16)
-  enemyPool: string[];           // EnemyGroupDef ids
+  themeToken: string; // background/palette set
+  stageCount: number; // ~10 (Q16)
+  enemyPool: string[]; // EnemyGroupDef ids
   elitePool: string[];
   bossPool: string[];
-  eventPool: string[];           // EncounterDef ids
-  elementBias?: ElementId;       // node badges; counter-element bonus stages (Q21a)
+  eventPool: string[]; // EncounterDef ids
+  elementBias?: ElementId; // node badges; counter-element bonus stages (Q21a)
 }
 
 type StageKind = 'battle' | 'elite' | 'boss' | 'event' | 'treasure' | 'camp'; // decided (Q16)
 
-interface GeneratedStage {       // engine/map output — lives in run save
-  number: number;                // endless global index (map shows "33. FAR ISLAND")
+interface GeneratedStage {
+  // engine/map output — lives in run save
+  number: number; // endless global index (map shows "33. FAR ISLAND")
   kind: StageKind;
   regionId: string;
-  name: string;                  // from region name tables
+  name: string; // from region name tables
   seed: number;
-  encounterRef: string;          // enemy group or event id
-  difficultyBudget: number;      // monotonic in stage number
-  bestStars: 0 | 1 | 2 | 3;      // persisted record; 3★ flawless / 2★ ≤2 deaths / 1★ win (Q17a)
+  encounterRef: string; // enemy group or event id
+  difficultyBudget: number; // monotonic in stage number
+  bestStars: 0 | 1 | 2 | 3; // persisted record; 3★ flawless / 2★ ≤2 deaths / 1★ win (Q17a)
 }
 
-interface EncounterDef {         // non-battle vignettes (event/treasure/camp)
+interface EncounterDef {
+  // non-battle vignettes (event/treasure/camp)
   id: string;
   kind: 'event' | 'treasure' | 'camp';
   prompt: string;
   choices: {
     label: string;
-    requires?: Requirement;      // currency, card class present, etc.
+    requires?: Requirement; // currency, card class present, etc.
     outcomes: WeightedOutcome[]; // rewards, statuses for next battle, loot…
   }[];
 }
@@ -256,11 +270,17 @@ interface EncounterDef {         // non-battle vignettes (event/treasure/camp)
 ## 9. Economy
 
 ```ts
-type CurrencyId = 'gold' | 'gems' | 'energy'            // energy decided (Q14b) — live value +
-                                                        // regen anchor live in SaveDoc.player.energy,
-                                                        // not the currencies record; rewards may grant it
-  | 'token_unit_t1' | 'token_unit_t2' | 'token_unit_t3' // summon tokens (earnable only — Q13a)
-  | 'token_hero' | 'fragment';                          // red-swords counter cut (Q15a)
+type CurrencyId =
+  | 'gold'
+  | 'gems'
+  | 'energy' // energy decided (Q14b) — live value +
+  // regen anchor live in SaveDoc.player.energy,
+  // not the currencies record; rewards may grant it
+  | 'token_unit_t1'
+  | 'token_unit_t2'
+  | 'token_unit_t3' // summon tokens (earnable only — Q13a)
+  | 'token_hero'
+  | 'fragment'; // red-swords counter cut (Q15a)
 
 interface LootTableDef {
   id: string;
@@ -269,13 +289,13 @@ interface LootTableDef {
 
 type RewardDef =
   | { kind: 'currency'; currency: CurrencyId; amount: NumberRange }
-  | { kind: 'cardXp';   amount: NumberRange }
-  | { kind: 'gearDrop'; table: GearDropSpec }   // slot/rarity weights per region
-  | { kind: 'card';     cardId: string }
+  | { kind: 'cardXp'; amount: NumberRange }
+  | { kind: 'gearDrop'; table: GearDropSpec } // slot/rarity weights per region
+  | { kind: 'card'; cardId: string }
   | { kind: 'fragment'; cardId: string; amount: NumberRange };
 
 interface SummonPoolDef {
-  id: string;                    // 'pool.unit_t1' … 'pool.hero'
+  id: string; // 'pool.unit_t1' … 'pool.hero'
   tokenCurrency: CurrencyId;
   entries: { cardId: string; weight: number }[];
   pity?: { rarity: CardRarity; threshold: number }[]; // "Legendary 18/55"
@@ -286,10 +306,10 @@ interface SummonPoolDef {
 // content/economy/energy.ts. Regen is computed lazily from the save's regen
 // anchor via injected time — never Date.now in the engine.
 interface EnergyConfig {
-  cap: number;                              // 30
-  regenSeconds: number;                     // 120 (1 energy / 2 min)
-  costs: Record<StageKind, number>;         // battle 5 · elite 6 · boss 8 ·
-                                            // event/treasure/camp 0 (free)
+  cap: number; // 30
+  regenSeconds: number; // 120 (1 energy / 2 min)
+  costs: Record<StageKind, number>; // battle 5 · elite 6 · boss 8 ·
+  // event/treasure/camp 0 (free)
   // rewards may push current energy above cap; regen pauses while above cap
 }
 ```
@@ -299,31 +319,35 @@ interface EnergyConfig {
 ```ts
 interface SaveDoc {
   saveVersion: number;
-  createdAt: string; updatedAt: string;
+  createdAt: string;
+  updatedAt: string;
   player: {
     profile: { name: string; avatarKey: string; level: number; xp: number };
     currencies: Record<CurrencyId, number>;
-    energy: { current: number; regenAnchor: string };  // Q14b — lazy regen from anchor
+    energy: { current: number; regenAnchor: string }; // Q14b — lazy regen from anchor
     cards: OwnedCard[];
     gear: OwnedGear[];
-    decks: DeckConfig[];         // 1 hero + 8 units each, max 6 decks (Q6a)
+    decks: DeckConfig[]; // 1 hero + 8 units each, max 6 decks (Q6a)
     activeDeckIndex: number;
-    stageRecords: Record<number, { bestStars: 0|1|2|3; clears: number }>;
-    unlocks: string[];           // feature flags: forge, pools, slots…
+    stageRecords: Record<number, { bestStars: 0 | 1 | 2 | 3; clears: number }>;
+    unlocks: string[]; // feature flags: forge, pools, slots…
     pity: Record<string, Record<CardRarity, number>>; // per pool
   };
   run: {
     seed: number;
     currentStage: number;
-    generatedWindow: GeneratedStage[];  // rolling window around position
+    generatedWindow: GeneratedStage[]; // rolling window around position
     pendingBattle?: { stage: number; attempt: number; intentLog: Intent[] }; // mid-battle resume
   };
-  settings: { sfx: boolean; music: boolean; speed: 1 | 2; language: string; /* … */ };
+  settings: { sfx: boolean; music: boolean; speed: 1 | 2; language: string /* … */ };
 }
 
 interface OwnedCard {
-  uid: string; defId: string;
-  level: number; xp: number; stars: number;
+  uid: string;
+  defId: string;
+  level: number;
+  xp: number;
+  stars: number;
   skillLevels: number[];
   equippedGear: Partial<Record<GearSlot, string /* OwnedGear.uid */>>;
   favorite: boolean;

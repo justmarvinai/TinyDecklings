@@ -1,35 +1,35 @@
 # TinyDecklings — UI Style Guide
 
-> Status: **PLANNING**. Derived from `assets/examples/*` — the visual source of truth. Hex values are sampled
-> approximations to be refined against the references during implementation; the *relationships* are binding.
+> Status: **Binding; tokens implemented in `src/ui/design/tokens.css` (Phase 0).** Derived from `assets/examples/*` — the visual source of truth. Hex values are sampled
+> approximations to be refined against the references during implementation; the _relationships_ are binding.
 > Do **not** replace this language with generic "modern mobile UI".
 
 ## 1. Reference inventory
 
 Two groups, one language:
 
-**A. Portrait references — core game screens (primary truth for layout *and* style):**
+**A. Portrait references — core game screens (primary truth for layout _and_ style):**
 
-| File | Shows |
-|---|---|
-| `Map.png` | Endless stage path, node medallions, star ratings, top HUD, purple title banner |
-| `Battle.png` | 2×3-per-side battlefield, HP plates, type badges, BOSS frame, TURN banner, AUTO/X1/flag controls, deck counters |
+| File                   | Shows                                                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `Map.png`              | Endless stage path, node medallions, star ratings, top HUD, purple title banner                                 |
+| `Battle.png`           | 2×3-per-side battlefield, HP plates, type badges, BOSS frame, TURN banner, AUTO/X1/flag controls, deck counters |
 | `Card_Unit_Detail.png` | Card sheet: level/XP, stars, Strength/Power, gear grid (fixed slot icons!), skills, action bar (LEVEL UP…EQUIP) |
-| `Decks.png` | Deck builder: leader + 8, deck power, page dots, UNITS/HEROES tabs, collection grid |
-| `Card_Summon.png` | Summon: token tabs, pity meters, reveal frame, SUMMON/×10 CTAs |
+| `Decks.png`            | Deck builder: leader + 8, deck power, page dots, UNITS/HEROES tabs, collection grid                             |
+| `Card_Summon.png`      | Summon: token tabs, pity meters, reveal frame, SUMMON/×10 CTAs                                                  |
 
 **B. Landscape references — design-language donors (Brawl Stars screens; translate patterns to portrait, never copy layouts 1:1):**
 
-| File | Steal this |
-|---|---|
-| `Shop.png` | Offer cards, timer chips, NEW/discount ribbons, strikethrough pricing, "Claimed" state, bottom category tabs |
-| `Buy_Submenu.png` | Purchase modal anatomy: purple sheet, info button, red X, two offer panels, yellow price buttons |
-| `Battlepass.png` | Track UI: premium/free lanes, tier nodes on a progress spine, locked states, season timer |
-| `Events.png` | Event cards: colored header band + illustration, countdown chip, locked/gray state with unlock text |
-| `Leaderboard.png` | Skewed list rows, rank + avatar + name + value, highlighted "you" row, segmented tabs |
-| `Player_Profile_Page.png` | Stat pills with icon + label-above, editable name plate, level badge + XP bar |
-| `Settings.png` | ON/OFF segmented toggles (green/red), chunky blue buttons, label-above-control pattern |
-| `UI_Stats.png` | Segmented stat bars: icon chip + colored label + blocky segments |
+| File                      | Steal this                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `Shop.png`                | Offer cards, timer chips, NEW/discount ribbons, strikethrough pricing, "Claimed" state, bottom category tabs |
+| `Buy_Submenu.png`         | Purchase modal anatomy: purple sheet, info button, red X, two offer panels, yellow price buttons             |
+| `Battlepass.png`          | Track UI: premium/free lanes, tier nodes on a progress spine, locked states, season timer                    |
+| `Events.png`              | Event cards: colored header band + illustration, countdown chip, locked/gray state with unlock text          |
+| `Leaderboard.png`         | Skewed list rows, rank + avatar + name + value, highlighted "you" row, segmented tabs                        |
+| `Player_Profile_Page.png` | Stat pills with icon + label-above, editable name plate, level badge + XP bar                                |
+| `Settings.png`            | ON/OFF segmented toggles (green/red), chunky blue buttons, label-above-control pattern                       |
+| `UI_Stats.png`            | Segmented stat bars: icon chip + colored label + blocky segments                                             |
 
 ## 2. Mood
 
@@ -39,49 +39,49 @@ Saturated, chunky, toy-like, confident. Everything looks **pressable**: thick ou
 
 ### 3.1 Chrome & surfaces
 
-| Token | Approx | Use |
-|---|---|---|
-| `--bg-app` | `#3B0F12` → `#571D18` texture | Warm dark maroon app backdrop (portrait refs) |
-| `--bg-hud` | `#141417` (≈95% opaque) | Top HUD bar, battle counters |
-| `--surface-panel` | `#221F26` | Panels, sheets |
-| `--surface-pill` | `#0F0F12` | Stat/name pills, counters |
-| `--surface-slot` | `#3A3740` | Empty slots, disabled tiles |
-| `--outline-dark` | `#0A0A0C` | Universal 2–3px component outline |
-| `--text-primary` | `#FFFFFF` | Primary text (always outlined/shadowed on busy art) |
-| `--text-secondary` | `#B9B4C2` | Secondary/labels |
+| Token              | Approx                        | Use                                                 |
+| ------------------ | ----------------------------- | --------------------------------------------------- |
+| `--bg-app`         | `#3B0F12` → `#571D18` texture | Warm dark maroon app backdrop (portrait refs)       |
+| `--bg-hud`         | `#141417` (≈95% opaque)       | Top HUD bar, battle counters                        |
+| `--surface-panel`  | `#221F26`                     | Panels, sheets                                      |
+| `--surface-pill`   | `#0F0F12`                     | Stat/name pills, counters                           |
+| `--surface-slot`   | `#3A3740`                     | Empty slots, disabled tiles                         |
+| `--outline-dark`   | `#0A0A0C`                     | Universal 2–3px component outline                   |
+| `--text-primary`   | `#FFFFFF`                     | Primary text (always outlined/shadowed on busy art) |
+| `--text-secondary` | `#B9B4C2`                     | Secondary/labels                                    |
 
 ### 3.2 Brand & feedback
 
-| Token | Approx | Use |
-|---|---|---|
-| `--accent-header` | `#8A2BD9` / gradient to `#A93BFF` | Title banners, back button, modal headers |
-| `--accent-positive` | `#3DC81E` | Primary CTAs (LEVEL UP, SUMMON), ON state, healed numbers |
-| `--accent-info` | `#2E9BF0` | Secondary CTAs (AUTO EQUIP), links |
-| `--accent-warning` | `#FFC21C` | EQUIP, highlights, active tab, star gold |
-| `--accent-danger` | `#E8281E` | Close X, OFF state, damage numbers, alerts |
-| `--accent-xp` | `#5FE01D` | XP/progress fills |
-| `--badge-notify` | `#FF2D1F` | Notification dots (with white count) |
+| Token               | Approx                            | Use                                                       |
+| ------------------- | --------------------------------- | --------------------------------------------------------- |
+| `--accent-header`   | `#8A2BD9` / gradient to `#A93BFF` | Title banners, back button, modal headers                 |
+| `--accent-positive` | `#3DC81E`                         | Primary CTAs (LEVEL UP, SUMMON), ON state, healed numbers |
+| `--accent-info`     | `#2E9BF0`                         | Secondary CTAs (AUTO EQUIP), links                        |
+| `--accent-warning`  | `#FFC21C`                         | EQUIP, highlights, active tab, star gold                  |
+| `--accent-danger`   | `#E8281E`                         | Close X, OFF state, damage numbers, alerts                |
+| `--accent-xp`       | `#5FE01D`                         | XP/progress fills                                         |
+| `--badge-notify`    | `#FF2D1F`                         | Notification dots (with white count)                      |
 
 ### 3.3 Card rarity (frames) — **cards only**
 
-| Rarity | Token | Approx |
-|---|---|---|
-| Common | `--rarity-card-common` | `#9AA0A8` gray |
-| Uncommon | `--rarity-card-uncommon` | `#4FBF3A` green |
-| Rare | `--rarity-card-rare` | `#3D9BEA` blue |
-| Epic | `--rarity-card-epic` | `#E93CAC` magenta |
+| Rarity    | Token                     | Approx                                           |
+| --------- | ------------------------- | ------------------------------------------------ |
+| Common    | `--rarity-card-common`    | `#9AA0A8` gray                                   |
+| Uncommon  | `--rarity-card-uncommon`  | `#4FBF3A` green                                  |
+| Rare      | `--rarity-card-rare`      | `#3D9BEA` blue                                   |
+| Epic      | `--rarity-card-epic`      | `#E93CAC` magenta                                |
 | Legendary | `--rarity-card-legendary` | `#FFB300` gold + glow, orange "LEGENDARY" banner |
 
 ### 3.4 Gear rarity (tile backgrounds) — **gear only, never reuse card tokens**
 
-| Gear rarity | Token | Approx |
-|---|---|---|
-| Worn | `--rarity-gear-worn` | `#8E8E96` |
-| Sturdy | `--rarity-gear-sturdy` | `#59B84C` |
-| Refined | `--rarity-gear-refined` | `#3E8FE0` |
-| Ornate | `--rarity-gear-ornate` | `#D84BC0` |
-| Exalted | `--rarity-gear-exalted` | `#F08A1D` |
-| Mythic | `--rarity-gear-mythic` | `#E23327` |
+| Gear rarity | Token                   | Approx    |
+| ----------- | ----------------------- | --------- |
+| Worn        | `--rarity-gear-worn`    | `#8E8E96` |
+| Sturdy      | `--rarity-gear-sturdy`  | `#59B84C` |
+| Refined     | `--rarity-gear-refined` | `#3E8FE0` |
+| Ornate      | `--rarity-gear-ornate`  | `#D84BC0` |
+| Exalted     | `--rarity-gear-exalted` | `#F08A1D` |
+| Mythic      | `--rarity-gear-mythic`  | `#E23327` |
 
 Two systems must be tellable apart at a glance: **cards carry rarity on the frame**, **gear carries rarity as tile background** behind the fixed slot icon.
 
@@ -104,24 +104,24 @@ Two systems must be tellable apart at a glance: **cards carry rarity on the fram
 
 ## 6. Core components (build in `ui/design`)
 
-| Component | Spec highlights |
-|---|---|
-| **TopHud** | Full-width dark bar, safe-area padded; left avatar (rounded square, level badge overlaps corner, red dot for news); center: resource pills; right: green `+`. Pills: dark rounded rect, icon left overlapping edge, white Black-weight value. |
-| **TitleBanner** | Full-width purple gradient band under HUD; centered white outlined caps title; optional left ribbon-tab (e.g. UNIT) and right red round X. |
-| **Button** | Variants: `positive` (green), `info` (blue), `warning` (yellow, dark text), `danger` (red), `neutral` (gray = disabled/locked with padlock). Bevel + outline + shadow per §5; icon-above-label allowed (action bar); pressed = translateY + shadow collapse; disabled = desaturated gray, no bevel. Min height 48px. |
-| **Pill** | Black rounded pill for names/values (map node names, deck power). |
-| **Tab / SegmentedControl** | Skewed rect tabs; active = filled (yellow/orange) with dark text, inactive = dark with light text; optional red notification dot; counts as second line (UNITS 42/70). |
-| **Toggle** | ON/OFF twin buttons; active side colored (green ON; red when OFF is the "negative" state), inactive side dark. |
-| **CardFrame** | Rarity-colored frame + inner art window; overlays: HP plate (bottom-left, Black weight), attack-type round badge (bottom-right), cooldown badge (top-left square), buff/status icons (top-right), star row (below or on frame), level label, BOSS golden variant with banner; active-turn = pulsing yellow glow outline; empty battle slot = dark silhouette tile. Sizes: battle M ≈ 30vw, collection S ≈ 21vw, detail L ≈ 42vw. |
-| **StarRow** | Gold stars (unearned = dark gray); card-detail ascension variant uses magenta stars with the next star slot dark; map nodes: tiny 3-star row under name pill. |
-| **StatBar** | Segmented blocky bar (UI_Stats): icon chip (rounded square, colored) + colored caps label + segments; XP variant: continuous green fill in dark trough with outline. |
-| **GearTile** | Rounded square; background = **gear-rarity color**; centered **slot icon (fixed per slot type — THE boots icon, THE helmet icon…)**; star row top; empty state: `--surface-slot` bg, gray slot-icon silhouette, blue `+` corner badge; locked state: padlock + unlock hint (e.g. `6★`). |
-| **NodeMedallion** | Circular portrait, thick ring (state-colored: next = purple/highlight, done = dimmed), element badge (small round chip, bottom-left), name pill + star row below; dotted path segments connect nodes. |
-| **Modal/Sheet** | Dimmed backdrop; panel with purple header (title + red X); content on `--surface-panel`; slides/springs up from bottom. |
-| **ProgressTrack** (pass/tiers) | Horizontal spine with numbered round nodes; reached = yellow fill; reward tiles above/below; locked = padlock overlay. |
-| **ListRow** | (Leaderboard-style) skewed row, rank block, avatar, name + subtitle, right-aligned value; "you" variant = orange fill. |
-| **Timer/InfoChip** | Small dark chip "3d 23h" top-corner; round blue `i` button. |
-| **NotificationDot** | Red circle, white count, top-right overlap on any control. |
+| Component                      | Spec highlights                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TopHud**                     | Full-width dark bar, safe-area padded; left avatar (rounded square, level badge overlaps corner, red dot for news); center: resource pills; right: green `+`. Pills: dark rounded rect, icon left overlapping edge, white Black-weight value.                                                                                                                                                                                    |
+| **TitleBanner**                | Full-width purple gradient band under HUD; centered white outlined caps title; optional left ribbon-tab (e.g. UNIT) and right red round X.                                                                                                                                                                                                                                                                                       |
+| **Button**                     | Variants: `positive` (green), `info` (blue), `warning` (yellow, dark text), `danger` (red), `neutral` (gray = disabled/locked with padlock). Bevel + outline + shadow per §5; icon-above-label allowed (action bar); pressed = translateY + shadow collapse; disabled = desaturated gray, no bevel. Min height 48px.                                                                                                             |
+| **Pill**                       | Black rounded pill for names/values (map node names, deck power).                                                                                                                                                                                                                                                                                                                                                                |
+| **Tab / SegmentedControl**     | Skewed rect tabs; active = filled (yellow/orange) with dark text, inactive = dark with light text; optional red notification dot; counts as second line (UNITS 42/70).                                                                                                                                                                                                                                                           |
+| **Toggle**                     | ON/OFF twin buttons; active side colored (green ON; red when OFF is the "negative" state), inactive side dark.                                                                                                                                                                                                                                                                                                                   |
+| **CardFrame**                  | Rarity-colored frame + inner art window; overlays: HP plate (bottom-left, Black weight), attack-type round badge (bottom-right), cooldown badge (top-left square), buff/status icons (top-right), star row (below or on frame), level label, BOSS golden variant with banner; active-turn = pulsing yellow glow outline; empty battle slot = dark silhouette tile. Sizes: battle M ≈ 30vw, collection S ≈ 21vw, detail L ≈ 42vw. |
+| **StarRow**                    | Gold stars (unearned = dark gray); card-detail ascension variant uses magenta stars with the next star slot dark; map nodes: tiny 3-star row under name pill.                                                                                                                                                                                                                                                                    |
+| **StatBar**                    | Segmented blocky bar (UI_Stats): icon chip (rounded square, colored) + colored caps label + segments; XP variant: continuous green fill in dark trough with outline.                                                                                                                                                                                                                                                             |
+| **GearTile**                   | Rounded square; background = **gear-rarity color**; centered **slot icon (fixed per slot type — THE boots icon, THE helmet icon…)**; star row top; empty state: `--surface-slot` bg, gray slot-icon silhouette, blue `+` corner badge; locked state: padlock + unlock hint (e.g. `6★`).                                                                                                                                          |
+| **NodeMedallion**              | Circular portrait, thick ring (state-colored: next = purple/highlight, done = dimmed), element badge (small round chip, bottom-left), name pill + star row below; dotted path segments connect nodes.                                                                                                                                                                                                                            |
+| **Modal/Sheet**                | Dimmed backdrop; panel with purple header (title + red X); content on `--surface-panel`; slides/springs up from bottom.                                                                                                                                                                                                                                                                                                          |
+| **ProgressTrack** (pass/tiers) | Horizontal spine with numbered round nodes; reached = yellow fill; reward tiles above/below; locked = padlock overlay.                                                                                                                                                                                                                                                                                                           |
+| **ListRow**                    | (Leaderboard-style) skewed row, rank block, avatar, name + subtitle, right-aligned value; "you" variant = orange fill.                                                                                                                                                                                                                                                                                                           |
+| **Timer/InfoChip**             | Small dark chip "3d 23h" top-corner; round blue `i` button.                                                                                                                                                                                                                                                                                                                                                                      |
+| **NotificationDot**            | Red circle, white count, top-right overlap on any control.                                                                                                                                                                                                                                                                                                                                                                       |
 
 ## 7. Screen blueprints (portrait 9:16–9:21)
 
