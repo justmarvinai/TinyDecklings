@@ -14,6 +14,38 @@
   position: relative;
 }
 
+/**
+ * Screens arrive rather than snapping in.
+ *
+ * Keyed on the screen in App, so React remounts this wrapper on every navigation
+ * and the animation runs each time. Transform and opacity only, so it stays on the
+ * compositor (ARCHITECTURE.md §9), and it is dropped when motion is reduced (Q28).
+ */
+.screenEnter {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: screen-in 180ms var(--ease-out, ease-out) both;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screenEnter {
+    animation: none;
+  }
+}
+
 .placeholder {
   flex: 1;
   display: flex;

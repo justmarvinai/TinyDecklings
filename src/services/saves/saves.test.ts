@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMemoryStorageService, type StorageService } from '../storage';
+import { createMemoryStorageService, StorageWriteError, type StorageService } from '../storage';
 import { createFixedClock } from '../clock';
 import { SaveService, SAVE_KEY } from './saveService';
 import { CURRENT_SAVE_VERSION, createNewSave, saveDoc } from './saveSchema';
@@ -190,6 +190,7 @@ describe('migrations', () => {
     expect(migrated.player.claimedChests).toEqual([]);
     expect(migrated.player.claimedAchievements).toEqual([]);
     expect(migrated.player.stats).toEqual({ battlesLost: 0 });
+    expect(migrated.player.tutorialStep).toBeGreaterThan(100);
     expect(migrated.run.branches).toEqual({});
     expect(migrated.run.pendingBoon).toBeNull();
   });
@@ -237,7 +238,7 @@ describe('migrations', () => {
 
     const migrated = saveDoc.parse(migrate(v3, CURRENT_SAVE_VERSION));
 
-    expect(migrated.saveVersion).toBe(4);
+    expect(migrated.saveVersion).toBe(CURRENT_SAVE_VERSION);
     // Losses are genuinely unknown for an older save, so they start at zero rather
     // than being invented.
     expect(migrated.player.stats).toEqual({ battlesLost: 0 });
@@ -245,6 +246,31 @@ describe('migrations', () => {
     // Everything the profile derives from is untouched.
     expect(migrated.player.currencies.gems).toBe(42);
     expect(migrated.player.stageRecords['12']).toEqual({ bestStars: 3, clears: 4 });
+  });
+
+  it('migrates a v4 save forward to v5, gaining the mix and the tutorial', () => {
+    const v4 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 4,
+    } as Record<string, unknown>;
+    const player = v4.player as Record<string, unknown>;
+    const settings = v4.settings as Record<string, unknown>;
+    player.stageRecords = { '3': { bestStars: 2, clears: 1 } };
+    settings.music = false;
+    delete player.tutorialStep;
+    delete settings.sfxVolume;
+    delete settings.musicVolume;
+
+    const migrated = saveDoc.parse(migrate(v4, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(5);
+    expect(migrated.settings.sfxVolume).toBeGreaterThan(0);
+    expect(migrated.settings.musicVolume).toBeGreaterThan(0);
+    // Their own choices survive the upgrade...
+    expect(migrated.settings.music).toBe(false);
+    expect(migrated.player.stageRecords['3']).toEqual({ bestStars: 2, clears: 1 });
+    // ...and somebody who was already playing is not walked through the opening.
+    expect(migrated.player.tutorialStep).toBeGreaterThan(100);
   });
 
   it('loads a stored v1 save through the service without losing progress', async () => {
@@ -258,6 +284,7 @@ describe('migrations', () => {
     delete (v1.player as Record<string, unknown>).claimedChests;
     delete (v1.player as Record<string, unknown>).claimedAchievements;
     delete (v1.player as Record<string, unknown>).stats;
+    delete (v1.player as Record<string, unknown>).tutorialStep;
     delete (v1.run as Record<string, unknown>).branches;
     delete (v1.run as Record<string, unknown>).pendingBoon;
     await storage.write(SAVE_KEY, JSON.stringify(v1));
@@ -404,5 +431,66 @@ describe('phase 2 progression survives a save round-trip', () => {
       { name: 'Too big', heroUid: null, unitUids: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] },
     ];
     expect(saveDoc.safeParse(doc).success).toBe(false);
+  });
+});
+
+describe('a device that will not accept a write', () => {
+  /** Storage that refuses everything, as private browsing and a full disk both do. */
+  function refusingStorage(): StorageService {
+    return {
+      read: async () => null,
+      write: async () => {
+        throw new StorageWriteError('save', new Error('QuotaExceededError'));
+      },
+      remove: async () => {},
+      keys: async () => [],
+    };
+  }
+
+  it('reports the failure instead of swallowing it', async () => {
+    const errors: unknown[] = [];
+    const service = new SaveService({
+      storage: refusingStorage(),
+      clock: { now: () => 0 },
+      energyCap: ENERGY_CAP,
+      onWriteError: (error) => errors.push(error),
+    });
+
+    await service.save(createNewSave(0, 1, ENERGY_CAP));
+
+    expect(errors.length).toBe(1);
+    expect(service.writesFailing).toBe(true);
+  });
+
+  it('keeps the document pending so a later attempt can still land', async () => {
+    let allow = false;
+    const written: string[] = [];
+    const storage: StorageService = {
+      read: async () => null,
+      write: async (_key, value) => {
+        if (!allow) throw new StorageWriteError('save', new Error('nope'));
+        written.push(value);
+      },
+      remove: async () => {},
+      keys: async () => [],
+    };
+    let recovered = 0;
+    const service = new SaveService({
+      storage,
+      clock: { now: () => 0 },
+      energyCap: ENERGY_CAP,
+      onWriteRecovered: () => recovered++,
+    });
+
+    await service.save(createNewSave(0, 1, ENERGY_CAP));
+    expect(written.length).toBe(0);
+
+    // The device comes back — private browsing ended, space was freed.
+    allow = true;
+    await service.flush();
+
+    expect(written.length).toBe(1);
+    expect(service.writesFailing).toBe(false);
+    expect(recovered).toBe(1);
   });
 });

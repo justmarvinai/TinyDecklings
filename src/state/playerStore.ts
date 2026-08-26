@@ -91,6 +91,10 @@ export interface PlayerState {
   claimAchievement: (id: string) => boolean;
   /** Renames the commander; trimmed and clamped to what the save allows. */
   setName: (name: string) => void;
+
+  /** How far through the guided opening the player is (Q25). */
+  tutorialStep: () => number;
+  setTutorialStep: (step: number) => void;
   /** The one record that leaves no other trace in the save. */
   recordDefeat: () => void;
 }
@@ -511,6 +515,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
     return true;
   },
+
+  tutorialStep: () => get().save?.player.tutorialStep ?? 0,
+
+  setTutorialStep: (step) =>
+    set((s) => {
+      if (!s.save || s.save.player.tutorialStep === step) return s;
+      return { save: { ...s.save, player: { ...s.save.player, tutorialStep: step } } };
+    }),
 
   setName: (name) =>
     set((s) => {

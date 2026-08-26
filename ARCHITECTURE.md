@@ -142,8 +142,18 @@ Game screens are a **state machine, not URLs**: `screenStore` holds a stack (`pu
 ## 9. Rendering & performance budget
 
 - Target: **60fps on a 2020 mid-range Android** (e.g. WebView on a Snapdragon 6-series); load-to-map < 3s on such a device.
-- Techniques: transform/opacity-only animations (compositor-friendly), `content-visibility` on long lists, virtualized collection grid past ~60 cards, texture-light DOM (no massive box-shadows stacking), single canvas FX layer with pooled particles, audio sprites.
-- Bundle: code-split by screen where free; keep initial JS < 300KB gz before art. Art budgets set when real art arrives.
+- Techniques: transform/opacity-only animations (compositor-friendly), `content-visibility: auto` with
+  `contain-intrinsic-size` on the long lists (collection grid, the road, the achievement list) so off-screen
+  rows are neither laid out nor painted, texture-light DOM (no massive box-shadows stacking), single canvas
+  FX layer with pooled particles.
+- **Shipped Phase 6:** `content-visibility` does the job a hand-rolled virtualizer was pencilled in for, with
+  no scroll-position bookkeeping to get wrong; a real virtualizer is only worth revisiting if a collection
+  ever outgrows it. Screen entrances, screen shake and the reward ceremony are all transform/opacity, and all
+  drop out entirely under reduced motion (Q28).
+- **Audio (Q26):** the sound set is _synthesized_ rather than sampled — short Web Audio envelopes and slow
+  generative music beds described in `services/audio/soundManifest.ts`. Nothing is downloaded, so audio costs
+  no bundle at all, and the owner's real files replace it as a manifest change (rule 6).
+- Bundle: code-split by screen where free; keep initial JS < 300KB gz before art. **Measured Phase 6: 177KB gz** (app 92 + shared primitives 85). Art budgets set when real art arrives.
 
 ## 10. Error handling & dev tooling
 

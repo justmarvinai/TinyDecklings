@@ -18,6 +18,13 @@ export interface TopHudProps {
   hasNews?: boolean;
   onAvatarPress?: () => void;
   onAddPress?: () => void;
+  /**
+   * Back, when there is somewhere to go back to.
+   *
+   * It lives up here rather than floating over the screen: a control that hovers
+   * above a scrolling list covers the very content the player is reading.
+   */
+  onBack?: () => void;
 }
 
 /**
@@ -30,19 +37,37 @@ export function TopHud({
   hasNews,
   onAvatarPress,
   onAddPress,
+  onBack,
 }: TopHudProps) {
   return (
     <header className={styles.hud}>
-      <button
-        type="button"
-        className={styles.avatar}
-        onClick={onAvatarPress}
-        aria-label={`Profile, level ${playerLevel}`}
-      >
-        <img className={styles.avatarImg} src={PLACEHOLDER_AVATAR} alt="" />
-        <span className={styles.level}>{playerLevel}</span>
-        {hasNews ? <NotificationDot /> : null}
-      </button>
+      {/*
+        Back takes the avatar's place rather than sitting beside it: three currency
+        pills, an avatar, a back arrow and an add button do not fit across a 360px
+        phone, and the profile is a tab away regardless.
+      */}
+      {onBack ? (
+        <Button
+          variant="header"
+          icon="ui.back"
+          iconOnly
+          sound="ui.back"
+          className={styles.back}
+          aria-label="Back"
+          onClick={onBack}
+        />
+      ) : (
+        <button
+          type="button"
+          className={styles.avatar}
+          onClick={onAvatarPress}
+          aria-label={`Profile, level ${playerLevel}`}
+        >
+          <img className={styles.avatarImg} src={PLACEHOLDER_AVATAR} alt="" />
+          <span className={styles.level}>{playerLevel}</span>
+          {hasNews ? <NotificationDot /> : null}
+        </button>
+      )}
 
       <div className={styles.currencies}>
         {resources.map((r) => (

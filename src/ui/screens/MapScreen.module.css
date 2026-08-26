@@ -54,6 +54,12 @@
   gap: var(--space-1);
 }
 
+/* Off-screen stretches of road cost nothing to keep (ARCHITECTURE.md §9). */
+.scroll > div {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 118px;
+}
+
 .node {
   position: relative;
   display: flex;
@@ -212,7 +218,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 44px;
+  min-height: 48px;
   padding: 2px var(--space-2);
   border: var(--outline-width-thin) solid var(--outline-dark);
   border-radius: var(--radius-pill);
@@ -295,7 +301,7 @@
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
   color: var(--accent-positive-bright);
-  min-height: 44px;
+  min-height: 48px;
   display: flex;
   align-items: center;
 }

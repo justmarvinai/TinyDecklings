@@ -7,6 +7,7 @@ import { usePlayerStore } from '@/state/playerStore';
 import { CARD_RARITY_VAR } from '@/ui/design/rarity';
 import { Button, IconChip, Ribbon, StarRow } from '@/ui/design/primitives';
 import { CardFrame } from '@/ui/components/CardFrame';
+import { useSfx } from '@/ui/audio/audioContext';
 import styles from './SummonScreen.module.css';
 
 const POOL_ORDER = ['pool.unit_t1', 'pool.unit_t2', 'pool.unit_t3', 'pool.hero'] as const;
@@ -21,6 +22,7 @@ const POOL_ORDER = ['pool.unit_t1', 'pool.unit_t2', 'pool.unit_t3', 'pool.hero']
 export function SummonScreen() {
   const [poolId, setPoolId] = useState<string>(POOL_ORDER[0]);
   const [revealed, setRevealed] = useState<SummonOutcome[]>([]);
+  const sfx = useSfx();
   const save = usePlayerStore((s) => s.save);
   const currency = usePlayerStore((s) => s.currency);
   const economy = useEconomyStore.getState();
@@ -36,7 +38,12 @@ export function SummonScreen() {
 
   const pull = (count: number) => {
     const results = useEconomyStore.getState().summon(poolId, count);
-    if (results.length > 0) setRevealed(results);
+    if (results.length === 0) {
+      sfx('ui.error');
+      return;
+    }
+    sfx('reward.summon');
+    setRevealed(results);
   };
 
   return (

@@ -353,14 +353,29 @@ collection by rarity, gear held, summons made — is computed on read.
 - Endless scaling past the authored curve: multiplicative stat growth + procedurally combined modifiers.
 - The wall is the pacing engine: hitting it sends the player to progression (level, gear, summon), which is the intended loop.
 
+## 13.1 Audio **[SHIPPED Phase 6 — Q26]**
+
+Everything is placeholder, and _synthesized_ rather than sampled: short Web Audio envelopes for effects, and
+slow generative chord beds for music, one per biome plus a battle and a boss mood. Nothing is downloaded, so
+audio costs no bundle and carries no licensing, and the owner's real files replace it as a manifest change
+with no call site touched (`services/audio/soundManifest.ts`, rule 6).
+
+- Effects are keyed by _meaning_ — `battle.heavyHit`, `reward.chest` — never by file. Every button clicks by
+  default, so no screen has to remember to.
+- The bed follows the player rather than the screen: the biome's theme on the road, a battle bed in a fight,
+  a heavier one against a boss. Screens never call `playMusic` themselves, so none of them can forget to.
+- Settings carry a mix, not just an on/off (save v5).
+
 ## 14. Out of scope
 
 - Multiplayer, PvP, server backend, cloud saves. Local **save export/import ships in Phase 7 [DECIDED — Q27]**.
 - **Real-money monetization: none [DECIDED — Q13].** Revisited only if the owner asks.
 - Capacitor packaging (future delivery phase — architecture keeps the seam clean, see `TECH_STACK.md`).
 - First release is **English-only**, with all strings centralized for later i18n **[DECIDED — Q30]**.
-- Accessibility floor **[DECIDED — Q28]**: reduced-motion mode, color-blind-safe rarity cues (icon/label accompanies color), min 11px text, ≥48px touch targets.
-- Onboarding **[DECIDED — Q25]**: guided first 2 stages (forced simple deck, tooltip beats), then free — built in Phase 6.
+- Accessibility floor **[SHIPPED Phase 6 — Q28]**: reduced-motion honoured from both the setting and the device,
+  colour-blind-safe rarity cues (every rarity is named as well as tinted), min 11px text, ≥48px touch targets.
+- Onboarding **[SHIPPED Phase 6 — Q25]**: a seven-beat guided opening across the first two stages, then free. It
+  points at what it is talking about, never blocks the tap it is asking for, and is skippable at every beat.
 - First-release content targets **[DECIDED — Q29]**: ~30 units + 6 heroes, ~40 gear items, 3 authored regions + endless generation, 1 boss per region.
 
 ## 15. Glossary

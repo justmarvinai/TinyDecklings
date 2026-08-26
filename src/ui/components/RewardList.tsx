@@ -16,6 +16,9 @@ import styles from './RewardList.module.css';
  * read the same way — one component rather than three drifting copies.
  */
 export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: string }) {
+  // Rows stagger in on their index; see the `land` animation in the stylesheet.
+  let index = 0;
+  const next = () => ({ '--index': index++ }) as CSSProperties;
   const currencies = Object.entries(rewards.currencies).filter(([, amount]) => (amount ?? 0) > 0);
   const isEmpty =
     currencies.length === 0 &&
@@ -31,7 +34,7 @@ export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: 
   return (
     <div className={styles.list}>
       {currencies.map(([currency, amount]) => (
-        <div key={currency} className={styles.row}>
+        <div key={currency} className={styles.row} style={next()}>
           <IconChip name={currencyIconKey(currency)} size={26} />
           <span>{currencyLabel(currency as CurrencyId)}</span>
           <span className={styles.value}>+{amount}</span>
@@ -39,7 +42,7 @@ export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: 
       ))}
 
       {rewards.cardXp > 0 ? (
-        <div className={styles.row}>
+        <div className={styles.row} style={next()}>
           <IconChip name="stat.power" size={26} />
           <span>Card XP</span>
           <span className={styles.value}>+{rewards.cardXp}</span>
@@ -50,7 +53,7 @@ export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: 
         const def = CONTENT.gear.get(drop.defId);
         if (!def) return null;
         return (
-          <div key={`gear-${i}`} className={styles.row}>
+          <div key={`gear-${i}`} className={styles.row} style={next()}>
             <span
               className={styles.gearTile}
               style={{ '--tile': gearRarityColor(def.rarity) } as CSSProperties}
@@ -64,7 +67,7 @@ export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: 
       })}
 
       {rewards.cards.map((cardId, i) => (
-        <div key={`card-${i}`} className={styles.row}>
+        <div key={`card-${i}`} className={styles.row} style={next()}>
           <IconChip name="nav.cards" size={26} />
           <span>{CONTENT.cards.get(cardId)?.name ?? cardId}</span>
           <span className={styles.value}>NEW</span>
@@ -72,7 +75,7 @@ export function RewardList({ rewards, empty }: { rewards: RewardBundle; empty?: 
       ))}
 
       {rewards.fragments.map((entry, i) => (
-        <div key={`frag-${i}`} className={styles.row}>
+        <div key={`frag-${i}`} className={styles.row} style={next()}>
           <IconChip name="currency.fragment" size={26} />
           <span>{CONTENT.cards.get(entry.cardId)?.name ?? entry.cardId} fragments</span>
           <span className={styles.value}>+{entry.amount}</span>

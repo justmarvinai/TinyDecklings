@@ -6,10 +6,10 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0–5 are complete** — the game is
-playable end to end with full collection depth, a live economy, an endless three-biome road and a player
-record with achievements, and deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 6 (polish &
-feel) is next.
+Questions answered and development started **2026-08-26**. **Phases 0–6 are complete** — the game is
+playable end to end with full collection depth, a live economy, an endless three-biome road, a player record
+with achievements, and a polish pass covering audio, juice, onboarding, edge states and performance. It
+deploys to Vercel for live review (`DEPLOYMENT.md`). Phase 7 (release readiness) is next.
 
 ---
 
@@ -105,13 +105,21 @@ can never disagree with what the player has done; and every deferred system — 
 sets, Events, Season pass, local records — visible, locked, and able to explain itself. Save migrated
 v3 → v4 with a fixture test. 353 tests green; verified at 390×844 and 360×640.
 
-## Phase 6 — Polish & feel
+## Phase 6 — Polish & feel ✅ COMPLETE
 
 - Audio pass: music per region, full SFX set, mix + settings (Q26)
 - FX pass: particles, screen shake (with reduce-motion), transitions, reward ceremonies
-- **Onboarding: guided first 2 stages** (forced simple deck, tooltip beats), then free (Q25)
-- Edge/empty/error states, haptics hooks (web no-op)
-- Performance hardening to budget (`ARCHITECTURE.md` §9), device sweep
+- **Onboarding: guided first 2 stages** (tooltip beats), then free (Q25)
+- Edge/empty/error states
+- Performance hardening to budget (`ARCHITECTURE.md` §9)
+
+**Exit:** ✅ the game is audible — a synthesized placeholder sound set and per-biome generative music beds
+behind the same keys the owner's real audio will use, with a mix in settings; hits shake the screen and
+rewards land one at a time, all of it dropping out under reduced motion; a seven-beat guided opening that
+points at what it is talking about and can never block the tap it is asking for; a device that refuses to
+save now says so instead of failing silently; and the long lists skip what is off screen. The map's reading
+direction was fixed — it had been running downhill since Phase 1. Save migrated v4 → v5 with a fixture test.
+369 tests green; verified at 390×844 and 360×640, with audio confirmed by instrumenting the Web Audio API.
 
 ## Phase 7 — Release readiness
 

@@ -2,16 +2,17 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## Current project status: Phase 5 complete — profile & records
+## Current project status: Phase 6 complete — polish & feel
 
 `USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
 the energy pacing system). **Phases 0–4 are done**: the core loop runs end to end, cards ascend and equip
 across all eight gear slots, decks are built by hand, the economy is live — summoning with pity meters, a
 fragment exchange, the energy pacing system and a daily shop, all paid for in currency the player earns — and
 the road runs through three authored biomes with elites, boss modifiers, vignettes, forks and region star
-chests before looping endlessly, and the player has a record: a profile derived from the save, achievements
-with claimable payouts, and honest locked facades for everything deferred. The app deploys to Vercel for live
-review (`DEPLOYMENT.md`). Next up is **Phase 6 — polish & feel** in `IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into
+chests before looping endlessly, the player has a record — a profile derived from the save, achievements with
+claimable payouts, honest locked facades for everything deferred — and the polish pass has landed: audio,
+juice, a guided opening, edge states and performance. The app deploys to Vercel for live review
+(`DEPLOYMENT.md`). Next up is **Phase 7 — release readiness** in `IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into
 `USER_QUESTIONS.md` → "Open questions" instead of being silently decided.
 
 **This is a single-player game.** There is no multiplayer, no PvP, no server and no accounts — anywhere.
@@ -62,7 +63,9 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 3. **Data-driven content.** Cards/gear/enemies/encounters are data entries validated by Zod. Never hard-code a card as bespoke UI/engine logic; new behavior = new reusable effect primitive.
 4. **Cards and Gear have separate rarity systems.** Distinct enums, names, and color tokens (`CardRarity` ≠ `GearRarity`). Never mix or visually reuse one for the other.
 5. **Gear icons are fixed per slot type.** Every Boots item shows THE boots icon, every Helmet THE helmet icon — everywhere (inventory, equipment grid, drops). `GearDef` has **no** icon field; icons resolve via `gearSlotIcon(slot)` only. Items differ by name, stats, rarity color, stars.
-6. **All art is swappable placeholder art for now.** One shared avatar for every card; icons from Open Game Icons (keep CC-BY attribution in `CREDITS.md`). The owner will supply final per-card art and icons later — everything resolves through the semantic asset manifest (`iconManifest.ts` / `artKey`), so a swap is an asset drop, never a code or schema change.
+6. **All art and audio is swappable placeholder for now.** One shared avatar for every card; icons from Open Game Icons (keep CC-BY attribution in `CREDITS.md`). The owner will supply final per-card art and icons later — everything resolves through the semantic asset manifest (`iconManifest.ts` / `artKey`), so a swap is an asset drop, never a code or schema change. Sound works the
+   same way: `services/audio/soundManifest.ts` names meanings, and today they resolve to synthesized voices
+   rather than files — dropping in real audio is a manifest change with no call site touched.
 7. **Engine purity.** `src/engine` and `src/content` never import React/DOM; no `Math.random`/`Date.now` inside the engine — inject seeded RNG (named streams) and time.
 8. **Saves are sacred.** Any save-shape change ⇒ version bump + migration + fixture test in the same commit.
 9. **Typography:** Saira, ALL CAPS for UI labels/titles; normal case where caps hurt readability (lore, prose).

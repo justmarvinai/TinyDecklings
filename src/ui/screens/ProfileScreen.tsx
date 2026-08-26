@@ -15,8 +15,10 @@ import { profileRecord, STARS_PER_LEVEL, type ProfileRecord } from '@/engine/rec
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { cardRarityColor } from '@/ui/design/rarity';
+import { cardRarityLabel } from '@/ui/text/labels';
 import { Button, IconChip, Modal, Panel, StarRow, TitleBanner } from '@/ui/design/primitives';
 import { RewardList } from '@/ui/components/RewardList';
+import { useSfx } from '@/ui/audio/audioContext';
 import { PLACEHOLDER_AVATAR } from '@/ui/art/artManifest';
 import styles from './ProfileScreen.module.css';
 
@@ -42,6 +44,7 @@ function formatDate(ms: number): string {
  * what happened. Only losses are stored, because a loss leaves no other trace.
  */
 export function ProfileScreen() {
+  const sfx = useSfx();
   const save = usePlayerStore((s) => s.save);
   const [claimed, setClaimed] = useState<{ name: string; rewards: RewardBundle } | null>(null);
   const [renaming, setRenaming] = useState(false);
@@ -68,6 +71,7 @@ export function ProfileScreen() {
     const seed = deriveSeed(useRunStore.getState().seed, `achievement:${state.def.id}`);
     const rewards = rollReward(CONTENT, reward, createRng(seed));
     player.applyRewards(rewards);
+    sfx('reward.levelUp');
     setClaimed({ name: state.def.name, rewards });
   };
 
@@ -211,14 +215,15 @@ function Collection({ record }: { record: ProfileRecord }) {
           <span style={{ width: `${(c.distinct / Math.max(1, c.collectible)) * 100}%` }} />
         </div>
         <div className={styles.rarityRow}>
+          {/* Colour is a cue, never the only one (Q28): each chip names its tier. */}
           {CARD_RARITIES.map((rarity: CardRarity) => (
             <span
               key={rarity}
               className={styles.rarityChip}
               style={{ borderColor: cardRarityColor(rarity) }}
-              title={rarity}
             >
               <span className={styles.rarityDot} style={{ background: cardRarityColor(rarity) }} />
+              <span className={styles.rarityName}>{cardRarityLabel(rarity)}</span>
               {c.byRarity[rarity]}
             </span>
           ))}

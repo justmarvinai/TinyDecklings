@@ -3,7 +3,7 @@
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
 > Development started **2026-08-26**. **Phases 0–3 are complete** (tasks 0.1–0.10, 1.1–1.18, 2.1–2.7 and
-> 3.1–3.6, 4.1–4.7 and 5.1–5.4 shipped, plus Vercel deployment); work continues at Phase 6.
+> 3.1–3.6, 4.1–4.7, 5.1–5.4 and 6.1–6.6 shipped, plus Vercel deployment); work continues at Phase 7.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -97,7 +97,7 @@ Scope decided (Q23): Profile + Settings are the only meta screens in first relea
 
 5.1 Profile screen (stats, records) · 5.2 Achievements-lite · 5.3 Locked facades for deferred systems polished.
 
-## Phase 6 — Polish
+## Phase 6 — Polish ✅ COMPLETE
 
 6.1 Music/SFX full pass (Q26) · 6.2 FX/juice pass · 6.3 **Tutorial: guided first 2 stages** (Q25) · 6.4 Edge/empty states · 6.5 Perf hardening · 6.6 Reduced-motion + color-blind-safe cue audit (Q28).
 
@@ -148,6 +148,11 @@ Phase 6 & 7 follow the last content phase shipped.
 - **Phase 5 — complete (2026-08-26).** A More hub, a Profile screen whose every number is derived from the
   save rather than tallied alongside it, seventeen achievements over a closed set of named metrics with
   claimable payouts, a commander level derived from stars, and polished locked facades for every deferred
-  system. Save v3 → v4, which also *drops* the stored `profile.level`/`xp` now that the level is derived.
-- **Phase 6 — next.** Audio pass, FX pass, onboarding for the first two stages, edge and empty states, and
-  performance hardening to budget.
+  system. Save v3 → v4, which also _drops_ the stored `profile.level`/`xp` now that the level is derived.
+- **Phase 6 — complete (2026-08-26).** A synthesized placeholder sound set and generative per-biome music
+  behind the manifest the owner's real audio will replace, a mix in settings, screen shake and staggered
+  reward ceremonies, a seven-beat guided opening (Q25), save-failure and corrupt-save notices, the back
+  control moved off the content it was covering, `content-visibility` on the long lists, and an
+  accessibility pass on text sizes, touch targets and colour-only cues (Q28). Save v4 → v5.
+- **Phase 7 — next.** Balance across the full curve, content breadth to target (Q29), the accessibility
+  sweep, save export/import (Q27), and release readiness.

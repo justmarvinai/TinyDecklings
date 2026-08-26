@@ -1,5 +1,7 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from 'react';
 import type { IconKey } from '@/content/schemas/iconKeys';
+import type { SoundKey } from '@/services/audio';
+import { useSfx } from '@/ui/audio/audioContext';
 import { Icon } from '@/ui/icons/Icon';
 import { NotificationDot } from './NotificationDot';
 import styles from './Button.module.css';
@@ -17,6 +19,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   locked?: boolean;
   lockHint?: string;
   notifications?: number;
+  /**
+   * The sound the tap makes. Every button clicks by default so no screen has to
+   * remember to; pass a key for a button that deserves its own voice, or `null`
+   * for one that should be silent (a rapid-fire control, say).
+   */
+  sound?: SoundKey | null;
   children?: ReactNode;
 }
 
@@ -29,11 +37,14 @@ export function Button({
   locked,
   lockHint,
   notifications,
+  sound = 'ui.tap',
   children,
   className,
   disabled,
+  onClick,
   ...rest
 }: ButtonProps) {
+  const sfx = useSfx();
   const classes = [
     styles.button,
     styles[locked ? 'neutral' : variant],
@@ -46,7 +57,16 @@ export function Button({
     .join(' ');
 
   return (
-    <button type="button" className={classes} disabled={disabled ?? locked} {...rest}>
+    <button
+      type="button"
+      className={classes}
+      disabled={disabled ?? locked}
+      onClick={(event: MouseEvent<HTMLButtonElement>) => {
+        if (sound) sfx(sound);
+        onClick?.(event);
+      }}
+      {...rest}
+    >
       {locked ? <Icon name="ui.lock" size={stacked ? 20 : 16} /> : null}
       {!locked && icon ? <Icon name={icon} size={stacked ? 22 : 18} /> : null}
       {children}

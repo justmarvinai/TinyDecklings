@@ -15,7 +15,7 @@
 .avatar {
   position: relative;
   width: 44px;
-  height: 44px;
+  height: 48px;
   flex: none;
   border: var(--outline-width-thin) solid var(--outline-dark);
   border-radius: var(--radius-tile);
@@ -66,4 +66,13 @@
   padding: 0;
   font-size: var(--fs-title);
   line-height: 1;
+}
+
+/* Back sits at the head of the bar rather than floating over the screen. */
+.back {
+  flex: none;
+  width: 44px;
+  min-width: 44px;
+  height: 48px;
+  padding: 0;
 }

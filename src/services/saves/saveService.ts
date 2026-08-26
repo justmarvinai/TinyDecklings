@@ -23,11 +23,16 @@ export interface SaveServiceOptions {
   energyCap: number;
   /** Debounce for autosave writes. */
   autosaveDelayMs?: number;
+  /** Called the first time a write fails, and on every failure after that. */
+  onWriteError?: (error: unknown) => void;
+  /** Called once a write succeeds again after failures. */
+  onWriteRecovered?: () => void;
 }
 
 export class SaveService {
   private pending: SaveDoc | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private failing = false;
 
   constructor(private readonly options: SaveServiceOptions) {}
 
@@ -58,11 +63,34 @@ export class SaveService {
     return createNewSave(this.options.clock.now(), seed, this.options.energyCap);
   }
 
-  /** Immediate, awaited write — use at hard checkpoints (battle end, purchase). */
+  /**
+   * Immediate, awaited write — use at hard checkpoints (battle end, purchase).
+   *
+   * A device that refuses the write (full storage, private browsing) is reported
+   * rather than swallowed: a game that has quietly stopped saving is the worst
+   * possible failure, so the player is told once and the pending document is kept
+   * so a later attempt can still land.
+   */
   async save(doc: SaveDoc): Promise<void> {
     const stamped: SaveDoc = { ...doc, updatedAtMs: this.options.clock.now() };
-    await this.options.storage.write(SAVE_KEY, JSON.stringify(stamped));
+    try {
+      await this.options.storage.write(SAVE_KEY, JSON.stringify(stamped));
+    } catch (error) {
+      this.pending = stamped;
+      this.failing = true;
+      this.options.onWriteError?.(error);
+      return;
+    }
+    if (this.failing) {
+      this.failing = false;
+      this.options.onWriteRecovered?.();
+    }
     this.pending = null;
+  }
+
+  /** True while the last write attempt failed and none has succeeded since. */
+  get writesFailing(): boolean {
+    return this.failing;
   }
 
   /** Debounced write for chatty transitions (equip, map scroll). */

@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { CURRENCY_IDS, GEAR_SLOTS, forkBranch, statKey, statusId } from '@/content/schemas';
 
 /** Bump on every shape change and add a migration in migrations.ts. */
-export const CURRENT_SAVE_VERSION = 4;
+export const CURRENT_SAVE_VERSION = 5;
 
 export const ownedGear = z.strictObject({
   uid: z.string().min(1),
@@ -113,6 +113,14 @@ export const saveDoc = z.strictObject({
     /** Achievement ids whose reward has been taken (save v4). */
     claimedAchievements: z.array(z.string()).default([]),
     stats: trackedStats,
+    /**
+     * How far through the guided opening the player is (Q25, save v5).
+     *
+     * An index into the beat list; once it reaches the end the tutorial never runs
+     * again. Skipping jumps straight there, so "skipped" and "finished" are the
+     * same state — there is nothing to resume.
+     */
+    tutorialStep: z.number().int().min(0).default(0),
   }),
 
   run: z.strictObject({
@@ -153,6 +161,9 @@ export const saveDoc = z.strictObject({
   settings: z.strictObject({
     sfx: z.boolean().default(true),
     music: z.boolean().default(true),
+    /** Mix, 0-1 (save v5). The toggles above are the on/off; these are the level. */
+    sfxVolume: z.number().min(0).max(1).default(0.8),
+    musicVolume: z.number().min(0).max(1).default(0.45),
     battleSpeed: z.union([z.literal(1), z.literal(2)]).default(1),
     reducedMotion: z.boolean().default(false),
     language: z.string().default('en'),
@@ -199,6 +210,7 @@ export function createNewSave(nowMs: number, seed: number, energyCap: number): S
       claimedChests: [],
       claimedAchievements: [],
       stats: { battlesLost: 0 },
+      tutorialStep: 0,
     },
     run: {
       seed,

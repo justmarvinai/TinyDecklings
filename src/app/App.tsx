@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { ENERGY_CONFIG } from '@/content';
 import {
   activeTab,
@@ -10,9 +10,11 @@ import {
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { commanderLevel, totalStarsOf } from '@/engine/records/profile';
+import { AudioProvider } from '@/ui/audio/AudioProvider';
+import { OnboardingCoach } from '@/ui/onboarding/OnboardingCoach';
+import { SystemNotices } from '@/ui/components/SystemNotices';
 import { TabBar, type TabBarItem } from '@/ui/components/TabBar';
 import { TopHud, type HudResource } from '@/ui/components/TopHud';
-import { Button } from '@/ui/design/primitives';
 import { MapScreen } from '@/ui/screens/MapScreen';
 
 /**
@@ -48,6 +50,7 @@ const KitchenSinkScreen = lazy(() =>
   import('@/ui/screens/KitchenSinkScreen').then((m) => ({ default: m.KitchenSinkScreen })),
 );
 import { createGameServices } from './gameServices';
+import { useAudioDirector } from './useAudioDirector';
 import { useAutosaveLifecycle } from './useAutosaveLifecycle';
 import { useBackButton } from './useBackButton';
 import { useGameBootstrap } from './useGameBootstrap';
@@ -82,24 +85,22 @@ function useEnergyTick() {
 }
 
 export function App() {
-  const services = useMemo(() => createGameServices(), []);
+  // `useState` with an initialiser, not `useMemo`: React guarantees the factory
+  // result is kept, where a memo is free to recompute. Creating a second set of
+  // services would mean a second AudioContext playing over the first.
+  const [services] = useState(() => createGameServices());
   const stack = useScreenStore((s) => s.stack);
   const switchTab = useScreenStore((s) => s.switchTab);
   const pop = useScreenStore((s) => s.pop);
+  const push = useScreenStore((s) => s.push);
   const save = usePlayerStore((s) => s.save);
   // Ticks once a minute so the HUD counts down without a per-second timer.
   const energy = useEnergyTick();
 
   useBackButton();
+  useAudioDirector(services.audio);
   useAutosaveLifecycle(services.saves);
   useGameBootstrap(services);
-
-  // Mobile browsers only allow audio to start from a gesture.
-  useEffect(() => {
-    const unlock = () => services.audio.unlock();
-    window.addEventListener('pointerdown', unlock, { once: true });
-    return () => window.removeEventListener('pointerdown', unlock);
-  }, [services]);
 
   if (!save) {
     return (
@@ -140,51 +141,57 @@ export function App() {
   // Battle is fullscreen: the reference gives the board the entire viewport, and on
   // a phone the HUD and tab bar are 120px the battlefield needs more.
   const immersive = screen.kind === 'battle';
+  // Battles keep their own identity per stage so returning to the map replays the
+  // entrance rather than treating it as the same screen.
+  const screenKey = screen.kind === 'battle' ? `battle:${screen.stage}` : screen.kind;
 
   return (
-    <div className={styles.app}>
-      {immersive ? null : (
-        <TopHud playerLevel={commanderLevel(totalStarsOf(save))} resources={resources} />
-      )}
-
-      <main className={styles.content}>
-        <Suspense fallback={<div className={styles.loading}>Loading…</div>}>
-          {screen.kind === 'devKitchenSink' ? (
-            <KitchenSinkScreen />
-          ) : screen.kind === 'battle' ? (
-            <BattleScreen stage={screen.stage} />
-          ) : screen.kind === 'map' ? (
-            <MapScreen />
-          ) : screen.kind === 'cards' ? (
-            <CardsScreen />
-          ) : screen.kind === 'summon' ? (
-            <SummonScreen />
-          ) : screen.kind === 'shop' ? (
-            <ShopScreen />
-          ) : screen.kind === 'more' ? (
-            <MoreScreen />
-          ) : screen.kind === 'settings' ? (
-            <SettingsScreen />
-          ) : (
-            <ProfileScreen />
-          )}
-        </Suspense>
-
-        {canGoBack && screen.kind !== 'battle' ? (
-          <Button
-            variant="header"
-            icon="ui.back"
-            iconOnly
-            aria-label="Back"
-            onClick={pop}
-            style={{ position: 'absolute', left: 'var(--space-3)', bottom: 'var(--space-3)' }}
+    <AudioProvider audio={services.audio}>
+      <div className={styles.app}>
+        {immersive ? null : (
+          <TopHud
+            playerLevel={commanderLevel(totalStarsOf(save))}
+            resources={resources}
+            onBack={canGoBack ? pop : undefined}
+            onAvatarPress={() => push({ kind: 'profile' })}
+            onAddPress={() => switchTab('shop')}
           />
-        ) : null}
-      </main>
+        )}
 
-      {immersive ? null : <TabBar items={TAB_ITEMS} value={tab} onChange={switchTab} />}
-      {import.meta.env.DEV ? <DevPanel /> : null}
-    </div>
+        <SystemNotices />
+
+        <main className={styles.content}>
+          {/* Keyed so every navigation remounts the wrapper and replays the entrance. */}
+          <div className={styles.screenEnter} key={screenKey}>
+            <Suspense fallback={<div className={styles.loading}>Loading…</div>}>
+              {screen.kind === 'devKitchenSink' ? (
+                <KitchenSinkScreen />
+              ) : screen.kind === 'battle' ? (
+                <BattleScreen stage={screen.stage} />
+              ) : screen.kind === 'map' ? (
+                <MapScreen />
+              ) : screen.kind === 'cards' ? (
+                <CardsScreen />
+              ) : screen.kind === 'summon' ? (
+                <SummonScreen />
+              ) : screen.kind === 'shop' ? (
+                <ShopScreen />
+              ) : screen.kind === 'more' ? (
+                <MoreScreen />
+              ) : screen.kind === 'settings' ? (
+                <SettingsScreen />
+              ) : (
+                <ProfileScreen />
+              )}
+            </Suspense>
+          </div>
+        </main>
+
+        {immersive ? null : <TabBar items={TAB_ITEMS} value={tab} onChange={switchTab} />}
+        <OnboardingCoach />
+        {import.meta.env.DEV ? <DevPanel /> : null}
+      </div>
+    </AudioProvider>
   );
 }
 

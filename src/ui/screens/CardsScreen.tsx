@@ -12,6 +12,7 @@ import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
 import { DeckScreen } from './DeckScreen';
 import { LockedFeatureSheet } from '@/ui/components/LockedFeatureSheet';
+import { useSfx } from '@/ui/audio/audioContext';
 import { deferredLabel, type DeferredFeatureId } from '@/ui/text/deferred';
 import styles from './CardsScreen.module.css';
 
@@ -155,6 +156,7 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
   const [showSkills, setShowSkills] = useState(false);
   const [showEvolve, setShowEvolve] = useState(false);
   const [lockedFeature, setLockedFeature] = useState<DeferredFeatureId | null>(null);
+  const sfx = useSfx();
 
   const def = card ? CONTENT.cards.get(card.defId) : undefined;
   if (!card || !def) return null;
@@ -274,7 +276,9 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
             stacked
             icon="stat.power"
             disabled={!canLevel}
-            onClick={() => levelUp(uid)}
+            onClick={() => {
+              if (levelUp(uid)) sfx('reward.levelUp');
+            }}
           >
             Level up
             <span className={styles.level}>{cost}g</span>
@@ -668,7 +672,7 @@ function CollectionGrid({
         const def = CONTENT.cards.get(card.defId);
         if (!def) return null;
         return (
-          <div key={card.uid} className={styles.tile}>
+          <div key={card.uid} className={`${styles.tile} ${styles.gridItem}`}>
             <span className={styles.tileWrap}>
               <CardFrame
                 defId={card.defId}
@@ -682,7 +686,7 @@ function CollectionGrid({
               ) : null}
             </span>
             <span className={styles.tileMeta}>
-              <StarRow value={card.stars} max={6} size={9} />
+              <StarRow value={card.stars} max={6} size={11} />
               <span className={styles.level}>Lvl {card.level}</span>
             </span>
           </div>

@@ -4,6 +4,7 @@ import type { CurrencyId, RewardDef, ShopOfferDef } from '@/content/schemas';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { Button, IconChip } from '@/ui/design/primitives';
+import { useSfx } from '@/ui/audio/audioContext';
 import { currencyLabel } from '@/ui/text/labels';
 import styles from './ShopScreen.module.css';
 
@@ -42,14 +43,18 @@ export function ShopScreen() {
   const economy = useEconomyStore.getState();
   void save; // re-render when the wallet or purchases change
 
+  const sfx = useSfx();
   const offers = economy.shopOffers();
   const permanent = offers.filter((o) => o.rotation === 'permanent');
   const daily = offers.filter((o) => o.rotation === 'daily');
 
   const buy = (offer: ShopOfferDef) => {
     if (useEconomyStore.getState().buyOffer(offer.id)) {
+      sfx('reward.coin');
       setFlash(offer.id);
       setTimeout(() => setFlash(null), 700);
+    } else {
+      sfx('ui.error');
     }
   };
 

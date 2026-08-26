@@ -27,6 +27,17 @@
   font-weight: var(--fw-bold);
 }
 
+/**
+ * A collection can run to hundreds of cards, so off-screen ones are skipped
+ * entirely by the browser rather than laid out and painted (ARCHITECTURE.md §9).
+ * `contain-intrinsic-size` is the height of one card tile, so the scrollbar stays
+ * honest for what has not been rendered yet.
+ */
+.gridItem {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 132px;
+}
+
 .grid {
   flex: 1;
   min-height: 0;

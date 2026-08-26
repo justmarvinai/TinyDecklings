@@ -5,6 +5,40 @@ import { Button, Panel, Toggle } from '@/ui/design/primitives';
 import styles from './SettingsScreen.module.css';
 
 /**
+ * A mix control (Q26).
+ *
+ * A native range input rather than a bespoke one: it is keyboard- and
+ * screen-reader-native, and the thumb is easy to hit on a phone.
+ */
+function Slider({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className={styles.slider}>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={Math.round(value * 100)}
+        disabled={disabled}
+        aria-label={label}
+        onChange={(e) => onChange(Number(e.target.value) / 100)}
+      />
+      <span className={styles.sliderValue}>{Math.round(value * 100)}%</span>
+    </label>
+  );
+}
+
+/**
  * Settings, in the reference's label-above-control layout.
  *
  * Nothing here talks to a server: there are no accounts, no sign-in and no social
@@ -23,12 +57,27 @@ export function SettingsScreen() {
         <div className={styles.row}>
           <span className={styles.label}>Sound effects</span>
           <Toggle value={settings.sfx} onChange={settings.setSfx} ariaLabel="Sound effects" />
+          <Slider
+            label="Effects volume"
+            value={settings.sfxVolume}
+            disabled={!settings.sfx}
+            onChange={settings.setSfxVolume}
+          />
         </div>
 
         <div className={styles.row}>
           <span className={styles.label}>Music</span>
           <Toggle value={settings.music} onChange={settings.setMusic} ariaLabel="Music" />
-          <span className={styles.hint}>Music and the full sound set arrive in a later phase.</span>
+          <Slider
+            label="Music volume"
+            value={settings.musicVolume}
+            disabled={!settings.music}
+            onChange={settings.setMusicVolume}
+          />
+          <span className={styles.hint}>
+            Everything you hear is placeholder sound, generated on the fly rather than shipped as
+            files. Final audio drops in later without changing a thing here.
+          </span>
         </div>
       </div>
 
