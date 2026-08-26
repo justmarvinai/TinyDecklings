@@ -22,6 +22,46 @@ function skillIsOffensive(content: Content, skillId: string): boolean {
   return def.effects.some((e) => e.target.side === 'enemy');
 }
 
+/**
+ * Would this support skill actually change anything right now?
+ *
+ * Without this check any ready support skill fires every time it comes off
+ * cooldown, so a card carrying four of them almost never swings — and two such
+ * sides shield and rally at each other until the round counter gives up. A skill
+ * has to earn its turn.
+ */
+function supportIsUseful(
+  content: Content,
+  skillId: string,
+  allies: readonly BattleCard[],
+): boolean {
+  const def = content.skills.get(skillId);
+  if (!def) return false;
+
+  return def.effects.some((effect) => {
+    const action = effect.action;
+    switch (action.kind) {
+      case 'heal':
+        return allies.some((c) => c.hp < c.maxHp * 0.9);
+      case 'shield':
+        return allies.some((c) => c.shield <= 0);
+      case 'cleanse':
+        return allies.some((c) => c.statuses.length > 0);
+      case 'modifyStat':
+        return allies.some((c) => !c.mods.some((m) => m.stat === action.stat));
+      case 'applyStatus':
+        return allies.some((c) => !c.statuses.some((st) => st.id === action.status));
+      case 'summon':
+        return true;
+      case 'taunt':
+        // Only worth it while there is something to pull aggro away from.
+        return allies.length > 1;
+      default:
+        return true;
+    }
+  });
+}
+
 /** How many enemies a skill would plausibly touch — favours hitting a crowd. */
 function skillBreadth(content: Content, skillId: string): number {
   const def = content.skills.get(skillId);
@@ -87,13 +127,10 @@ export function chooseIntent(state: BattleState, content: Content, rng: Rng): In
         const targetUid = pickAttackTarget(state, actor, content);
         return { kind: 'skill', skillIndex: index, targetUid };
       }
-    } else {
-      // Support: only when it would actually do something — someone hurt, or a
-      // buff with allies to buff.
-      const hurt = allies.some((c) => c.hp < c.maxHp * 0.75);
-      if (hurt || allies.length > 1) {
-        return { kind: 'skill', skillIndex: index };
-      }
+    } else if (actor.supportStreak === 0 && supportIsUseful(content, skill.skillId, allies)) {
+      // One support turn at a time. A card carrying nothing but buffs would
+      // otherwise never swing, and two such sides never finish.
+      return { kind: 'skill', skillIndex: index };
     }
   }
 

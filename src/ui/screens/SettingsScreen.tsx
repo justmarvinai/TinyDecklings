@@ -1,8 +1,62 @@
+import { useState } from 'react';
 import { CONTENT } from '@/content';
 import { usePlayerStore } from '@/state/playerStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { Button, Panel, Toggle } from '@/ui/design/primitives';
+import type { SaveService } from '@/services/saves';
+import { BackupSection } from './BackupSection';
 import styles from './SettingsScreen.module.css';
+
+/**
+ * Something to hand over when something is wrong.
+ *
+ * The crash net already offers this, but most problems do not crash — they just
+ * behave oddly. This is the same blob, reachable on purpose rather than by
+ * accident. It carries no personal data: a version, a seed, some counts.
+ */
+function Diagnostics() {
+  const save = usePlayerStore((s) => s.save);
+  const [copied, setCopied] = useState(false);
+  if (!save) return null;
+
+  const blob = () =>
+    JSON.stringify(
+      {
+        app: 'TinyDecklings',
+        saveVersion: save.saveVersion,
+        runSeed: save.run.seed,
+        currentStage: save.run.currentStage,
+        cards: save.player.cards.length,
+        gear: save.player.gear.length,
+        stagesRecorded: Object.keys(save.player.stageRecords).length,
+        settings: save.settings,
+        userAgent: navigator.userAgent,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+      },
+      null,
+      2,
+    );
+
+  return (
+    <div className={styles.row}>
+      <Button
+        variant="info"
+        onClick={() => {
+          void navigator.clipboard?.writeText(blob()).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          });
+        }}
+      >
+        {copied ? 'Copied' : 'Copy diagnostics'}
+      </Button>
+      <span className={styles.hint}>
+        Version, seed and a few counts — no personal data, and nothing is sent anywhere. Paste it
+        wherever you are reporting the problem.
+      </span>
+    </div>
+  );
+}
 
 /**
  * A mix control (Q26).
@@ -44,7 +98,7 @@ function Slider({
  * Nothing here talks to a server: there are no accounts, no sign-in and no social
  * links, because the game is single-player and fully offline (CLAUDE.md rule 11).
  */
-export function SettingsScreen() {
+export function SettingsScreen({ saves }: { saves: SaveService }) {
   const settings = useSettingsStore();
   const cards = usePlayerStore((s) => s.cards().length);
   const gear = usePlayerStore((s) => s.gear().length);
@@ -121,6 +175,16 @@ export function SettingsScreen() {
             More languages may follow; every string lives in one place.
           </span>
         </div>
+      </div>
+
+      <div className={styles.group}>
+        <h2 className={styles.groupTitle}>Your save</h2>
+        <BackupSection saves={saves} />
+      </div>
+
+      <div className={styles.group}>
+        <h2 className={styles.groupTitle}>Report a problem</h2>
+        <Diagnostics />
       </div>
 
       <div className={styles.group}>

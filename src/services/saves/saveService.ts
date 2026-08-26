@@ -7,7 +7,7 @@
 import type { StorageService } from '../storage';
 import type { Clock } from '../clock';
 import { CURRENT_SAVE_VERSION, createNewSave, saveDoc, type SaveDoc } from './saveSchema';
-import { migrate, type UnknownSave } from './migrations';
+import { SaveMigrationError, migrate, type UnknownSave } from './migrations';
 
 export const SAVE_KEY = 'save.v1';
 
@@ -27,6 +27,18 @@ export interface SaveServiceOptions {
   onWriteError?: (error: unknown) => void;
   /** Called once a write succeeds again after failures. */
   onWriteRecovered?: () => void;
+}
+
+/** Thrown when a pasted or uploaded backup cannot be used, with a readable reason. */
+export class SaveImportError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SaveImportError';
+  }
+}
+
+function failImport(reason: string): never {
+  throw new SaveImportError(reason);
 }
 
 export class SaveService {
@@ -117,12 +129,49 @@ export class SaveService {
     await this.options.storage.remove(SAVE_KEY);
   }
 
-  /** Manual backup — the Phase 7 export/import feature (Q27) builds on this. */
+  /**
+   * Manual backup (Q27).
+   *
+   * Pretty-printed on purpose: a backup a player can open and read is a backup
+   * they can trust, and it costs nothing when the whole document is a few
+   * kilobytes.
+   */
   export(doc: SaveDoc): string {
     return JSON.stringify(doc, null, 2);
   }
 
+  /**
+   * Reads a backup back in.
+   *
+   * Migrated on the way through, so a file exported from an older build still
+   * loads, and validated afterwards, so a truncated or hand-edited one is refused
+   * rather than half-applied. Throws `SaveImportError` with a readable reason.
+   */
   import(text: string): SaveDoc {
-    return saveDoc.parse(migrate(JSON.parse(text) as UnknownSave, CURRENT_SAVE_VERSION));
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return failImport('That does not look like a TinyDecklings backup — it is not valid JSON.');
+    }
+    if (typeof parsed !== 'object' || parsed === null) {
+      return failImport('That backup is empty or the wrong shape.');
+    }
+    if (typeof (parsed as UnknownSave).saveVersion !== 'number') {
+      return failImport('That file has no save version, so it is not a TinyDecklings backup.');
+    }
+
+    try {
+      return saveDoc.parse(migrate(parsed as UnknownSave, CURRENT_SAVE_VERSION));
+    } catch (error) {
+      if (error instanceof SaveMigrationError) return failImport(error.message);
+      return failImport('That backup could not be read — some of it is missing or damaged.');
+    }
+  }
+
+  /** Writes an imported document straight to storage, bypassing the debounce. */
+  async replace(doc: SaveDoc): Promise<void> {
+    this.pending = null;
+    await this.options.storage.write(SAVE_KEY, JSON.stringify(doc));
   }
 }

@@ -179,7 +179,7 @@ export function App() {
               ) : screen.kind === 'more' ? (
                 <MoreScreen />
               ) : screen.kind === 'settings' ? (
-                <SettingsScreen />
+                <SettingsScreen saves={services.saves} />
               ) : (
                 <ProfileScreen />
               )}

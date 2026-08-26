@@ -1,0 +1,20 @@
+{
+  "name": "TinyDecklings",
+  "short_name": "TinyDecklings",
+  "description": "A portrait-only, single-player collectible card roguelike. Offline, no accounts, no real money.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141417",
+  "theme_color": "#141417",
+  "categories": ["games"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

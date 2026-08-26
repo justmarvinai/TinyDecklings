@@ -334,4 +334,56 @@ export const GEAR_DEFS: readonly GearDef[] = [
     stars: 5,
     mainStatBase: 12,
   },
+
+  // --- Phase 7: an exalted piece for every slot ------------------------------
+  // The boss and chest tables lean on the top of the ladder; without these the
+  // roller quietly falls back a rarity, which reads as a worse drop than promised.
+  {
+    id: 'gear.sovereigns_edge',
+    name: "Sovereign's Edge",
+    slot: 'weapon',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 36,
+  },
+  {
+    id: 'gear.rootmothers_carapace',
+    name: "Rootmother's Carapace",
+    slot: 'armor',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 244,
+  },
+  {
+    id: 'gear.emberlords_grips',
+    name: "Emberlord's Grips",
+    slot: 'gauntlets',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 31,
+  },
+  {
+    id: 'gear.ring_of_still_water',
+    name: 'Ring of Still Water',
+    slot: 'ring',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 30,
+  },
+  {
+    id: 'gear.hollow_crown_pendant',
+    name: 'Hollow Crown Pendant',
+    slot: 'amulet',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 198,
+  },
+  {
+    id: 'gear.ashfall_aegis',
+    name: 'Ashfall Aegis',
+    slot: 'shield',
+    rarity: 'ornate',
+    stars: 4,
+    mainStatBase: 186,
+  },
 ];

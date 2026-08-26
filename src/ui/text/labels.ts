@@ -7,6 +7,7 @@
  * this module turns them into words.
  */
 import type { CardRarity, CurrencyId, ElementId, GearRarity, StageKind } from '@/content/schemas';
+import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 
 export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
   gold: 'Gold',
@@ -50,33 +51,17 @@ export function stageKindLabel(kind: StageKind): string {
 }
 
 /**
- * Card rarity names.
- *
+ * Rarity names live in `content/schemas/rarity.ts` beside the ladders themselves,
+ * re-exported here so screens have one import for "what do I call this".
  * Rarity is shown in colour everywhere, so it also has to be shown in words:
  * colour is a cue, never the only one (Q28).
  */
-export const CARD_RARITY_LABELS: Readonly<Record<CardRarity, string>> = {
-  common: 'Common',
-  uncommon: 'Uncommon',
-  rare: 'Rare',
-  epic: 'Epic',
-  legendary: 'Legendary',
-};
+export { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 
 export function cardRarityLabel(rarity: CardRarity): string {
-  return CARD_RARITY_LABELS[rarity];
+  return CARD_RARITY_LABEL[rarity];
 }
 
-/** Gear rarity names — a separate ladder from cards (CLAUDE.md rule 4). */
-export const GEAR_RARITY_LABELS: Readonly<Record<GearRarity, string>> = {
-  worn: 'Worn',
-  sturdy: 'Sturdy',
-  refined: 'Refined',
-  ornate: 'Ornate',
-  exalted: 'Exalted',
-  mythic: 'Mythic',
-};
-
 export function gearRarityLabel(rarity: GearRarity): string {
-  return GEAR_RARITY_LABELS[rarity];
+  return GEAR_RARITY_LABEL[rarity];
 }

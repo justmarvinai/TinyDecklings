@@ -1,4 +1,10 @@
-export { SaveService, SAVE_KEY, type LoadResult, type SaveServiceOptions } from './saveService';
+export {
+  SaveService,
+  SaveImportError,
+  SAVE_KEY,
+  type LoadResult,
+  type SaveServiceOptions,
+} from './saveService';
 export {
   CURRENT_SAVE_VERSION,
   createNewSave,

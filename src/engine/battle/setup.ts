@@ -109,6 +109,7 @@ function buildCard(
     isBoss: spec.isBoss ?? false,
     alive: true,
     hasActed: false,
+    supportStreak: 0,
   };
 }
 

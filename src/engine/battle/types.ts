@@ -57,6 +57,14 @@ export interface BattleCard {
   isBoss: boolean;
   alive: boolean;
   hasActed: boolean;
+  /**
+   * Turns spent in a row on support rather than on the enemy.
+   *
+   * The AI refuses to take a second one, which is what stops two defensive sides
+   * shielding at each other forever. Part of the battle state rather than the AI
+   * so a replayed intent log reproduces the same fight (ARCHITECTURE.md §7).
+   */
+  supportStreak: number;
 }
 
 export type BattleOutcome = 'ongoing' | 'victory' | 'defeat';

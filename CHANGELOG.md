@@ -8,6 +8,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-26 — **Phase 7: release readiness** (`IMPLEMENTATION_PLAN.md` 7.1–7.6).
+  - **The first-release roster (Q29)** — grown from 14 collectible cards to **36: 30 units and 6 heroes**
+    across both rarity ladders, plus ten new skills so a thirty-card roster is not five skills wearing thirty
+    names. Gear reaches 44 items, with an **exalted piece in every slot** — the boss and chest tables lean on
+    the top of the ladder, and without those the roller quietly fell back a rarity, which reads as a worse
+    drop than the sheet promised
+  - **Manual save backup (Q27)** — export a readable file or copy it to the clipboard; restore by pasting or
+    picking the file. The backup is checked before the warning is shown, confirmed before anything is
+    replaced, and the game reloads rather than swapping the world out from under itself. An older backup is
+    migrated forward; a damaged one is refused with a reason, not half-applied
+  - **A roster sweep** that puts every collectible card into a real fight with all five of its skills live.
+    Thirty-six cards times five skills is a lot of authored effect data, and this is the test that catches one
+    of them targeting something that is never there
+  - **A string contract (Q30)** — every repeated vocabulary (currencies, both rarity ladders, elements, node
+    kinds) is named in one place and guarded by a test, including that the two rarity ladders never share a
+    name. Prose that appears once still lives with the component that says it
+  - **Release bits** — a web manifest so the game installs to a home screen, and a diagnostics blob reachable
+    from Settings rather than only after a crash: version, seed and a few counts, no personal data, nothing
+    sent anywhere
+  - 384 tests green; verified at 390×844 and 360×640
+
 - 2026-08-26 — **Phase 6: polish & feel** (`IMPLEMENTATION_PLAN.md` 6.1–6.6).
   - **The game is audible (Q26)** — a full sound set and per-biome music, all of it _synthesized_ rather than
     sampled: short Web Audio envelopes for effects, slow generative chord beds for music. Nothing is
@@ -109,6 +130,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   - 277 tests green; verified at 390×844 and 360×640
 
 ### Changed
+
+- 2026-08-26 — **The AI would not stop buffing.** A ready support skill fired whenever it was off cooldown, so
+  a card carrying four of them almost never swung — and two defensive sides shielded and rallied at each other
+  until the round counter gave up. Support now has to earn its turn (would this heal, shield, cleanse or buff
+  actually change anything?) and no card takes two support turns in a row. Found by the new roster sweep, not
+  by a player.
+- 2026-08-26 — Rarity labels were being defined twice: once beside the ladders in the content schemas and
+  again in `ui/text/labels.ts`. The UI module now re-exports the originals.
 
 - 2026-08-26 — **Save format v4 → v5**: added `settings.sfxVolume`, `settings.musicVolume` and
   `player.tutorialStep`. A save from before the tutorial existed belongs to someone who has already played,

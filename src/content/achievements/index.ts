@@ -103,7 +103,7 @@ export const ACHIEVEMENT_DEFS: readonly AchievementDef[] = [
     group: 'collection',
     metric: 'distinctCards',
     // Pinned to the whole collectible roster by a test — adding a card bumps this.
-    target: 14,
+    target: 36,
     reward: { kind: 'currency', currency: 'gems', amount: { min: 100, max: 100 } },
   },
   {

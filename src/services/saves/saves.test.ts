@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryStorageService, StorageWriteError, type StorageService } from '../storage';
 import { createFixedClock } from '../clock';
-import { SaveService, SAVE_KEY } from './saveService';
+import { SaveImportError, SaveService, SAVE_KEY } from './saveService';
 import { CURRENT_SAVE_VERSION, createNewSave, saveDoc } from './saveSchema';
 import { MIGRATIONS, SaveMigrationError, migrate, type UnknownSave } from './migrations';
 
@@ -492,5 +492,73 @@ describe('a device that will not accept a write', () => {
     expect(written.length).toBe(1);
     expect(service.writesFailing).toBe(false);
     expect(recovered).toBe(1);
+  });
+});
+
+describe('manual backup (Q27)', () => {
+  it('round-trips a save through export and import', () => {
+    const { service } = makeService();
+    const original = createNewSave(0, 4242, ENERGY_CAP);
+    original.player.currencies.gold = 5150;
+    original.player.stageRecords = { '7': { bestStars: 3, clears: 2 } };
+
+    const restored = service.import(service.export(original));
+
+    expect(restored).toEqual(original);
+  });
+
+  it('exports something a person can actually read', () => {
+    const { service } = makeService();
+    const text = service.export(createNewSave(0, 1, ENERGY_CAP));
+    expect(text).toContain('\n');
+    expect(text).toContain('"saveVersion"');
+  });
+
+  it('brings an older backup forward rather than refusing it', () => {
+    const { service } = makeService();
+    const old = { ...createNewSave(0, 9, ENERGY_CAP), saveVersion: 1 } as Record<string, unknown>;
+    const player = old.player as Record<string, unknown>;
+    player.currencies = { ...(player.currencies as object), gold: 999 };
+    for (const key of [
+      'shop',
+      'summonCounts',
+      'claimedChests',
+      'claimedAchievements',
+      'stats',
+      'tutorialStep',
+    ]) {
+      delete player[key];
+    }
+
+    const restored = service.import(JSON.stringify(old));
+
+    expect(restored.saveVersion).toBe(CURRENT_SAVE_VERSION);
+    expect(restored.player.currencies.gold).toBe(999);
+  });
+
+  it('refuses what is not a backup, and says why', () => {
+    const { service } = makeService();
+    expect(() => service.import('not json at all')).toThrow(SaveImportError);
+    expect(() => service.import('"a string"')).toThrow(/wrong shape/i);
+    expect(() => service.import('{"hello":"world"}')).toThrow(/save version/i);
+    expect(() => service.import(JSON.stringify({ saveVersion: 5 }))).toThrow(/missing or damaged/i);
+  });
+
+  it('refuses a backup from a newer build rather than dropping what it cannot read', () => {
+    const { service } = makeService();
+    const future = { ...createNewSave(0, 1, ENERGY_CAP), saveVersion: CURRENT_SAVE_VERSION + 7 };
+    expect(() => service.import(JSON.stringify(future))).toThrow(/newer version/i);
+  });
+
+  it('writes an imported document straight through, bypassing the debounce', async () => {
+    const storage = createMemoryStorageService();
+    const { service } = makeService(storage);
+    const doc = createNewSave(0, 77, ENERGY_CAP);
+    doc.player.currencies.gems = 321;
+
+    await service.replace(doc);
+
+    const raw = await storage.read(SAVE_KEY);
+    expect(JSON.parse(raw!).player.currencies.gems).toBe(321);
   });
 });

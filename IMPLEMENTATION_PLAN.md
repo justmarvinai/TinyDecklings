@@ -3,7 +3,7 @@
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
 > Development started **2026-08-26**. **Phases 0–3 are complete** (tasks 0.1–0.10, 1.1–1.18, 2.1–2.7 and
-> 3.1–3.6, 4.1–4.7, 5.1–5.4 and 6.1–6.6 shipped, plus Vercel deployment); work continues at Phase 7.
+> every phase 0–7 shipped, plus Vercel deployment). The plan is complete.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -101,7 +101,7 @@ Scope decided (Q23): Profile + Settings are the only meta screens in first relea
 
 6.1 Music/SFX full pass (Q26) · 6.2 FX/juice pass · 6.3 **Tutorial: guided first 2 stages** (Q25) · 6.4 Edge/empty states · 6.5 Perf hardening · 6.6 Reduced-motion + color-blind-safe cue audit (Q28).
 
-## Phase 7 — Release readiness
+## Phase 7 — Release readiness ✅ COMPLETE
 
 7.1 Balance across full curve · 7.2 Content breadth to targets: ~30 units + 6 heroes, ~40 gear, 3 regions, 1 boss/region (Q29) · 7.3 **Save export/import** (Q27) · 7.4 English-only string audit (centralized — Q30) · 7.5 PWA nicety · 7.6 Release checklist.
 
@@ -154,5 +154,7 @@ Phase 6 & 7 follow the last content phase shipped.
   reward ceremonies, a seven-beat guided opening (Q25), save-failure and corrupt-save notices, the back
   control moved off the content it was covering, `content-visibility` on the long lists, and an
   accessibility pass on text sizes, touch targets and colour-only cues (Q28). Save v4 → v5.
-- **Phase 7 — next.** Balance across the full curve, content breadth to target (Q29), the accessibility
-  sweep, save export/import (Q27), and release readiness.
+- **Phase 7 — complete (2026-08-26).** The roster grown to its first-release target (30 units, 6 heroes, 44
+  gear, 23 skills), manual save backup with a check-then-confirm restore (Q27), a string contract guarded by
+  a test (Q30), a home-screen manifest, a reachable diagnostics blob, and an AI fix for a stall the roster
+  sweep uncovered. Nothing in the plan is outstanding; the remaining work is the owner's art and audio.

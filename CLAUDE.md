@@ -2,18 +2,20 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## Current project status: Phase 6 complete — polish & feel
+## Current project status: all seven phases complete — release ready
 
 `USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
-the energy pacing system). **Phases 0–4 are done**: the core loop runs end to end, cards ascend and equip
+the energy pacing system). **Phases 0–7 are done**: the core loop runs end to end, cards ascend and equip
 across all eight gear slots, decks are built by hand, the economy is live — summoning with pity meters, a
 fragment exchange, the energy pacing system and a daily shop, all paid for in currency the player earns — and
 the road runs through three authored biomes with elites, boss modifiers, vignettes, forks and region star
 chests before looping endlessly, the player has a record — a profile derived from the save, achievements with
 claimable payouts, honest locked facades for everything deferred — and the polish pass has landed: audio,
-juice, a guided opening, edge states and performance. The app deploys to Vercel for live review
-(`DEPLOYMENT.md`). Next up is **Phase 7 — release readiness** in `IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into
-`USER_QUESTIONS.md` → "Open questions" instead of being silently decided.
+juice, a guided opening, edge states and performance, and release readiness has landed — the first-release
+roster (30 units, 6 heroes, 44 gear), manual save backup (Q27), and a home-screen install. The app deploys to
+Vercel for live review (`DEPLOYMENT.md`). `IMPLEMENTATION_PLAN.md` has nothing outstanding; what remains is
+the owner's art and audio drop-in and the decided backlog in `ROADMAP.md`. New owner-preference ambiguities
+go into `USER_QUESTIONS.md` → "Open questions" instead of being silently decided.
 
 **This is a single-player game.** There is no multiplayer, no PvP, no server and no accounts — anywhere.
 Reference screenshots contain multiplayer furniture (defense decks, leaderboards); those are deliberately
@@ -85,9 +87,12 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
   `ascensionFodder`) — it re-renders forever. Subscribe to `save` and use the pure helpers
   (`computeCardStats`, `ascensionFodderFor`) inside `useMemo`.
 - Commits: imperative subject, scope prefix when useful (`engine: add burn tick`), update `CHANGELOG.md` for user-visible changes. Do not mention AI models in commit messages or code.
-- User-facing strings live centralized in `ui/text/labels.ts` (future i18n), never scattered literals. The
-  **engine never builds prose**: it returns structured facts (e.g. why a choice is blocked) and the UI writes
-  the sentence.
+- **Every repeated vocabulary is named in one place** — currencies, both rarity ladders, elements, node kinds
+  (`ui/text/labels.ts`, re-exporting from the content schemas where the ladder itself lives). Prose that
+  appears once stays with the component that says it, which is where it is readable; what must never happen is
+  the same word being spelled out at ten call sites, or a sentence being built by concatenating fragments.
+  `ui/text/labels.test.ts` guards it. The **engine never builds prose**: it returns structured facts (e.g.
+  why a choice is blocked) and the UI writes the sentence.
 - New content shapes ship with the registry rule that catches the obvious way to author them wrong — an
   unreachable chest threshold, a node kind with no content, a status that would lock a side out of a fight,
   an achievement asking for more cards than exist. A gap the pipeline can catch should fail validation, not

@@ -6,10 +6,11 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0–6 are complete** — the game is
-playable end to end with full collection depth, a live economy, an endless three-biome road, a player record
-with achievements, and a polish pass covering audio, juice, onboarding, edge states and performance. It
-deploys to Vercel for live review (`DEPLOYMENT.md`). Phase 7 (release readiness) is next.
+Questions answered and development started **2026-08-26**. **All seven phases are complete.** The game is
+playable end to end with the full first-release roster, a live economy, an endless three-biome road, a player
+record with achievements, a polish pass covering audio, juice and onboarding, and release readiness including
+manual save backup. It deploys to Vercel for live review (`DEPLOYMENT.md`). What is left is the owner's art
+and audio drop-in, and whatever the backlog below earns.
 
 ---
 
@@ -121,13 +122,21 @@ save now says so instead of failing silently; and the long lists skip what is of
 direction was fixed — it had been running downhill since Phase 1. Save migrated v4 → v5 with a fixture test.
 369 tests green; verified at 390×844 and 360×640, with audio confirmed by instrumenting the Web Audio API.
 
-## Phase 7 — Release readiness
+## Phase 7 — Release readiness ✅ COMPLETE
 
 - Balance pass across the full curve; content breadth to targets (Q29: ~30 units + 6 heroes, ~40 gear, 3 regions, 1 boss/region)
 - Accessibility pass (Q28: reduced-motion, color-blind-safe cues, size floors)
 - **Save export/import** (file/clipboard backup) (Q27)
 - English-only release; strings stay centralized (Q30)
-- Crash/bug reporting affordance; PWA install nicety (optional)
+- Crash/bug reporting affordance; PWA install nicety
+
+**Exit:** ✅ the first-release roster is authored — **30 collectible units and 6 heroes** across both rarity
+ladders, 44 gear items with an exalted piece in every slot, 23 skills; manual backup exports a readable file
+or copies to the clipboard, and restores through a check-then-confirm that reloads rather than swapping the
+world out mid-game; every repeated vocabulary is named in one place and guarded by a test; the game installs
+to a home screen; and diagnostics are reachable on purpose rather than only after a crash. The roster sweep
+caught a real AI stall — support skills fired whenever they were off cooldown, so a defensive deck could
+grind forever. 384 tests green; verified at 390×844 and 360×640.
 
 ## Post-first-release backlog (decided deferrals)
 

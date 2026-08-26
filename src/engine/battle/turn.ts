@@ -305,6 +305,8 @@ export function step(state: BattleState, content: Content, intent: Intent): Step
 
   const rng = rngFor(next);
 
+  let spentOnSupport = false;
+
   if (intent.kind === 'attack') {
     const legal = legalAttackTargets(next, actor);
     // An illegal target would let the UI break the front-row rule; fall back to a
@@ -321,11 +323,18 @@ export function step(state: BattleState, content: Content, intent: Intent): Step
       rng,
       events,
     );
-    if (!cast) {
+    if (cast) {
+      const def = content.skills.get(actor.skills[intent.skillIndex]?.skillId ?? '');
+      spentOnSupport = def !== undefined && !def.effects.some((e) => e.target.side === 'enemy');
+    } else {
       const legal = legalAttackTargets(next, actor);
       if (legal[0]) performAttack(next, content, actor, legal[0], events);
     }
   }
+
+  // A turn that did nothing to the other side is remembered, so the next one
+  // cannot be another of the same (see `supportStreak`).
+  actor.supportStreak = spentOnSupport ? actor.supportStreak + 1 : 0;
 
   next.rngState = rng.getState();
   actor.hasActed = true;
