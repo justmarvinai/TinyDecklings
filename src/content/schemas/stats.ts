@@ -32,7 +32,18 @@ export const ELEMENTS = ['nature', 'fire', 'ice', 'lightning', 'dark'] as const;
 export type ElementId = (typeof ELEMENTS)[number];
 export const element = z.enum(ELEMENTS);
 
-/** Which element beats which (Phase 4). A cycle, so no element is strictly best. */
+/**
+ * How much Attack a counter-element card gains on a themed stage (Q21).
+ *
+ * Deliberately at the low end of the 10-15% band the owner chose: enough that
+ * bringing the right element is worth doing, not so much that it decides fights.
+ */
+export const ELEMENT_AFFINITY_PERCENT = 12;
+
+/**
+ * Which element beats which (Q21). A cycle, so no element is strictly best —
+ * except dark, which answers only itself.
+ */
 export const ELEMENT_COUNTERS: Readonly<Record<ElementId, ElementId>> = {
   nature: 'lightning',
   lightning: 'ice',
@@ -40,3 +51,12 @@ export const ELEMENT_COUNTERS: Readonly<Record<ElementId, ElementId>> = {
   fire: 'nature',
   dark: 'dark',
 };
+
+/** True when `element` counters the element a stage is themed to. */
+export function countersElement(
+  element: ElementId | undefined,
+  stageElement: ElementId | undefined,
+): boolean {
+  if (!element || !stageElement) return false;
+  return ELEMENT_COUNTERS[element] === stageElement;
+}

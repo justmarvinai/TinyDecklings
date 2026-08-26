@@ -3,8 +3,8 @@ import { CONTENT } from '@/content';
 import { createRng } from '../rng';
 import { applyStarBonus, rollLoot } from './rewards';
 
-const battleTable = CONTENT.lootTables.get('loot.slice_battle')!;
-const bossTable = CONTENT.lootTables.get('loot.slice_boss')!;
+const battleTable = CONTENT.lootTables.get('loot.isles_battle')!;
+const bossTable = CONTENT.lootTables.get('loot.isles_boss')!;
 
 describe('loot rolls', () => {
   it('always pays the guaranteed rewards', () => {

@@ -19,6 +19,7 @@ import {
   lootTableDef,
   regionDef,
   skillDef,
+  stageModifierDef,
   statusDef,
   summonPoolDef,
   shopOfferDef,
@@ -32,10 +33,12 @@ import {
   type LootTableDef,
   type RegionDef,
   type SkillDef,
+  type StageModifierDef,
   type StatusDef,
   type SummonPoolDef,
   type ShopOfferDef,
 } from './schemas';
+import { maxRegionStars, regionPlanFor } from './schemas/map';
 import { ICON_KEYS, type IconKey } from './schemas/iconKeys';
 
 export interface ContentSource {
@@ -48,6 +51,7 @@ export interface ContentSource {
   enemies: readonly unknown[];
   regions: readonly unknown[];
   encounters: readonly unknown[];
+  stageModifiers: readonly unknown[];
   lootTables: readonly unknown[];
   summonPools: readonly unknown[];
   growthCurves: readonly unknown[];
@@ -64,6 +68,7 @@ export interface Content {
   enemies: ReadonlyMap<string, EnemyGroupDef>;
   regions: ReadonlyMap<string, RegionDef>;
   encounters: ReadonlyMap<string, EncounterDef>;
+  stageModifiers: ReadonlyMap<string, StageModifierDef>;
   lootTables: ReadonlyMap<string, LootTableDef>;
   summonPools: ReadonlyMap<string, SummonPoolDef>;
   growthCurves: ReadonlyMap<string, GrowthCurveDef>;
@@ -117,6 +122,7 @@ export function buildContent(source: ContentSource): Content {
   const enemies = parseTable('enemy', enemyGroupDef, source.enemies, problems);
   const regions = parseTable('region', regionDef, source.regions, problems);
   const encounters = parseTable('encounter', encounterDef, source.encounters, problems);
+  const stageModifiers = parseTable('modifier', stageModifierDef, source.stageModifiers, problems);
   const lootTables = parseTable('loot', lootTableDef, source.lootTables, problems);
   const summonPools = parseTable('pool', summonPoolDef, source.summonPools, problems);
   const growthCurves = parseTable('growth', growthCurveDef, source.growthCurves, problems);
@@ -202,11 +208,30 @@ export function buildContent(source: ContentSource): Content {
     }
   }
 
-  for (const region of regions.values()) {
+  for (const modifier of stageModifiers.values()) {
     need(
-      lootTables.has(region.lootTable),
-      `region "${region.id}": unknown loot table "${region.lootTable}"`,
+      iconKeys.has(modifier.iconKey),
+      `modifier "${modifier.id}": unknown icon key "${modifier.iconKey}"`,
     );
+    for (const effect of modifier.effects) {
+      if (effect.kind !== 'startingStatus') continue;
+      const status = statuses.get(effect.status);
+      need(status !== undefined, `modifier "${modifier.id}": unknown status "${effect.status}"`);
+      // A stage twist must never lock a side out of its own fight.
+      need(
+        !status?.blocksAction,
+        `modifier "${modifier.id}": "${effect.status}" blocks actions and would make the stage unplayable`,
+      );
+    }
+  }
+
+  for (const region of regions.values()) {
+    for (const [label, table] of [
+      ['lootTable', region.lootTable],
+      ['bossLootTable', region.bossLootTable],
+    ] as const) {
+      need(lootTables.has(table), `region "${region.id}": ${label} names unknown table "${table}"`);
+    }
     for (const [poolName, pool] of [
       ['enemyPool', region.enemyPool],
       ['elitePool', region.elitePool],
@@ -218,6 +243,75 @@ export function buildContent(source: ContentSource): Content {
     }
     for (const e of region.eventPool) {
       need(encounters.has(e), `region "${region.id}": unknown encounter "${e}"`);
+    }
+    for (const m of region.modifierPool) {
+      need(stageModifiers.has(m), `region "${region.id}": unknown modifier "${m}"`);
+    }
+
+    /**
+     * A region's road must be walkable on both sides of its fork. These checks
+     * exist because the cheapest way to ship a dead node is to plan a kind the
+     * region has no content for — a boss stage with an empty boss pool, or a camp
+     * with no camp encounters authored.
+     */
+    need(
+      region.nodePlan.length === region.stageCount,
+      `region "${region.id}": nodePlan has ${region.nodePlan.length} entries but stageCount is ${region.stageCount}`,
+    );
+    if (region.fork) {
+      const { startIndex, length, risky } = region.fork;
+      need(
+        risky.length === length,
+        `region "${region.id}": fork length is ${length} but the risky branch has ${risky.length} stages`,
+      );
+      need(
+        startIndex + length - 1 <= region.stageCount,
+        `region "${region.id}": fork starting at ${startIndex} runs past the end of the region`,
+      );
+      need(startIndex > 1, `region "${region.id}": a fork cannot open on the region's first stage`);
+    }
+
+    for (const branch of ['a', 'b'] as const) {
+      const plan = regionPlanFor(region, branch);
+      const kinds = new Set(plan);
+      if (kinds.has('elite')) {
+        need(
+          region.elitePool.length > 0,
+          `region "${region.id}": branch ${branch} plans an elite but elitePool is empty`,
+        );
+      }
+      if (kinds.has('boss')) {
+        need(
+          region.bossPool.length > 0,
+          `region "${region.id}": branch ${branch} plans a boss but bossPool is empty`,
+        );
+      }
+      for (const kind of ['event', 'treasure', 'camp'] as const) {
+        if (!kinds.has(kind)) continue;
+        const available = region.eventPool.filter((e) => encounters.get(e)?.kind === kind);
+        need(
+          available.length > 0,
+          `region "${region.id}": branch ${branch} plans a ${kind} node but no ${kind} encounter is in its eventPool`,
+        );
+      }
+    }
+
+    if (region.chestThresholds.length > 0) {
+      need(
+        region.chestLootTable !== undefined && lootTables.has(region.chestLootTable),
+        `region "${region.id}": chestThresholds need a valid chestLootTable`,
+      );
+      const ascending = region.chestThresholds.every(
+        (t, i) => i === 0 || t > region.chestThresholds[i - 1],
+      );
+      need(ascending, `region "${region.id}": chestThresholds must ascend`);
+      // Reachable on the *safe* road too, or the last chest is a lie on branch a.
+      const safeMax = maxRegionStars(region, 'a');
+      const highest = region.chestThresholds[region.chestThresholds.length - 1];
+      need(
+        highest <= safeMax,
+        `region "${region.id}": chest threshold ${highest} is above the ${safeMax} stars branch a can earn`,
+      );
     }
   }
 
@@ -260,6 +354,25 @@ export function buildContent(source: ContentSource): Content {
             `encounter "${encounter.id}": unknown loot table "${rewardId}"`,
           );
         }
+        if (!outcome.carriedStatus) continue;
+        const status = statuses.get(outcome.carriedStatus.status);
+        need(
+          status !== undefined,
+          `encounter "${encounter.id}": unknown status "${outcome.carriedStatus.status}"`,
+        );
+        /**
+         * A boon rides into the next fight on its own, so it has to mean something
+         * on its own — and it must never be one that stops a side acting, which
+         * would hand the player an unwinnable stage for taking a vignette.
+         */
+        need(
+          !status?.blocksAction,
+          `encounter "${encounter.id}": "${outcome.carriedStatus.status}" blocks actions and would carry an unwinnable fight`,
+        );
+        need(
+          status?.tick !== undefined,
+          `encounter "${encounter.id}": "${outcome.carriedStatus.status}" does nothing on its own — carry a status that ticks`,
+        );
       }
     }
   }
@@ -291,6 +404,7 @@ export function buildContent(source: ContentSource): Content {
     enemies,
     regions,
     encounters,
+    stageModifiers,
     lootTables,
     summonPools,
     growthCurves,

@@ -8,8 +8,8 @@ import { rollLoot } from './rewards';
  * be reachable by playing, because nothing here is for sale for real money (Q13).
  */
 describe('play feeds every system', () => {
-  const battle = CONTENT.lootTables.get('loot.slice_battle')!;
-  const boss = CONTENT.lootTables.get('loot.slice_boss')!;
+  const battle = CONTENT.lootTables.get('loot.isles_battle')!;
+  const boss = CONTENT.lootTables.get('loot.isles_boss')!;
 
   function totals(table: typeof battle, runs: number, seed: number) {
     const rng = createRng(seed);

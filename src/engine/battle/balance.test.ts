@@ -1,18 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT, STARTER_CARD_IDS } from '@/content';
-import { CARD_RARITY_BASE_STARS } from '@/content/schemas';
+import { CARD_RARITY_BASE_STARS, isCombatStage } from '@/content/schemas';
 import { createRng } from '../rng';
-import { enemyLevelBonus } from '../map/generate';
+import { authoredStageCount, generateStage } from '../map/generate';
+import { battleSetupFor } from '../map/stageBattle';
 import { beginBattle, chooseIntent, createBattle, step, type CombatantSpec } from './index';
 
 /**
- * Balance guard for the vertical slice.
+ * Balance guard for the whole authored road.
  *
- * The slice has to be completable: stage 1 winnable with the starter deck as it is
- * handed out, the middle stages asking for a few levels, and the boss asking for
- * real investment. These assertions are deliberately loose — they catch "the slice
- * became unplayable", not "a number moved".
+ * The road has to be walkable: stage 1 winnable with the starter deck as it is
+ * handed out, the middle of a region asking for a few levels, and a boss asking
+ * for real investment — in every biome, on both sides of every fork. These
+ * assertions are deliberately loose. They catch "a region became unplayable" and
+ * "a fight can hang", not "a number moved".
  */
+
+const SEED = 4242;
+const TOTAL = authoredStageCount(CONTENT);
 
 function starterDeck(level: number): CombatantSpec[] {
   const cards = STARTER_CARD_IDS.map((id) => CONTENT.cards.get(id)!);
@@ -32,42 +37,25 @@ function starterDeck(level: number): CombatantSpec[] {
   ];
 }
 
-function stageGroupId(stage: number): string {
-  const region = [...CONTENT.regions.values()][0];
-  return stage % 10 === 0
-    ? region.bossPool[0]
-    : region.enemyPool[(stage - 1) % region.enemyPool.length];
-}
+type Result = 'victory' | 'defeat' | 'stalled';
 
-function simulate(stage: number, level: number, seed: number): 'victory' | 'defeat' | 'stalled' {
-  const group = CONTENT.enemies.get(stageGroupId(stage))!;
-  const bonus = enemyLevelBonus(stage);
-
-  const created = createBattle(CONTENT, {
-    stage,
-    attempt: 1,
-    seed,
+function simulate(
+  stageNumber: number,
+  level: number,
+  seed: number,
+  branch: 'a' | 'b' = 'a',
+): Result {
+  const generated = generateStage(CONTENT, SEED, stageNumber, branch);
+  const setup = battleSetupFor(CONTENT, generated, {
     player: starterDeck(level),
-    enemy: [
-      ...group.members.map((m) => ({
-        defId: m.cardId,
-        level: m.level + bonus,
-        stars: 3,
-        slot: m.slot,
-        isBoss: m.cardId === group.bossCardId,
-      })),
-      ...group.reinforcements.map((cardId) => ({
-        defId: cardId,
-        level: 1 + bonus,
-        stars: 3,
-        reserve: true,
-      })),
-    ],
+    seed,
+    attempt: 1,
   });
+  if (!setup) throw new Error(`Stage ${stageNumber} has no fight to simulate`);
 
-  let state = beginBattle(created.state, CONTENT).state;
+  let state = beginBattle(createBattle(CONTENT, setup).state, CONTENT).state;
   const rng = createRng(seed);
-  for (let i = 0; i < 1000 && state.outcome === 'ongoing'; i++) {
+  for (let i = 0; i < 1500 && state.outcome === 'ongoing'; i++) {
     const intent = chooseIntent(state, CONTENT, rng);
     if (!intent) return 'stalled';
     state = step(state, CONTENT, intent).state;
@@ -77,40 +65,79 @@ function simulate(stage: number, level: number, seed: number): 'victory' | 'defe
 }
 
 const SEEDS = [1, 2, 3, 4, 5];
-const winRate = (stage: number, level: number) =>
-  SEEDS.filter((s) => simulate(stage, level, s) === 'victory').length / SEEDS.length;
+const winRate = (stage: number, level: number, branch: 'a' | 'b' = 'a') =>
+  SEEDS.filter((s) => simulate(stage, level, s, branch) === 'victory').length / SEEDS.length;
 
-describe('the slice is playable end to end', () => {
-  it('never stalls a fight, at any stage or deck level', () => {
-    for (const stage of [1, 5, 8, 10]) {
-      for (const level of [1, 10, 25]) {
-        for (const seed of SEEDS) {
-          expect(
-            simulate(stage, level, seed),
-            `stage ${stage}, level ${level}, seed ${seed}`,
-          ).not.toBe('stalled');
-        }
+/** Every combat stage on the authored road, on the branch that reaches it. */
+function combatStages(branch: 'a' | 'b'): number[] {
+  const stages: number[] = [];
+  for (let n = 1; n <= TOTAL; n++) {
+    if (isCombatStage(generateStage(CONTENT, SEED, n, branch).kind)) stages.push(n);
+  }
+  return stages;
+}
+
+describe('no fight can hang', () => {
+  it('resolves every combat stage on both sides of every fork', () => {
+    for (const branch of ['a', 'b'] as const) {
+      for (const stage of combatStages(branch)) {
+        // A high level so the fight ends by winning rather than by dying early —
+        // stalls hide behind quick defeats.
+        expect(simulate(stage, 60, 7, branch), `stage ${stage} (${branch})`).not.toBe('stalled');
       }
     }
   });
 
+  it('resolves deep endless stages too', () => {
+    for (const stage of [TOTAL + 5, TOTAL * 2 + 10, TOTAL * 3 + 5]) {
+      expect(simulate(stage, 200, 3), `stage ${stage}`).not.toBe('stalled');
+    }
+  });
+});
+
+describe('the first region is a fair on-ramp', () => {
   it('lets a brand-new player win stage 1 with the deck they are given', () => {
     expect(winRate(1, 1)).toBe(1);
   });
 
   it('asks for a few levels by the middle of the region', () => {
-    expect(winRate(8, 1)).toBeLessThan(0.5);
-    expect(winRate(8, 12)).toBe(1);
+    expect(winRate(9, 1)).toBeLessThan(0.5);
+    expect(winRate(9, 14)).toBe(1);
   });
 
-  it('makes the boss a real wall that levelling gets you past (Q17/Q16)', () => {
+  it('makes the boss a real wall that levelling gets you past (Q16/Q17)', () => {
     expect(winRate(10, 5)).toBe(0);
+    expect(winRate(10, 26)).toBe(1);
+  });
+});
+
+describe('the road keeps climbing', () => {
+  it('makes each region boss ask more than the one before it', () => {
     expect(winRate(10, 22)).toBe(1);
+    expect(winRate(20, 22)).toBe(0);
+    expect(winRate(20, 50)).toBe(1);
+    expect(winRate(30, 50)).toBe(0);
+    expect(winRate(30, 80)).toBe(1);
   });
 
-  it('keeps difficulty climbing across the region', () => {
-    // A level that comfortably clears an early stage should not clear the boss.
-    expect(winRate(3, 8)).toBe(1);
-    expect(winRate(10, 8)).toBeLessThan(1);
+  it('opens each region with a breather rather than a second wall', () => {
+    // Whatever the last boss demanded should walk into the next region's first
+    // fight. A region ramps; it does not open on a cliff.
+    expect(winRate(11, 22)).toBe(1);
+    expect(winRate(21, 50)).toBe(1);
+  });
+});
+
+describe('elites and forks are the risk they advertise', () => {
+  it('makes an elite a wall the battles around it are not', () => {
+    const level = 10;
+    expect(winRate(7, level)).toBe(1);
+    expect(winRate(6, level, 'b')).toBe(0);
+  });
+
+  it('pays more for taking the risky road', () => {
+    const safe = generateStage(CONTENT, SEED, 6, 'a');
+    const risky = generateStage(CONTENT, SEED, 6, 'b');
+    expect(risky.rewardBonusPercent).toBeGreaterThan(safe.rewardBonusPercent);
   });
 });

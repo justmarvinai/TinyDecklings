@@ -69,6 +69,24 @@ const SOURCES = [
   'scroll-unfurled',
   'open-treasure-chest',
   'campfire',
+  // elements (Q21 stage affinity)
+  'oak-leaf',
+  'fire-bowl',
+  'snowflake-2',
+  'lightning-trio',
+  'evil-moon',
+  // stage modifiers
+  'enrage',
+  'spiked-armor',
+  'hive-mind',
+  'hazard-sign',
+  'dust-cloud',
+  'stopwatch',
+  'heart-plus',
+  // map furniture
+  'crossroad',
+  'chest',
+  'locked-chest',
   // navigation & ui
   'treasure-map',
   'card-play',

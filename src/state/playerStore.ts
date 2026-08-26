@@ -81,6 +81,11 @@ export interface PlayerState {
 
   recordStage: (stage: number, stars: 0 | 1 | 2 | 3) => void;
   bestStars: (stage: number) => 0 | 1 | 2 | 3;
+
+  /** Region star chests (Phase 4). Keys come from `chestKey()`. */
+  hasClaimedChest: (key: string) => boolean;
+  /** Marks a chest opened; returns false if it was already claimed. */
+  claimChest: (key: string) => boolean;
 }
 
 let uidCounter = 0;
@@ -470,4 +475,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   bestStars: (stage) =>
     (get().save?.player.stageRecords[String(stage)]?.bestStars ?? 0) as 0 | 1 | 2 | 3,
+
+  hasClaimedChest: (key) => (get().save?.player.claimedChests ?? []).includes(key),
+
+  claimChest: (key) => {
+    const save = get().save;
+    if (!save || save.player.claimedChests.includes(key)) return false;
+    set({
+      save: {
+        ...save,
+        player: { ...save.player, claimedChests: [...save.player.claimedChests, key] },
+      },
+    });
+    return true;
+  },
 }));

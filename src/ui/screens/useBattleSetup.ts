@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { CONTENT } from '@/content';
 import type { BattleSetup, CombatantSpec } from '@/engine/battle';
-import { enemyLevelBonus } from '@/engine/map/generate';
+import { battleSetupFor } from '@/engine/map/stageBattle';
 import { useDeckStore } from '@/state/deckStore';
 import { gearBonusesFor, usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
@@ -25,8 +25,6 @@ export function useBattleSetupFactory(): (stage: number) => BattleSetup | null {
     if (!save || save.player.cards.length === 0) return null;
 
     const generated = run.stage(stage);
-    const group = CONTENT.enemies.get(generated.encounterRef);
-    if (!group) return null;
 
     const toSpec = (uid: string): CombatantSpec => {
       const owned = save.player.cards.find((c) => c.uid === uid)!;
@@ -72,24 +70,13 @@ export function useBattleSetupFactory(): (stage: number) => BattleSetup | null {
       ...bench.map((r) => toSpec(r.card.uid)),
     ];
 
-    const levelBonus = enemyLevelBonus(stage);
-    const enemySpecs: CombatantSpec[] = [
-      ...group.members.map((m) => ({
-        defId: m.cardId,
-        level: m.level + levelBonus,
-        stars: 3,
-        slot: m.slot,
-        isBoss: m.cardId === group.bossCardId,
-      })),
-      ...group.reinforcements.map((cardId) => ({
-        defId: cardId,
-        level: 1 + levelBonus,
-        stars: 3,
-        reserve: true,
-      })),
-    ];
-
-    const attempt = (save.player.stageRecords[String(stage)]?.clears ?? 0) + 1;
-    return { stage, attempt, seed: run.seed, player: playerSpecs, enemy: enemySpecs };
+    // Everything the stage itself brings — formation, level bonus, twists, element
+    // theme — comes from one place, so a replayed or resumed fight is the same fight.
+    return battleSetupFor(CONTENT, generated, {
+      player: playerSpecs,
+      seed: run.seed,
+      attempt: (save.player.stageRecords[String(stage)]?.clears ?? 0) + 1,
+      carriedStatus: run.pendingBoon,
+    });
   }, []);
 }

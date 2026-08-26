@@ -3,7 +3,7 @@
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
 > Development started **2026-08-26**. **Phases 0–3 are complete** (tasks 0.1–0.10, 1.1–1.18, 2.1–2.7 and
-> 3.1–3.6 shipped, plus Vercel deployment); work continues at Phase 4.
+> 3.1–3.6 and 4.1–4.7 shipped, plus Vercel deployment); work continues at Phase 5.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -85,7 +85,7 @@ Scope decided: gacha fully earnable, zero IAP (Q13) · energy system per Q14(b) 
 | 3.5 | Shop v1 (rotating soft-currency offers; gem energy refill — no real money)                                                                                                                                                                                        |                                                                |
 | 3.6 | Economy tuning pass (sources/sinks sheet)                                                                                                                                                                                                                         |                                                                |
 
-## Phase 4 — Endless road
+## Phase 4 — Endless road ✅ COMPLETE
 
 Scope decided: fork nodes yes (Q2) · full node mix (Q16) · light elemental affinity +10–15% (Q21).
 
@@ -140,5 +140,10 @@ Phase 6 & 7 follow the last content phase shipped.
   fragments and a fragment exchange, the energy system (Q14b) gating combat stages, a daily shop, an
   economy tuning pass so tokens and tomes actually drop, and **save v2 with a real v1 → v2 migration**.
   Screens are code-split, cutting the initial bundle from 160 KB to 84 KB gzip. 277 tests green.
-- **Phase 4 — next.** Region biomes, elites, boss modifiers, event/treasure/camp nodes, fork nodes, and the
-  light elemental affinity system.
+- **Phase 4 — complete (2026-08-26).** Three authored biomes with node plans, palettes and taglines; elite and
+  boss stage modifiers rolled per stage and printed before energy is spent; twelve event/treasure/camp vignettes
+  with priced choices and boons carried into the next fight; a fork in every region that rejoins within three
+  stages; region star chests; the counter-element bonus (Q21); and an endless loop that replays the biomes at a
+  compounding difficulty. Save v2 → v3.
+- **Phase 5 — next.** Player profile and records, plus polishing the locked-state facades for the systems
+  deferred past first release (RANK / TRAIT / FOIL / artifact sets).

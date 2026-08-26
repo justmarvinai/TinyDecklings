@@ -9,7 +9,7 @@ import { create } from 'zustand';
 import { CONTENT } from '@/content';
 import { starsForResult } from '@/content/schemas';
 import { createRng } from '@/engine/rng';
-import { applyStarBonus, rollLoot, type RewardBundle } from '@/engine/economy/rewards';
+import { applyRewardBonus, applyStarBonus, rollLoot, type RewardBundle } from '@/engine/economy/rewards';
 import { lootTableForStage } from '@/engine/map/generate';
 import { usePlayerStore } from './playerStore';
 import { useRunStore } from './runStore';
@@ -137,16 +137,21 @@ export const useBattleStore = create<BattleSlice>((set, get) => ({
     const stars = starsForResult(state.outcome === 'victory', state.alliesLost);
     player.recordStage(state.stage, stars);
 
+    // A boon from the vignette before this stage is spent by the fight that used
+    // it, win or lose (Phase 4).
+    run.takeBoon();
+
     let rewards: RewardBundle = { currencies: {}, cardXp: 0, gear: [], cards: [], fragments: [] };
     if (state.outcome === 'victory') {
       const generated = run.stage(state.stage);
       const table = CONTENT.lootTables.get(lootTableForStage(CONTENT, generated));
       if (table) {
         // Rewards continue the battle's own rng stream, so a replayed fight pays
-        // out exactly the same loot.
-        rewards = applyStarBonus(
-          rollLoot(CONTENT, table, createRng(state.seed, state.rngState)),
-          stars,
+        // out exactly the same loot. The stage's own bonus — its modifiers and
+        // the risky side of a fork — is paid on top of the star multiplier.
+        rewards = applyRewardBonus(
+          applyStarBonus(rollLoot(CONTENT, table, createRng(state.seed, state.rngState)), stars),
+          generated.rewardBonusPercent,
         );
         player.applyRewards(rewards);
       }

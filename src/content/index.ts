@@ -5,9 +5,10 @@
  * cross-references, so bad data fails at start-up (and in tests) with a readable
  * message rather than surfacing mid-battle.
  *
- * Phase 1 registers the vertical-slice content: the card roster, gear, skills,
- * enemy formations, the Sunken Isles region and its loot tables, on top of the
- * Phase 0 system content (gear slots, attack patterns, statuses, growth curves).
+ * Registered here: the card roster, gear, skills, enemy formations, the three
+ * authored biomes with their encounters, stage modifiers and loot tables, the
+ * economy (summon pools, shop, energy) and the Phase 0 system content (gear slots,
+ * attack patterns, statuses, growth curves).
  */
 import { buildContent, type Content, type ContentSource } from './registry';
 import { GEAR_SLOT_DEFS } from './gear/slots';
@@ -22,6 +23,8 @@ import { CARD_DEFS } from './cards';
 import { SKILL_DEFS } from './skills';
 import { ENEMY_GROUP_DEFS } from './enemies';
 import { REGION_DEFS } from './map/regions';
+import { ENCOUNTER_DEFS } from './map/encounters';
+import { STAGE_MODIFIER_DEFS } from './map/modifiers';
 
 export const CONTENT_SOURCE: ContentSource = {
   cards: CARD_DEFS,
@@ -32,7 +35,8 @@ export const CONTENT_SOURCE: ContentSource = {
   patterns: ATTACK_PATTERN_DEFS,
   enemies: ENEMY_GROUP_DEFS,
   regions: REGION_DEFS,
-  encounters: [],
+  encounters: ENCOUNTER_DEFS,
+  stageModifiers: STAGE_MODIFIER_DEFS,
   lootTables: LOOT_TABLE_DEFS,
   summonPools: SUMMON_POOL_DEFS,
   growthCurves: GROWTH_CURVE_DEFS,
@@ -45,7 +49,7 @@ export { ENERGY_CONFIG } from './economy/energy';
 export { STARTER_CARD_IDS } from './cards';
 export { DUPLICATE_FRAGMENTS, FRAGMENT_EXCHANGE_COST } from './economy/summon';
 export { DAILY_OFFER_COUNT } from './economy/shop';
-export { BOSS_LOOT_TABLE } from './map/regions';
+export { MODIFIER_COUNTS } from './map/modifiers';
 export { DIFFICULTY_CURVE } from './economy/difficulty';
 export { buildContent, validateContent, ContentValidationError } from './registry';
 export type { Content, ContentSource } from './registry';

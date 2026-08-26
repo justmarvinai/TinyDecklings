@@ -20,6 +20,7 @@ const emptySource = {
   enemies: [],
   regions: [],
   encounters: [],
+  stageModifiers: [],
   lootTables: [],
   summonPools: [],
   growthCurves: [],

@@ -6,10 +6,10 @@
  * no class instances, no Maps — so a save is always serialisable and diffable.
  */
 import { z } from 'zod';
-import { CURRENCY_IDS, GEAR_SLOTS, statKey } from '@/content/schemas';
+import { CURRENCY_IDS, GEAR_SLOTS, forkBranch, statKey, statusId } from '@/content/schemas';
 
 /** Bump on every shape change and add a migration in migrations.ts. */
-export const CURRENT_SAVE_VERSION = 2;
+export const CURRENT_SAVE_VERSION = 3;
 
 export const ownedGear = z.strictObject({
   uid: z.string().min(1),
@@ -93,6 +93,8 @@ export const saveDoc = z.strictObject({
     /** pool id -> total pulls made, so each batch draws a fresh rng stream. */
     summonCounts: z.record(z.string(), z.number().int().min(0)).default({}),
     shop: shopState,
+    /** Region star chests already opened, as `<regionId>#<threshold>` (save v3). */
+    claimedChests: z.array(z.string()).default([]),
   }),
 
   run: z.strictObject({
@@ -100,6 +102,24 @@ export const saveDoc = z.strictObject({
     currentStage: z.number().int().min(1).default(1),
     /** Rolling window of generated stages around the player's position. */
     generatedWindow: z.array(z.unknown()).default([]),
+    /**
+     * Which side of each fork the player took, keyed by the fork's first stage
+     * number (save v3). The road itself is derived from the seed; this is the one
+     * part of it that is a decision, so it is the one part that is stored.
+     */
+    branches: z.record(z.string(), forkBranch).default({}),
+    /**
+     * A status a vignette hung on the party, waiting for the next fight to spend
+     * it (save v3).
+     */
+    pendingBoon: z
+      .strictObject({
+        status: statusId,
+        side: z.enum(['player', 'enemy']),
+        stacks: z.number().int().positive(),
+      })
+      .nullable()
+      .default(null),
     /** Mid-battle resume: replaying the intent log restores the exact state. */
     pendingBattle: z
       .strictObject({
@@ -157,8 +177,16 @@ export function createNewSave(nowMs: number, seed: number, energyCap: number): S
       pity: {},
       summonCounts: {},
       shop: { dayKey: today, purchased: {} },
+      claimedChests: [],
     },
-    run: { seed, currentStage: 1, generatedWindow: [], pendingBattle: null },
+    run: {
+      seed,
+      currentStage: 1,
+      generatedWindow: [],
+      branches: {},
+      pendingBoon: null,
+      pendingBattle: null,
+    },
     settings: {},
   });
 }

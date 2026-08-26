@@ -1,4 +1,4 @@
-export { createBattle, type BattleSetup, type CombatantSpec } from './setup';
+export { createBattle, type BattleSetup, type CarriedStatus, type CombatantSpec } from './setup';
 export { beginBattle, step, activeCard, isPlayerTurn } from './turn';
 export { chooseIntent } from './ai';
 export {

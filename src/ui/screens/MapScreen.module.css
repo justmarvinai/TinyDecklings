@@ -4,16 +4,45 @@
  * Reads bottom-to-top like the reference map: the player climbs the screen as they
  * progress, so "up" always means "further".
  */
+/**
+ * Biome backdrops.
+ *
+ * Each authored region names a theme token (`RegionDef.themeToken`) and that token
+ * picks the two glows and the ground tint here — so a new biome is a palette entry,
+ * not a new screen.
+ */
 .screen {
+  --glow-low: rgb(90 30 30 / 0.6);
+  --glow-high: rgb(40 60 110 / 0.55);
+  --ground: var(--bg-app-warm);
+
   flex: 1;
   min-height: 0;
   position: relative;
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 20% 90%, rgb(90 30 30 / 0.6), transparent 45%),
-    radial-gradient(circle at 80% 20%, rgb(40 60 110 / 0.55), transparent 50%),
-    linear-gradient(180deg, var(--bg-app-deep), var(--bg-app) 40%, var(--bg-app-warm));
+    radial-gradient(circle at 20% 90%, var(--glow-low), transparent 45%),
+    radial-gradient(circle at 80% 20%, var(--glow-high), transparent 50%),
+    linear-gradient(180deg, var(--bg-app-deep), var(--bg-app) 40%, var(--ground));
+}
+
+.screen[data-theme='theme-isles'] {
+  --glow-low: rgb(24 78 110 / 0.65);
+  --glow-high: rgb(60 120 160 / 0.45);
+  --ground: #16222e;
+}
+
+.screen[data-theme='theme-ashfall'] {
+  --glow-low: rgb(150 48 18 / 0.6);
+  --glow-high: rgb(90 40 30 / 0.55);
+  --ground: #2a1712;
+}
+
+.screen[data-theme='theme-verdant'] {
+  --glow-low: rgb(36 96 44 / 0.6);
+  --glow-high: rgb(70 110 50 / 0.45);
+  --ground: #17251a;
 }
 
 .scroll {
@@ -35,14 +64,14 @@
 }
 
 /* Alternate the medallion side so the path snakes, as in the reference. */
-.node:nth-child(odd) {
+.scroll > div:nth-child(odd) .node {
   flex-direction: row-reverse;
   justify-content: flex-end;
   align-self: flex-end;
   padding-right: var(--space-5);
 }
 
-.node:nth-child(even) {
+.scroll > div:nth-child(even) .node {
   align-self: flex-start;
   padding-left: var(--space-5);
 }
@@ -145,12 +174,258 @@
   border-bottom: var(--outline-width-thin) solid var(--outline-dark);
 }
 
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
 .regionName {
   font-size: var(--fs-section);
   font-weight: var(--fw-black);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
   text-shadow: var(--text-shadow-hard);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tagline {
+  font-size: var(--fs-label);
+  color: var(--text-secondary);
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chestButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: 2px var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--surface-pill);
+  color: inherit;
+  font: inherit;
+}
+
+.chestCount {
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-label);
+}
+
+/* --- fork (Q2) ----------------------------------------------------------- */
+
+.fork {
+  margin: var(--space-2) 0;
+}
+
+.forkHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.forkTitle {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.forkHead .muted {
+  margin-left: auto;
+}
+
+.forkColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.forkColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-1);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-card);
+  background: var(--surface-slot-deep);
+}
+
+.forkChosen {
+  border-color: var(--accent-header-bright);
+  background: var(--surface-slot);
+}
+
+.forkDim {
+  opacity: 0.55;
+}
+
+.forkLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  text-align: center;
+}
+
+.forkTaken {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-positive-bright);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.compactNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
+.medallionSmall {
+  width: 56px;
+  height: 56px;
+  border-width: 4px;
+}
+
+.elite {
+  --ring: var(--accent-danger);
+}
+
+.elementBadge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+}
+
+.plateRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.twistTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bonus {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  color: var(--accent-warning-bright, var(--accent-warning));
+  font-variant-numeric: tabular-nums;
+}
+
+.sheetKind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.elementRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.modifierList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.modifierRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'icon name' 'icon text';
+  align-items: center;
+  gap: 0 var(--space-2);
+}
+
+.modifierRow > :first-child {
+  grid-area: icon;
+}
+
+.modifierName {
+  grid-area: name;
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-size: var(--fs-label);
+}
+
+.modifierText {
+  grid-area: text;
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  text-transform: none;
+  line-height: 1.35;
+}
+
+.modifierBonus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+  border-top: var(--outline-width-thin) solid var(--outline-dark);
+}
+
+.chestList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.chestRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-slot);
+}
+
+.chestLabel {
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-size: var(--fs-label);
 }
 
 .sheet {
@@ -210,4 +485,23 @@
   background: var(--surface-pill);
   font-weight: var(--fw-black);
   font-variant-numeric: tabular-nums;
+}
+
+/* Fork columns are half a phone wide, so their plates wrap instead of running out. */
+.compactNode .plate {
+  align-items: center;
+  width: 100%;
+}
+
+.compactNode .namePill {
+  white-space: normal;
+  text-align: center;
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 3px var(--space-1);
+}
+
+.compactNode .plateRow {
+  justify-content: center;
 }
