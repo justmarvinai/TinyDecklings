@@ -229,43 +229,106 @@ interface AttackPatternDef {
 
 ```ts
 interface RegionDef {
-  id: string; // 'region.frostfjord'
+  id: string; // 'region.sunken_isles'
   name: string;
-  themeToken: string; // background/palette set
-  stageCount: number; // ~10 (Q16)
+  tagline: string; // one line under the region name on the map header
+  themeToken: string; // background/palette set: 'theme-isles' | 'theme-ashfall' | ...
+  stageCount: number; // 10 (Q16)
+  nodePlan: StageKind[]; // what sits on each stage, in order; length === stageCount
+  fork?: ForkDef; // the region's 2-way split (Q2)
+  nameTable: string[];
   enemyPool: string[]; // EnemyGroupDef ids
   elitePool: string[];
   bossPool: string[];
   eventPool: string[]; // EncounterDef ids
-  elementBias?: ElementId; // node badges; counter-element bonus stages (Q21a)
+  modifierPool: string[]; // StageModifierDef ids elites/bosses may roll
+  lootTable: string;
+  bossLootTable: string;
+  elementBias?: ElementId; // node badges; counter-element bonus stages (Q21)
+  difficultyScale: number;
+  chestThresholds: number[]; // star totals that unlock this region's chests
+  chestLootTable?: string;
 }
 
-type StageKind = 'battle' | 'elite' | 'boss' | 'event' | 'treasure' | 'camp'; // decided (Q16)
+/**
+ * A 2-way fork (Q2). Branch A is simply the region's own plan for those stages;
+ * branch B replaces it with a harder detour that pays more. Both sides occupy the
+ * same stage numbers and rejoin afterwards, so the road stays one numbered chain.
+ */
+interface ForkDef {
+  startIndex: number; // 1-based index into nodePlan
+  length: 1 | 2 | 3; // stages per branch before they rejoin
+  risky: StageKind[]; // branch B's kinds; length === length
+  riskyRewardBonusPercent: number;
+}
+
+type StageKind = 'battle' | 'elite' | 'boss' | 'event' | 'treasure' | 'camp'; // (Q16)
+
+/** The twist printed on an elite or boss medallion (Phase 4). */
+interface StageModifierDef {
+  id: string; // 'modifier.frenzied'
+  name: string;
+  description: string; // one line, shown before energy is spent
+  iconKey: IconKey;
+  appliesTo: StageKind[];
+  effects: ModifierEffect[];
+  rewardBonusPercent: number; // extra loot for the extra risk
+}
+
+type ModifierEffect =
+  | { kind: 'statScale'; side: 'player' | 'enemy'; stat: StatKey; percent: number }
+  | { kind: 'startingStatus'; side: 'player' | 'enemy'; status: StatusId; stacks: number }
+  | { kind: 'extraReinforcements'; count: number };
 
 interface GeneratedStage {
   // engine/map output — lives in run save
   number: number; // endless global index (map shows "33. FAR ISLAND")
   kind: StageKind;
   regionId: string;
-  name: string; // from region name tables
+  name: string; // from region name tables; later laps take a numeral
   seed: number;
-  encounterRef: string; // enemy group or event id
+  encounterRef: string; // enemy group on combat stages, encounter id on vignettes
   difficultyBudget: number; // monotonic in stage number
-  bestStars: 0 | 1 | 2 | 3; // persisted record; 3★ flawless / 2★ ≤2 deaths / 1★ win (Q17a)
+  elementBias?: ElementId;
+  bestStars: 0 | 1 | 2 | 3; // 3★ flawless / 2★ ≤2 deaths / 1★ win (Q17)
+  modifiers: string[]; // StageModifierDef ids
+  rewardBonusPercent: number; // from the modifiers and the risky fork branch
+  forkOf?: number; // first stage of the fork this sits in
+  branch?: 'a' | 'b';
 }
 
 interface EncounterDef {
   // non-battle vignettes (event/treasure/camp)
   id: string;
   kind: 'event' | 'treasure' | 'camp';
-  prompt: string;
+  title: string;
+  prompt: string; // prose, normal case (rule 9)
   choices: {
     label: string;
-    requires?: Requirement; // currency, card class present, etc.
-    outcomes: WeightedOutcome[]; // rewards, statuses for next battle, loot…
-  }[];
+    hint?: string; // one line under the button explaining the trade
+    requires?: Requirement; // a `currency` requirement is a PRICE: it gates and is deducted
+    outcomes: WeightedOutcome[];
+  }[]; // 1-3
+}
+
+interface WeightedOutcome {
+  weight: number;
+  description: string;
+  rewards: string[]; // LootTableDef ids
+  /** A boon or curse carried into the next fight, spent by it. */
+  carriedStatus?: { status: StatusId; side: 'player' | 'enemy'; stacks: number };
 }
 ```
+
+**Rules the registry enforces** (`content/registry.ts`):
+
+- `nodePlan.length === stageCount`; a fork must fit inside the region and never open on its first stage.
+- Both branches must be walkable: a planned elite needs an `elitePool`, a planned boss a `bossPool`, and a planned
+  event/treasure/camp needs an encounter of that kind in the `eventPool`.
+- A modifier may not apply a status that blocks actions — a twist must never lock a side out of its own fight.
+- A carried status must tick and must not block actions, so a boon always means something and can never hand the
+  player an unwinnable stage.
+- `chestThresholds` ascend and the highest must be reachable on the region's **safe** branch.
 
 ## 9. Economy
 
@@ -332,11 +395,17 @@ interface SaveDoc {
     stageRecords: Record<number, { bestStars: 0 | 1 | 2 | 3; clears: number }>;
     unlocks: string[]; // feature flags: forge, pools, slots…
     pity: Record<string, Record<CardRarity, number>>; // per pool
+    summonCounts: Record<string, number>; // v2 — pulls per pool
+    shop: { dayKey: string; purchased: Record<string, number> }; // v2
+    claimedChests: string[]; // v3 — `<regionId>#<threshold>`
   };
   run: {
     seed: number;
     currentStage: number;
     generatedWindow: GeneratedStage[]; // rolling window around position
+    // v3 — the road is derived from the seed; which fork the player took is not.
+    branches: Record<string, 'a' | 'b'>; // keyed by the fork's first stage number
+    pendingBoon: { status: StatusId; side: 'player' | 'enemy'; stacks: number } | null; // v3
     pendingBattle?: { stage: number; attempt: number; intentLog: Intent[] }; // mid-battle resume
   };
   settings: { sfx: boolean; music: boolean; speed: 1 | 2; language: string /* … */ };

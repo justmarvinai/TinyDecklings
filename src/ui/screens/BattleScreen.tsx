@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CONTENT } from '@/content';
+import { elementIconKey } from '@/content/schemas';
+import { elementLabel } from '@/ui/text/labels';
 import { BOARD_SLOTS, type BattleCard, type BattleEvent, type Intent } from '@/engine/battle';
 import type { RewardBundle } from '@/engine/economy/rewards';
 import { useBattleStore } from '@/state/battleStore';
 import { usePlayerStore } from '@/state/playerStore';
+import { useRunStore } from '@/state/runStore';
 import { useScreenStore } from '@/state/screenStore';
 import { useSettingsStore } from '@/state/settingsStore';
-import { gearRarityColor } from '@/ui/design/rarity';
 import { Button, IconChip, Modal, StarRow } from '@/ui/design/primitives';
-import { GearSlotIcon } from '@/ui/icons/Icon';
 import { BattleCardFrame, EmptySlot } from '@/ui/components/CardFrame';
+import { RewardList } from '@/ui/components/RewardList';
 import { BattleFx, type BattleFxHandle } from '@/ui/fx/BattleFx';
 import { useBattleSetupFactory } from './useBattleSetup';
 import styles from './BattleScreen.module.css';
@@ -278,6 +280,8 @@ export function BattleScreen({ stage }: { stage: number }) {
         </div>
       </div>
 
+      <StageBanner stage={stage} />
+
       {renderSide('enemy')}
 
       <div className={styles.divider}>
@@ -346,6 +350,48 @@ export function BattleScreen({ stage }: { stage: number }) {
   );
 }
 
+/**
+ * What this stage brought to the fight, kept on screen while it is being fought.
+ *
+ * The stage sheet already promised these before the player spent energy; this is
+ * the reminder mid-fight of why the enemies are hitting the way they are.
+ */
+function StageBanner({ stage }: { stage: number }) {
+  // Subscribe to the window, not to `stage()` — that helper builds a fresh object
+  // for anything outside the window and would re-render forever (CLAUDE.md).
+  const window_ = useRunStore((s) => s.window);
+  const generated = useMemo(
+    () => window_.find((s) => s.number === stage) ?? useRunStore.getState().stage(stage),
+    [window_, stage],
+  );
+  const modifiers = useMemo(
+    () =>
+      generated.modifiers
+        .map((id) => CONTENT.stageModifiers.get(id))
+        .filter((def): def is NonNullable<typeof def> => def !== undefined),
+    [generated],
+  );
+
+  if (modifiers.length === 0 && !generated.elementBias) return null;
+
+  return (
+    <div className={styles.stageBanner}>
+      {generated.elementBias ? (
+        <span className={styles.stageTag}>
+          <IconChip name={elementIconKey(generated.elementBias)} size={18} />
+          {elementLabel(generated.elementBias)}
+        </span>
+      ) : null}
+      {modifiers.map((def) => (
+        <span key={def.id} className={styles.stageTag} title={def.description}>
+          <IconChip name={def.iconKey} size={18} background="var(--accent-danger)" />
+          {def.name}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function ResultSheet({
   victory,
   stars,
@@ -367,47 +413,7 @@ function ResultSheet({
         {victory ? <StarRow value={stars} max={3} size={30} /> : null}
 
         {victory ? (
-          <div className={styles.rewardList}>
-            {Object.entries(rewards.currencies).map(([currency, amount]) => (
-              <div key={currency} className={styles.rewardRow}>
-                <IconChip
-                  name={
-                    currency === 'gold'
-                      ? 'currency.gold'
-                      : currency === 'gems'
-                        ? 'currency.gems'
-                        : 'currency.token'
-                  }
-                  size={26}
-                />
-                <span>{currency.replace('_', ' ')}</span>
-                <span className={styles.rewardValue}>+{amount}</span>
-              </div>
-            ))}
-            {rewards.cardXp > 0 ? (
-              <div className={styles.rewardRow}>
-                <IconChip name="stat.power" size={26} />
-                <span>Card XP</span>
-                <span className={styles.rewardValue}>+{rewards.cardXp}</span>
-              </div>
-            ) : null}
-            {rewards.gear.map((drop, i) => {
-              const def = CONTENT.gear.get(drop.defId);
-              if (!def) return null;
-              return (
-                <div key={i} className={styles.rewardRow}>
-                  <span
-                    className={styles.gearTile}
-                    style={{ '--tile': gearRarityColor(def.rarity) } as CSSProperties}
-                  >
-                    <GearSlotIcon slot={def.slot} size={24} />
-                  </span>
-                  <span className={styles.gearRow}>{def.name}</span>
-                  <StarRow value={def.stars} max={5} size={11} className={styles.rewardValue} />
-                </div>
-              );
-            })}
-          </div>
+          <RewardList rewards={rewards} />
         ) : (
           <p className="u-prose">
             Your cards were beaten back. Nothing was lost — level up, equip what you have found, and

@@ -4,6 +4,7 @@ import type { CurrencyId, RewardDef, ShopOfferDef } from '@/content/schemas';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { Button, IconChip } from '@/ui/design/primitives';
+import { currencyLabel } from '@/ui/text/labels';
 import styles from './ShopScreen.module.css';
 
 const CURRENCY_ICON: Partial<
@@ -26,18 +27,6 @@ const CURRENCY_ICON: Partial<
   token_unit_t2: 'currency.token',
   token_unit_t3: 'currency.token',
   token_hero: 'currency.token',
-};
-
-const CURRENCY_LABEL: Partial<Record<CurrencyId, string>> = {
-  gold: 'Gold',
-  gems: 'Gems',
-  energy: 'Energy',
-  fragment: 'Fragments',
-  tome: 'Tomes',
-  token_unit_t1: 'Unit token',
-  token_unit_t2: 'Veteran token',
-  token_unit_t3: 'Elite token',
-  token_hero: 'Hero token',
 };
 
 /**
@@ -150,9 +139,7 @@ function RewardPreview({ reward }: { reward: RewardDef }) {
       <>
         <IconChip name={CURRENCY_ICON[reward.currency] ?? 'currency.gold'} size={40} />
         <span className={styles.offerAmount}>{reward.amount.min}</span>
-        <span className={styles.offerWhat}>
-          {CURRENCY_LABEL[reward.currency] ?? reward.currency}
-        </span>
+        <span className={styles.offerWhat}>{currencyLabel(reward.currency)}</span>
       </>
     );
   }

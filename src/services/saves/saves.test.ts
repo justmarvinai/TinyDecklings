@@ -177,16 +177,49 @@ describe('migrations', () => {
 
     const migrated = saveDoc.parse(migrate(v1, CURRENT_SAVE_VERSION));
 
-    expect(migrated.saveVersion).toBe(2);
+    expect(migrated.saveVersion).toBe(CURRENT_SAVE_VERSION);
     // Everything the player had is untouched...
     expect(migrated.player.currencies.gold).toBe(1234);
     expect(migrated.player.cards[0].skillLevels).toEqual([2]);
     expect(migrated.player.stageRecords['4']).toEqual({ bestStars: 2, clears: 3 });
     expect(migrated.run.currentStage).toBe(5);
     expect(migrated.settings.battleSpeed).toBe(2);
-    // ...and the new shop state is present and empty.
+    // ...and every field the newer versions added is present and empty.
     expect(migrated.player.shop).toEqual({ dayKey: '', purchased: {} });
     expect(migrated.player.summonCounts).toEqual({});
+    expect(migrated.player.claimedChests).toEqual([]);
+    expect(migrated.run.branches).toEqual({});
+    expect(migrated.run.pendingBoon).toBeNull();
+  });
+
+  it('migrates a v2 save forward to v3, gaining forks, boons and chests', () => {
+    const v2 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 2,
+    } as Record<string, unknown>;
+    const player = v2.player as Record<string, unknown>;
+    const run = v2.run as Record<string, unknown>;
+    player.currencies = { ...(player.currencies as object), gold: 777 };
+    player.stageRecords = { '6': { bestStars: 3, clears: 1 } };
+    run.currentStage = 7;
+    delete player.claimedChests;
+    delete run.branches;
+    delete run.pendingBoon;
+
+    const migrated = saveDoc.parse(migrate(v2, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(3);
+    // A v2 save has walked no forks, carries nothing and has opened no chests...
+    expect(migrated.run.branches).toEqual({});
+    expect(migrated.run.pendingBoon).toBeNull();
+    expect(migrated.player.claimedChests).toEqual([]);
+    // ...and everything it did have survives.
+    expect(migrated.player.currencies.gold).toBe(777);
+    expect(migrated.player.stageRecords['6']).toEqual({ bestStars: 3, clears: 1 });
+    expect(migrated.run.currentStage).toBe(7);
+    expect(migrated.player.shop).toEqual(
+      (createNewSave(0, 7, ENERGY_CAP) as { player: { shop: unknown } }).player.shop,
+    );
   });
 
   it('loads a stored v1 save through the service without losing progress', async () => {
@@ -197,6 +230,9 @@ describe('migrations', () => {
     } as Record<string, unknown>;
     delete (v1.player as Record<string, unknown>).shop;
     delete (v1.player as Record<string, unknown>).summonCounts;
+    delete (v1.player as Record<string, unknown>).claimedChests;
+    delete (v1.run as Record<string, unknown>).branches;
+    delete (v1.run as Record<string, unknown>).pendingBoon;
     await storage.write(SAVE_KEY, JSON.stringify(v1));
 
     const { service } = makeService(storage);

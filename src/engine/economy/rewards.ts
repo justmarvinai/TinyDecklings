@@ -123,14 +123,42 @@ export function rollLoot(content: Content, table: LootTableDef, rng: Rng): Rewar
   return bundle;
 }
 
-/** Stars multiply the payout, so a flawless clear is worth replaying for (Q17). */
-export function applyStarBonus(bundle: RewardBundle, stars: 0 | 1 | 2 | 3): RewardBundle {
-  const multiplier = stars === 3 ? 1.25 : stars === 2 ? 1.1 : 1;
+/** Scales the countable part of a payout. Gear and cards are never multiplied. */
+function scaleBundle(bundle: RewardBundle, multiplier: number): RewardBundle {
   if (multiplier === 1) return bundle;
-
   const currencies: Partial<Record<CurrencyId, number>> = {};
   for (const [key, value] of Object.entries(bundle.currencies)) {
     currencies[key as CurrencyId] = Math.round((value ?? 0) * multiplier);
   }
   return { ...bundle, currencies, cardXp: Math.round(bundle.cardXp * multiplier) };
+}
+
+/** Stars multiply the payout, so a flawless clear is worth replaying for (Q17). */
+export function applyStarBonus(bundle: RewardBundle, stars: 0 | 1 | 2 | 3): RewardBundle {
+  return scaleBundle(bundle, stars === 3 ? 1.25 : stars === 2 ? 1.1 : 1);
+}
+
+/**
+ * The stage's own bonus: what its modifiers and its fork branch add (Phase 4).
+ *
+ * This is the other half of the deal a stage sheet offers — the twists that make
+ * an elite harder are the same ones that make it pay.
+ */
+export function applyRewardBonus(bundle: RewardBundle, percent: number): RewardBundle {
+  return scaleBundle(bundle, 1 + Math.max(0, percent) / 100);
+}
+
+/** Folds several rolled payouts into one, for encounters that name more than one table. */
+export function mergeBundles(bundles: readonly RewardBundle[]): RewardBundle {
+  const merged = emptyBundle();
+  for (const bundle of bundles) {
+    for (const [key, value] of Object.entries(bundle.currencies)) {
+      addCurrency(merged, key as CurrencyId, value ?? 0);
+    }
+    merged.cardXp += bundle.cardXp;
+    merged.gear.push(...bundle.gear);
+    merged.cards.push(...bundle.cards);
+    merged.fragments.push(...bundle.fragments);
+  }
+  return merged;
 }

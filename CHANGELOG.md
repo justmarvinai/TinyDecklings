@@ -8,6 +8,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-26 — **Phase 4: the endless road** (`IMPLEMENTATION_PLAN.md` 4.1–4.7).
+  - **Three authored biomes** — Sunken Isles, Ashfall Reach and Verdant Wound, each ten stages with its own
+    palette, tagline and **node plan**: where the elite lands and where you get to breathe is now a content
+    decision rather than modular arithmetic. Fourteen new enemy cards and twenty-four new formations, plus
+    two bosses to hold the ends of the new roads
+  - **Stage modifiers** — elites and bosses roll twists from their region's pool (Frenzied, Ironhide, Endless
+    Tide, Scorched, Choking Dust, Quickened, Blessed Ground), stacking up to three deep on the endless road.
+    Every twist is **printed on the stage sheet before energy is spent** and pays a matching loot bonus, and
+    is visible again on a banner during the fight
+  - **Vignettes (Q16)** — twelve event, treasure and camp encounters with up to three choices each. Prices
+    are shown on the button, closed choices say exactly what they need, and an outcome can hang a **boon or
+    curse on the party that the next fight spends** — bounded to a few rounds, because a vignette should give
+    a fight a different opening, not decide it
+  - **Fork nodes (Q2)** — every region splits once into two roads that rejoin within three stages. Both sides
+    occupy the same stage numbers, so the map stays one numbered chain; the safe road is the region's own
+    plan, the detour swaps vignettes for elites and pays a flat bonus. The choice can be changed right up
+    until a fork stage is cleared, then it stands
+  - **Region star chests** — stars earned in a region unlock chests at authored thresholds. A fight is scored
+    out of three stars, a vignette is worth one, and the registry refuses a threshold above what the region's
+    _safe_ road can earn
+  - **Elemental affinity (Q21)** — stages carry an element and counter-element cards attack **+12% harder**.
+    Roughly a third of a region's ordinary stages theme themselves off-biome, so the counter you bring is
+    worth reading the map for; the stage sheet says how many of your deck qualify
+  - **Endless scaling** — past the authored road the biomes loop at a compounding difficulty, enemy levels
+    take a flat jump per lap, and stage names take a numeral (`Coral Keep II`)
+  - **New pipeline guards** — a region must be walkable on _both_ sides of its fork (a planned elite needs an
+    elite pool, a planned camp needs a camp encounter), a modifier may never apply a status that stops a side
+    acting, and a carried boon must be one that actually ticks. Each of these is a way to ship a dead or
+    unwinnable stage, so each now fails validation instead
+  - **Balance guard rewritten** — it now walks every combat stage on both sides of every fork through the real
+    generator, proving nothing hangs and that each region's boss asks more than the last while each region
+    still _opens_ on a breather rather than a second wall
+  - 333 tests green; verified at 390×844 and 360×640
+
 - 2026-08-26 — **Phase 3: economy, summon & energy** (`IMPLEMENTATION_PLAN.md` 3.1–3.6).
   - **Summoning** — four pools (three unit tiers plus heroes) with **working pity counters**: a test proves
     a player can never exceed a pool's threshold without the promised rarity, and the registry now refuses
@@ -29,6 +63,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   - 277 tests green; verified at 390×844 and 360×640
 
 ### Changed
+
+- 2026-08-26 — **Save format v2 → v3**: added `run.branches` (which side of each fork was taken),
+  `run.pendingBoon` and `player.claimedChests`. The road itself is still derived from the run seed — only the
+  decisions are stored. Existing saves migrate automatically; fixture tests walk both a v1 and a v2 document
+  forward and assert nothing is lost.
+- 2026-08-26 — **Elites are elite.** The difficulty curve's elite multiplier used to sit in the stage data
+  unread; it is now spent where it is felt, as extra enemy levels on elite nodes.
+- 2026-08-26 — Reward lists (victory, vignettes, chests) render through one shared component, and currency
+  names come from a single `ui/text/labels.ts` rather than three drifting maps.
 
 - 2026-08-26 — **Save format v1 → v2**: added `player.shop` and `player.summonCounts`. Existing saves
   migrate automatically; a fixture test walks a full v1 document forward and asserts nothing is lost.

@@ -193,11 +193,16 @@ Combat must be readable at phone size, one-handed, and distinctly _not_ Hearthst
 Initial set: **Burn**, **Poison**, **Freeze/Stun**, **Shield**, **Taunt**, **Weaken**, **Strengthen**, **Regen**.
 Data-driven; stacking/duration rules in `CONTENT_SCHEMA.md`. Slice ships ~3 (Burn, Shield, Stun); the rest land by Phase 2–4.
 
-### 7.6 Elements **[DECIDED — Q21; lands Phase 4]**
+### 7.6 Elements **[SHIPPED Phase 4 — Q21]**
 
 **Light stage-affinity system:** stages carry an element theme (the node badges: nature, fire, ice, lightning, dark…);
-cards of the **counter-element get a small bonus (+10–15%, tunable)** on that stage. Flavor and gentle
-deck-variety pressure — no full advantage wheel.
+cards of the **counter-element get +12% Attack** on that stage — the low end of the decided 10–15% band. Flavor and
+gentle deck-variety pressure, no full advantage wheel.
+
+A region's biome sets the theme, but roughly a third of its ordinary stages theme themselves to something else, so
+the counter you bring is worth reading the map for rather than picking once per region. A boss always fights on its
+own ground. The bonus applies to whoever counters the stage, both sides alike — which is why enemies standing on
+their own biome never gain from it. Dark answers only itself.
 
 ---
 
@@ -205,8 +210,11 @@ deck-variety pressure — no full advantage wheel.
 
 The reference map (`assets/examples/Map.png`) shows a **linear, numbered, endless stage path** (28 → 34…) winding upward through themed terrain (ocean → ice → volcano), each node a portrait medallion with a name plate, an element badge, and a 3-star rating.
 
-- **Structure:** linear endless chain of **stages**, generated in themed **regions** (~10 stages each) with escalating difficulty. Occasional **fork nodes** offer a 2-way choice (risk/reward) that rejoins the main path after 1–3 stages — roguelike texture without abandoning the reference's linear look. _(Forks land in Phase 4; the slice is linear.)_
-- **Node types:** Battle, **Elite** (~every 5th), **Boss** (~every 10th, gold "BOSS" card frame in battle), **Event** (choice vignette), **Treasure**, **Camp** (heal/buff vignette before hard fights). Slice ships Battle + Boss.
+- **Structure:** linear endless chain of **stages**, generated in themed **regions** (10 stages each) with escalating difficulty. Each region carries a **fork**: a 2-way choice that rejoins the main path after 1–3 stages — roguelike texture without abandoning the reference's linear look. Both sides occupy the same stage numbers; branch A is the region's own plan, branch B swaps vignettes for elites and pays a flat loot bonus on top. The choice can be changed right up until a fork stage is cleared, then it stands.
+- **Node types:** Battle, **Elite**, **Boss**, **Event** (choice vignette), **Treasure**, **Camp**. Where each sits is authored per region as a **node plan**, so a biome's rhythm — where the elite lands, where you get to breathe — is a content decision rather than modular arithmetic. The registry refuses a region that plans a node kind it has no content for.
+- **Stage modifiers [SHIPPED Phase 4]:** elites and bosses roll twists from their region's pool — Frenzied, Ironhide, Endless Tide, Scorched, Choking Dust, Quickened, Blessed Ground. The count climbs with depth (one in region one, up to three deep on the road). Every twist is printed on the stage sheet **before** energy is spent, and every one pays a matching loot bonus. A twist may never be a status that stops a side acting; the registry enforces it.
+- **Endless [SHIPPED Phase 4]:** past the third region the road loops the authored biomes again at a compounding difficulty multiplier, with enemy levels jumping a flat step per lap and stage names taking a numeral (`Coral Keep II`).
+- **Region star chests [SHIPPED Phase 4]:** stars earned inside a region unlock chests at authored thresholds. A first-lap reward — the endless loops replay the fights, not the chests. A fight is scored out of three stars; a vignette is worth one, which marks the node walked. The registry refuses a threshold above what the region's _safe_ road can earn.
 - **Stars & replay [DECIDED — Q17]:** each stage stores its best star rating; replaying beaten stages for farming is allowed (costs Energy like any attempt, §10.1); star records are permanent.
 - Completed path behind, current node highlighted, next nodes preview with grayed stars.
 

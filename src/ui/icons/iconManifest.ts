@@ -57,6 +57,24 @@ const MANIFEST = {
   'stage.treasure': 'open-treasure-chest',
   'stage.camp': 'campfire',
 
+  'element.nature': 'oak-leaf',
+  'element.fire': 'fire-bowl',
+  'element.ice': 'snowflake-2',
+  'element.lightning': 'lightning-trio',
+  'element.dark': 'evil-moon',
+
+  'modifier.frenzied': 'enrage',
+  'modifier.ironhide': 'spiked-armor',
+  'modifier.endless_tide': 'hive-mind',
+  'modifier.scorched': 'hazard-sign',
+  'modifier.choking_dust': 'dust-cloud',
+  'modifier.quickened': 'stopwatch',
+  'modifier.blessed_ground': 'heart-plus',
+
+  'map.fork': 'crossroad',
+  'map.chest': 'chest',
+  'map.chestLocked': 'locked-chest',
+
   'nav.map': 'treasure-map',
   'nav.cards': 'card-play',
   'nav.summon': 'portal',

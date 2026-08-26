@@ -71,6 +71,27 @@ export const ICON_KEYS = [
   'stage.treasure',
   'stage.camp',
 
+  // elements (Q21 stage affinity)
+  'element.nature',
+  'element.fire',
+  'element.ice',
+  'element.lightning',
+  'element.dark',
+
+  // stage modifiers (Phase 4)
+  'modifier.frenzied',
+  'modifier.ironhide',
+  'modifier.endless_tide',
+  'modifier.scorched',
+  'modifier.choking_dust',
+  'modifier.quickened',
+  'modifier.blessed_ground',
+
+  // map furniture
+  'map.fork',
+  'map.chest',
+  'map.chestLocked',
+
   // navigation
   'nav.map',
   'nav.cards',
@@ -95,4 +116,36 @@ export type IconKey = (typeof ICON_KEYS)[number];
 /** The only supported way to name gear art: from the slot, never from the item. */
 export function gearSlotIconKey(slot: GearSlot): IconKey {
   return `gear.${slot}`;
+}
+
+/** Element art resolves through the manifest, same as everything else (rule 6). */
+export function elementIconKey(element: string): IconKey {
+  return `element.${element}` as IconKey;
+}
+
+const CURRENCY_ICON_KEYS: Readonly<Record<string, IconKey>> = {
+  gold: 'currency.gold',
+  gems: 'currency.gems',
+  energy: 'currency.energy',
+  fragment: 'currency.fragment',
+  tome: 'currency.tome',
+  token_unit_t1: 'currency.token',
+  token_unit_t2: 'currency.token',
+  token_unit_t3: 'currency.token',
+  token_hero: 'currency.token',
+};
+
+/** Currency art resolves through the manifest too — one route per meaning. */
+export function currencyIconKey(currency: string): IconKey {
+  return CURRENCY_ICON_KEYS[currency] ?? 'currency.token';
+}
+
+/** Status art, by status id. */
+export function statusIconKey(status: string): IconKey {
+  return `status.${status}` as IconKey;
+}
+
+/** Stage-kind art, by node kind. */
+export function stageKindIconKey(kind: string): IconKey {
+  return `stage.${kind}` as IconKey;
 }

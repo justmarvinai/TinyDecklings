@@ -28,6 +28,26 @@ export const MIGRATIONS: Readonly<Record<number, (doc: UnknownSave) => UnknownSa
       player: { ...player, shop: { dayKey: '', purchased: {} }, summonCounts: {} },
     };
   },
+
+  /**
+   * v2 → v3: the endless road arrived (Phase 4). Forks became a decision worth
+   * remembering, vignettes can hand a status to the next fight, and regions pay
+   * out star chests — so the save gained `run.branches`, `run.pendingBoon` and
+   * `player.claimedChests`.
+   *
+   * An older save has walked no forks, carries nothing, and has opened no chests,
+   * which is exactly what the empty defaults mean.
+   */
+  2: (doc) => {
+    const player = (doc.player ?? {}) as Record<string, unknown>;
+    const run = (doc.run ?? {}) as Record<string, unknown>;
+    return {
+      ...doc,
+      saveVersion: 3,
+      player: { ...player, claimedChests: [] },
+      run: { ...run, branches: {}, pendingBoon: null },
+    };
+  },
 };
 
 export class SaveMigrationError extends Error {

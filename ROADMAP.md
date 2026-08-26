@@ -6,9 +6,9 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0–3 are complete** — the game is
-playable end to end with full collection depth and a live economy, and deployable to Vercel for live review
-(`DEPLOYMENT.md`). Phase 4 (the endless road) is next.
+Questions answered and development started **2026-08-26**. **Phases 0–4 are complete** — the game is
+playable end to end with full collection depth, a live economy and an endless three-biome road, and
+deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 5 (profile & records) is next.
 
 ---
 
@@ -77,13 +77,20 @@ fragments buy a chosen card; energy gates combat stages with a clear out-of-ener
 own; a daily shop trades earned currency for energy, tomes and tokens. Save migrated v1 → v2 with a fixture
 test. 277 tests green; verified at 390×844 and 360×640.
 
-## Phase 4 — The endless road
+## Phase 4 — The endless road ✅ COMPLETE
 
-- Region generator v2: 3 authored biomes/themes, elites, bosses with modifiers, endless scaling curve
+- Region generator v2: 3 authored biomes with node plans and palettes, elites, bosses with modifiers, endless scaling curve
 - Event/choice encounters, treasure & camp nodes (Q16)
 - Fork nodes: 2-way risk/reward branches that rejoin (Q2)
 - Stage star chests / region completion rewards; difficulty tuning pass
-- **Light elemental affinity:** stage element themes, counter-element bonus +10–15% (Q21)
+- **Light elemental affinity:** stage element themes, counter-element bonus +12% (Q21)
+
+**Exit:** ✅ three biomes (Sunken Isles, Ashfall Reach, Verdant Wound) of ten authored nodes each, every one
+carrying a fork that rejoins within three stages; elites and bosses roll twists that are printed before energy
+is spent and paid for in loot; twelve vignettes with priced choices and boons that ride into the next fight;
+region star chests; and a road that loops the biomes at a compounding difficulty past stage 30. Save migrated
+v2 → v3 with a fixture test. 333 tests green, including a balance guard that walks every combat stage on both
+sides of every fork; verified at 390×844 and 360×640.
 
 ## Phase 5 — Profile & records
 

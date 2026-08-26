@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CONTENT, CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
+import { maxStarsForKind } from '@/content/schemas';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
@@ -172,7 +173,7 @@ export function DevPanel() {
       <div className={styles.group}>
         <div className={styles.groupTitle}>Jump to stage</div>
         <div className={styles.row}>
-          {[1, 5, 9, 10, 20].map((stage) => (
+          {[1, 3, 5, 6, 10, 15, 20, 25, 30, 33].map((stage) => (
             <Button
               key={stage}
               variant="neutral"
@@ -184,9 +185,34 @@ export function DevPanel() {
               }}
             >
               {stage}
-              {stage === 10 ? ' (boss)' : ''}
+              {stage % 10 === 0 ? '★' : ''}
             </Button>
           ))}
+        </div>
+        <div className={styles.row}>
+          <Button
+            variant="warning"
+            onClick={() => {
+              // Full marks across the authored road, so region chests unlock —
+              // and only what each node kind can actually award (Q17).
+              for (let n = 1; n <= 30; n++) {
+                player.recordStage(n, maxStarsForKind(run.stage(n).kind));
+              }
+              run.refreshWindow();
+              screen.switchTab('map');
+            }}
+          >
+            3★ every stage
+          </Button>
+          <Button
+            variant="neutral"
+            onClick={() => {
+              const span = run.forkAt(run.currentStage) ?? run.forkAt(6);
+              if (span) run.chooseBranch(span.start, run.branchFor(span.start) === 'a' ? 'b' : 'a');
+            }}
+          >
+            Flip fork
+          </Button>
         </div>
       </div>
 
