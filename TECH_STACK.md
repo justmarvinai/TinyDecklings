@@ -62,7 +62,7 @@ The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps 
 | Lint/format | **ESLint + Prettier** | Standard |
 | Runtime targets | Evergreen mobile browsers; Android WebView / iOS WKWebView (Capacitor later) | See performance budget in `ARCHITECTURE.md` |
 
-**No backend. Fully offline.** All content ships with the app; saves are local (`Q27` covers export/cloud ambitions).
+**No backend. Fully offline.** All content ships with the app; saves are local; manual export/import lands in Phase 7 (Q27 decided).
 
 ## 4. How this stays Capacitor-ready (without doing Capacitor now)
 
@@ -75,6 +75,6 @@ The Capacitor requirement effectively mandates a **web stack** (Capacitor wraps 
 ## 5. Notable non-goals / deferred tech
 
 - **PixiJS/WebGL renderer** — only if canvas-overlay VFX provably hits perf limits.
-- **i18n framework** — English-only strings module first, but *all user-facing strings centralized* so i18n is a bolt-on (`Q30`).
+- **i18n framework** — English-only first release (Q30 decided), but *all user-facing strings centralized* so i18n is a bolt-on later.
 - **Service worker / PWA install** — nice-to-have after the slice; trivially compatible.
 - **React Router** — screens are a game state machine, not URLs; a tiny screen-stack store replaces routing (see `ARCHITECTURE.md`).

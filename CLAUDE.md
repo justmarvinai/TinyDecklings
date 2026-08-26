@@ -2,12 +2,13 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## ⛔ Current project status: PLANNING — development gate is CLOSED
+## ⛔ Current project status: DECISIONS LOCKED — awaiting explicit start instruction
 
-**Do not implement gameplay, UI, or scaffolding until the owner has answered `USER_QUESTIONS.md` and
-explicitly instructed development to start.** Until then, only documentation and planning work is allowed.
-When answers arrive: update all affected docs, state explicitly which docs changed, reconcile contradictions,
-finalize `IMPLEMENTATION_PLAN.md` — then begin with Phase 0.
+`USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
+the energy pacing system) and all docs are updated to the decided state. **Do not implement gameplay, UI, or
+scaffolding until the owner explicitly instructs development to start.** When that instruction arrives, begin
+with Phase 0 of `IMPLEMENTATION_PLAN.md`, top to bottom. New owner-preference ambiguities discovered later go
+into `USER_QUESTIONS.md` → "Open questions" instead of being silently decided.
 
 ## What this project is
 
@@ -25,7 +26,7 @@ endless stage map. Full vision: `GAME_DESIGN.md`.
 | `CONTENT_SCHEMA.md` | Data shapes for cards/gear/skills/effects/map/economy/saves |
 | `UI_STYLE_GUIDE.md` | Visual language extracted from `assets/examples/` — binding for all UI work |
 | `ROADMAP.md` / `IMPLEMENTATION_PLAN.md` | Phases; concrete tasks + acceptance criteria |
-| `USER_QUESTIONS.md` | Open owner decisions — **the development gate** |
+| `USER_QUESTIONS.md` | Owner decision log (Q1–Q30 answered 2026-08-26) + intake for future questions — **the development gate** |
 | `CHANGELOG.md` | Keep-a-Changelog history; update with every meaningful change |
 
 ## Commands

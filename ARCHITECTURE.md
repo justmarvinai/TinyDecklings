@@ -125,7 +125,7 @@ Why: deterministic tests ("given seed + intents, expect events"), replayability,
 
 - One **versioned save document** (`saveVersion`, `playerState`, `runState`, `settings`, timestamps) — schema in `CONTENT_SCHEMA.md` §Save.
 - **Migrations**: pure functions `vN → vN+1`, run in sequence on load; tested with fixture saves.
-- **Autosave** on every meaningful transition (battle end, reward claim, map move, equip change, purchase) and on `visibilitychange` — a killed app never loses more than the current animation. Mid-battle resume: persist battle seed + intent log; replaying the log restores the exact state (`Q27` covers export/import).
+- **Autosave** on every meaningful transition (battle end, reward claim, map move, equip change, purchase) and on `visibilitychange` — a killed app never loses more than the current animation. Mid-battle resume: persist battle seed + intent log; replaying the log restores the exact state. Manual export/import ships in Phase 7 (Q27 decided).
 - Storage behind `StorageService` (async-shaped API even over localStorage) → Capacitor Preferences/Filesystem swap later.
 
 ## 8. Navigation model

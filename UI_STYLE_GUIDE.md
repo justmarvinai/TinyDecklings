@@ -148,7 +148,7 @@ Two systems must be tellable apart at a glance: **cards carry rarity on the fram
 - **Ambient life:** active-turn glow pulse, ready-skill shimmer, legendary frame slow sheen, map current-node bob.
 - **Numbers count up** (gold totals, power) — never snap.
 - Speed toggle (X1/X2) scales battle sequencer timings only, not menu motion.
-- Respect `prefers-reduced-motion`: swap springs/particles for fades (`Q28` covers a11y).
+- Respect `prefers-reduced-motion`: swap springs/particles for fades (accessibility floor decided — Q28).
 
 ## 10. Do / Don't
 

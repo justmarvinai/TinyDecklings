@@ -1,16 +1,17 @@
 # TinyDecklings — Content Schema
 
-> Status: **PLANNING**. Authoritative shapes will be Zod schemas in `src/content/schemas/`; this document is their
-> human-readable blueprint and will be kept in sync. TypeScript-style notation below; all ids are stable snake_case strings.
-> Open balance questions are flagged with `Qn` (see `USER_QUESTIONS.md`).
+> Status: **DECISIONS LOCKED (2026-08-26)** — all owner questions answered (see `USER_QUESTIONS.md` decision log);
+> `(Qn)` marks are provenance, not open items. Authoritative shapes will be Zod schemas in `src/content/schemas/`;
+> this document is their human-readable blueprint and will be kept in sync. TypeScript-style notation below;
+> all ids are stable snake_case strings. Numeric values are initial tunables in `content/economy`.
 
 ## 1. Rarity — two independent systems (owner directive)
 
 ```ts
 // Cards and Gear DELIBERATELY use separate enums; they never mix,
 // compare, or share color tokens.
-type CardRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';        // Q8
-type GearRarity = 'worn' | 'sturdy' | 'refined' | 'ornate' | 'exalted' | 'mythic'; // Q9
+type CardRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';        // decided (Q8)
+type GearRarity = 'worn' | 'sturdy' | 'refined' | 'ornate' | 'exalted' | 'mythic'; // decided (Q9)
 
 interface CardRarityDef {
   id: CardRarity;
@@ -23,7 +24,7 @@ interface CardRarityDef {
 interface GearRarityDef {
   id: GearRarity;
   colorToken: string;               // css token, e.g. '--rarity-gear-mythic'
-  substatCount: number;             // Q11
+  substatCount: number;             // rarity-scaled (Q11a)
   mainStatMultiplier: number;
   dropWeight: number;
 }
@@ -32,7 +33,7 @@ interface GearRarityDef {
 ## 2. Stats
 
 ```ts
-type StatKey = 'strength' | 'attack' | 'speed';   // speed dormant in slice (Q5)
+type StatKey = 'strength' | 'attack' | 'speed';   // decided (Q5a); speed dormant until post-slice
 
 interface StatBlock { strength: number; attack: number; speed: number; }
 
@@ -52,7 +53,7 @@ interface CardDef {
   cardClass: CardClass;
   rarity: CardRarity;
   attackType: AttackType;
-  element?: ElementId;            // Q21 — dormant until elements decided
+  element?: ElementId;            // light stage-affinity system, lands Phase 4 (Q21a)
   baseStats: StatBlock;           // at level 1, base stars
   growth: GrowthCurveId;          // per-rarity level scaling curve (content/economy)
   attackPattern: AttackPatternId; // 'single' default
@@ -88,7 +89,8 @@ interface EnemyGroupDef {
 ```ts
 type GearSlot =
   | 'weapon' | 'helmet' | 'shield' | 'gauntlets'
-  | 'armor' | 'boots' | 'ring' | 'amulet' | 'artifact';   // set trimmed by Q10
+  | 'armor' | 'boots' | 'ring' | 'amulet' | 'artifact';   // full set decided (Q10a);
+                                                          // slice activates weapon/helmet/armor/boots
 
 interface GearSlotDef {
   id: GearSlot;
@@ -104,7 +106,7 @@ interface GearDef {
   rarity: GearRarity;
   stars: 1 | 2 | 3 | 4 | 5;  // item grade (reference shows starred gear)
   mainStatBase: number;      // scaled by rarity/stars/enhancement
-  substats?: SubstatRoll[];  // rolled on drop per rarity (Q11)
+  substats?: SubstatRoll[];  // rolled on drop per rarity (Q11a); no rerolls
   setId?: string;            // artifact sets — later phase (Q22)
   // ⚠ NO icon field, NO art field — icon ALWAYS resolves from slot
   //   (owner directive: every Boots shows THE boots icon, etc.)
@@ -117,7 +119,7 @@ interface GearDef {
 interface OwnedGear {
   uid: string;               // instance id
   defId: string;
-  enhanceLevel: number;      // Q11
+  enhanceLevel: number;      // gold enhancement (Q11a)
   substats: SubstatRoll[];   // as rolled
   equippedBy?: string;       // owned-card uid
 }
@@ -130,7 +132,7 @@ interface SkillDef {
   id: string;
   name: string;
   iconKey: string;               // placeholder now, owner art later
-  cooldown: number;              // rounds; battle badge shows remaining (Q4)
+  cooldown: number;              // rounds; battle badge shows rounds-until-ready (Q4a)
   maxLevel: number;
   effects: EffectDef[];          // what it does — see §6
   levelScaling: Partial<Record<EffectParam, PerLevelCurve>>;
@@ -223,10 +225,10 @@ interface RegionDef {
   elitePool: string[];
   bossPool: string[];
   eventPool: string[];           // EncounterDef ids
-  elementBias?: ElementId;       // node badges (Q21)
+  elementBias?: ElementId;       // node badges; counter-element bonus stages (Q21a)
 }
 
-type StageKind = 'battle' | 'elite' | 'boss' | 'event' | 'treasure' | 'camp'; // Q16
+type StageKind = 'battle' | 'elite' | 'boss' | 'event' | 'treasure' | 'camp'; // decided (Q16)
 
 interface GeneratedStage {       // engine/map output — lives in run save
   number: number;                // endless global index (map shows "33. FAR ISLAND")
@@ -236,7 +238,7 @@ interface GeneratedStage {       // engine/map output — lives in run save
   seed: number;
   encounterRef: string;          // enemy group or event id
   difficultyBudget: number;      // monotonic in stage number
-  bestStars: 0 | 1 | 2 | 3;      // persisted record (Q17)
+  bestStars: 0 | 1 | 2 | 3;      // persisted record; 3★ flawless / 2★ ≤2 deaths / 1★ win (Q17a)
 }
 
 interface EncounterDef {         // non-battle vignettes (event/treasure/camp)
@@ -254,9 +256,11 @@ interface EncounterDef {         // non-battle vignettes (event/treasure/camp)
 ## 9. Economy
 
 ```ts
-type CurrencyId = 'gold' | 'gems' | 'energy'            // energy → Q14
-  | 'token_unit_t1' | 'token_unit_t2' | 'token_unit_t3' // summon tokens
-  | 'token_hero' | 'fragment';                          // Q13/Q15 refine
+type CurrencyId = 'gold' | 'gems' | 'energy'            // energy decided (Q14b) — live value +
+                                                        // regen anchor live in SaveDoc.player.energy,
+                                                        // not the currencies record; rewards may grant it
+  | 'token_unit_t1' | 'token_unit_t2' | 'token_unit_t3' // summon tokens (earnable only — Q13a)
+  | 'token_hero' | 'fragment';                          // red-swords counter cut (Q15a)
 
 interface LootTableDef {
   id: string;
@@ -277,6 +281,17 @@ interface SummonPoolDef {
   pity?: { rarity: CardRarity; threshold: number }[]; // "Legendary 18/55"
   x10Discount?: number;
 }
+
+// Energy pacing (decided Q14b; system lands Phase 3). Initial tunables in
+// content/economy/energy.ts. Regen is computed lazily from the save's regen
+// anchor via injected time — never Date.now in the engine.
+interface EnergyConfig {
+  cap: number;                              // 30
+  regenSeconds: number;                     // 120 (1 energy / 2 min)
+  costs: Record<StageKind, number>;         // battle 5 · elite 6 · boss 8 ·
+                                            // event/treasure/camp 0 (free)
+  // rewards may push current energy above cap; regen pauses while above cap
+}
 ```
 
 ## 10. Player save (versioned — see `ARCHITECTURE.md` §7)
@@ -288,9 +303,10 @@ interface SaveDoc {
   player: {
     profile: { name: string; avatarKey: string; level: number; xp: number };
     currencies: Record<CurrencyId, number>;
+    energy: { current: number; regenAnchor: string };  // Q14b — lazy regen from anchor
     cards: OwnedCard[];
     gear: OwnedGear[];
-    decks: DeckConfig[];         // 1 hero + 8 units each (Q6)
+    decks: DeckConfig[];         // 1 hero + 8 units each, max 6 decks (Q6a)
     activeDeckIndex: number;
     stageRecords: Record<number, { bestStars: 0|1|2|3; clears: number }>;
     unlocks: string[];           // feature flags: forge, pools, slots…
