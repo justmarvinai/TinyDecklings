@@ -315,14 +315,34 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 | **Summon**                     | `Card_Summon.png`                     | Phase 3                                                                                     |
 | **Shop**                       | `Shop.png` (style ref)                | Phase 3 (soft-currency v1)                                                                  |
 | **Settings**                   | `Settings.png` (style ref)            | Phase 2 (minimal early)                                                                     |
-| **Profile**                    | `Player_Profile_Page.png` (style ref) | Phase 5                                                                                     |
+| **More** (hub)                 | —                                     | Phase 5                                                                                     |
+| **Profile**                    | `Player_Profile_Page.png` (style ref) | Phase 5 ✅                                                                                  |
 | **Events hub**                 | `Events.png` (style ref)              | **Post-first-release backlog**                                                              |
 | **Season pass**                | `Battlepass.png` (style ref)          | **Post-first-release backlog**                                                              |
 | **Leaderboard**                | `Leaderboard.png` (style ref)         | **Cut for first release** (offline game, no backend); local records are a backlog candidate |
 
 **Navigation [DECIDED — Q24]:** persistent **top HUD** (avatar/level, currencies, add button) + **bottom tab bar**
 (MAP · CARDS · SUMMON · SHOP · MORE), modals for detail views, purple back button inside stacked screens.
-**Map is home.** First release ships Map, Battle, Cards (+detail), Summon, Shop v1, Settings, Profile.
+**Map is home.** First release ships Map, Battle, Cards (+detail), Summon, Shop v1, More, Settings, Profile.
+
+### 12.1 Profile & records **[SHIPPED Phase 5 — Q23]**
+
+The profile is **derived, not tallied**. Stars, clears, the collection and the summon counters already record
+what the player did, so the screen reads them rather than keeping a second copy that can drift. The only
+stored record is battles lost, because a loss leaves no other trace; everything else — furthest stage, stars,
+flawless clears, regions and chests, vignettes walked, risky roads taken, laps of the endless road, the
+collection by rarity, gear held, summons made — is computed on read.
+
+- **Commander level** is derived from stars earned (one per three), so the badge on the HUD is a summary of
+  the journey and can never disagree with the stage records. The stored `profile.level`/`xp` fields were
+  dropped in save v4.
+- **Achievements-lite:** each names one of a closed set of profile metrics and a target, so authoring one is
+  a data entry. Because the metrics are derived, an achievement added later is correctly already earned by a
+  player who did the thing months ago. Each carries a small payout, claimed by hand, in currency the player
+  earns (rule 12). The registry refuses a target the shipped content could never reach.
+- **Locked facades (Q22):** Rank, Trait, Foil and artifact sets sit on the card sheet, and Events, Season pass
+  and local records sit in the More tab — visible, locked, and each able to say what it would have been and
+  why it is not here. One description per system, shared by every place it appears.
 
 ---
 

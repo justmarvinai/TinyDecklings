@@ -86,6 +86,13 @@ export interface PlayerState {
   hasClaimedChest: (key: string) => boolean;
   /** Marks a chest opened; returns false if it was already claimed. */
   claimChest: (key: string) => boolean;
+
+  /** Achievement rewards (Phase 5). Returns false if already taken. */
+  claimAchievement: (id: string) => boolean;
+  /** Renames the commander; trimmed and clamped to what the save allows. */
+  setName: (name: string) => void;
+  /** The one record that leaves no other trace in the save. */
+  recordDefeat: () => void;
 }
 
 let uidCounter = 0;
@@ -489,4 +496,46 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
     return true;
   },
+
+  claimAchievement: (id) => {
+    const save = get().save;
+    if (!save || save.player.claimedAchievements.includes(id)) return false;
+    set({
+      save: {
+        ...save,
+        player: {
+          ...save.player,
+          claimedAchievements: [...save.player.claimedAchievements, id],
+        },
+      },
+    });
+    return true;
+  },
+
+  setName: (name) =>
+    set((s) => {
+      if (!s.save) return s;
+      const trimmed = name.trim().slice(0, 24);
+      if (trimmed.length === 0) return s;
+      return {
+        save: {
+          ...s.save,
+          player: { ...s.save.player, profile: { ...s.save.player.profile, name: trimmed } },
+        },
+      };
+    }),
+
+  recordDefeat: () =>
+    set((s) => {
+      if (!s.save) return s;
+      return {
+        save: {
+          ...s.save,
+          player: {
+            ...s.save.player,
+            stats: { ...s.save.player.stats, battlesLost: s.save.player.stats.battlesLost + 1 },
+          },
+        },
+      };
+    }),
 }));

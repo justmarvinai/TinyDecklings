@@ -9,6 +9,7 @@
  */
 import { z } from 'zod';
 import {
+  achievementDef,
   attackPatternDef,
   cardDef,
   encounterDef,
@@ -23,6 +24,7 @@ import {
   statusDef,
   summonPoolDef,
   shopOfferDef,
+  type AchievementDef,
   type AttackPatternDef,
   type CardDef,
   type EncounterDef,
@@ -52,6 +54,7 @@ export interface ContentSource {
   regions: readonly unknown[];
   encounters: readonly unknown[];
   stageModifiers: readonly unknown[];
+  achievements: readonly unknown[];
   lootTables: readonly unknown[];
   summonPools: readonly unknown[];
   growthCurves: readonly unknown[];
@@ -69,6 +72,7 @@ export interface Content {
   regions: ReadonlyMap<string, RegionDef>;
   encounters: ReadonlyMap<string, EncounterDef>;
   stageModifiers: ReadonlyMap<string, StageModifierDef>;
+  achievements: ReadonlyMap<string, AchievementDef>;
   lootTables: ReadonlyMap<string, LootTableDef>;
   summonPools: ReadonlyMap<string, SummonPoolDef>;
   growthCurves: ReadonlyMap<string, GrowthCurveDef>;
@@ -123,6 +127,7 @@ export function buildContent(source: ContentSource): Content {
   const regions = parseTable('region', regionDef, source.regions, problems);
   const encounters = parseTable('encounter', encounterDef, source.encounters, problems);
   const stageModifiers = parseTable('modifier', stageModifierDef, source.stageModifiers, problems);
+  const achievements = parseTable('achievement', achievementDef, source.achievements, problems);
   const lootTables = parseTable('loot', lootTableDef, source.lootTables, problems);
   const summonPools = parseTable('pool', summonPoolDef, source.summonPools, problems);
   const growthCurves = parseTable('growth', growthCurveDef, source.growthCurves, problems);
@@ -392,6 +397,54 @@ export function buildContent(source: ContentSource): Content {
     }
   }
 
+  /**
+   * Achievements must be earnable by the content that actually ships.
+   *
+   * Some metrics have a ceiling the game itself sets — there are only so many
+   * collectible cards, regions or chests — and a target above it is a task the
+   * player can never finish. Metrics with no ceiling (stars, wins, summons) are
+   * left alone, since those climb forever.
+   */
+  const collectible = [...cards.values()].filter((c) => !c.enemyOnly);
+  const ceilings: Partial<Record<string, { limit: number; what: string }>> = {
+    distinctCards: { limit: collectible.length, what: 'collectible cards' },
+    heroesOwned: {
+      limit: collectible.filter((c) => c.cardClass === 'hero').length,
+      what: 'collectible heroes',
+    },
+    legendaryCards: {
+      limit: collectible.filter((c) => c.rarity === 'legendary').length,
+      what: 'collectible legendary cards',
+    },
+    regionsCleared: { limit: regions.size, what: 'authored regions' },
+    chestsOpened: {
+      limit: [...regions.values()].reduce((sum, r) => sum + r.chestThresholds.length, 0),
+      what: 'region chests',
+    },
+  };
+
+  for (const achievement of achievements.values()) {
+    const ceiling = ceilings[achievement.metric];
+    if (ceiling) {
+      need(
+        achievement.target <= ceiling.limit,
+        `achievement "${achievement.id}": asks for ${achievement.target} but the game only has ${ceiling.limit} ${ceiling.what}`,
+      );
+    }
+    const reward = achievement.reward;
+    if (reward?.kind === 'card' || reward?.kind === 'fragment') {
+      need(
+        cards.has(reward.cardId),
+        `achievement "${achievement.id}": unknown card "${reward.cardId}"`,
+      );
+    }
+    if (reward?.kind === 'gearDrop') {
+      for (const slot of reward.slots) {
+        need(gearSlots.has(slot), `achievement "${achievement.id}": unknown gear slot "${slot}"`);
+      }
+    }
+  }
+
   if (problems.length > 0) throw new ContentValidationError(problems);
 
   return {
@@ -405,6 +458,7 @@ export function buildContent(source: ContentSource): Content {
     regions,
     encounters,
     stageModifiers,
+    achievements,
     lootTables,
     summonPools,
     growthCurves,

@@ -11,6 +11,8 @@ import { Button, IconChip, Modal, Panel, StarRow, Tabs } from '@/ui/design/primi
 import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
 import { DeckScreen } from './DeckScreen';
+import { LockedFeatureSheet } from '@/ui/components/LockedFeatureSheet';
+import { deferredLabel, type DeferredFeatureId } from '@/ui/text/deferred';
 import styles from './CardsScreen.module.css';
 
 type CollectionTab = 'units' | 'heroes' | 'deck';
@@ -152,6 +154,7 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
   const [pickingSlot, setPickingSlot] = useState<GearSlot | null>(null);
   const [showSkills, setShowSkills] = useState(false);
   const [showEvolve, setShowEvolve] = useState(false);
+  const [lockedFeature, setLockedFeature] = useState<DeferredFeatureId | null>(null);
 
   const def = card ? CONTENT.cards.get(card.defId) : undefined;
   if (!card || !def) return null;
@@ -296,13 +299,9 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
           >
             {card.favorite ? 'Favoured' : 'Favourite'}
           </Button>
-          <Button stacked locked lockHint="Later">
-            Rank
-          </Button>
-          <Button stacked locked lockHint="Later">
-            Foil
-          </Button>
         </div>
+
+        <DeferredRow onOpen={setLockedFeature} />
       </div>
 
       {pickingSlot ? (
@@ -310,7 +309,44 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
       ) : null}
       {showSkills ? <SkillSheet uid={uid} onClose={() => setShowSkills(false)} /> : null}
       {showEvolve ? <EvolveSheet uid={uid} onClose={() => setShowEvolve(false)} /> : null}
+      {lockedFeature ? (
+        <LockedFeatureSheet feature={lockedFeature} onClose={() => setLockedFeature(null)} />
+      ) : null}
     </Modal>
+  );
+}
+
+/**
+ * The systems the card sheet shows but does not have yet (Q22).
+ *
+ * Visible but locked, set apart from the live actions so nothing here competes
+ * with what the player can actually do. Tapping one explains what it would be.
+ */
+const DEFERRED_CARD_FEATURES: readonly DeferredFeatureId[] = [
+  'rank',
+  'trait',
+  'foil',
+  'artifactSet',
+];
+
+function DeferredRow({ onOpen }: { onOpen: (id: DeferredFeatureId) => void }) {
+  return (
+    <div className={styles.deferred}>
+      <span className={styles.deferredLabel}>After the first release</span>
+      <div className={styles.deferredRow}>
+        {DEFERRED_CARD_FEATURES.map((id) => (
+          <Button
+            key={id}
+            variant="neutral"
+            className={styles.deferredButton}
+            onClick={() => onOpen(id)}
+          >
+            <IconChip name="ui.lock" size={16} />
+            {deferredLabel(id, true)}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 }
 

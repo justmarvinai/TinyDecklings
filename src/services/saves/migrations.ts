@@ -48,6 +48,33 @@ export const MIGRATIONS: Readonly<Record<number, (doc: UnknownSave) => UnknownSa
       run: { ...run, branches: {}, pendingBoon: null },
     };
   },
+
+  /**
+   * v3 → v4: the profile arrived (Phase 5). Almost everything it shows is derived
+   * from what the save already held, so this adds only what cannot be: the
+   * achievements whose reward has been taken, and the battles lost.
+   *
+   * It also *drops* `profile.level` and `profile.xp`. Nothing is lost: the
+   * commander level is now derived from stars earned, which the save has kept all
+   * along, and those two fields never advanced.
+   *
+   * An older save has claimed nothing. Its losses are genuinely unknown, so they
+   * start at zero rather than being invented.
+   */
+  3: (doc) => {
+    const player = (doc.player ?? {}) as Record<string, unknown>;
+    const profile = (player.profile ?? {}) as Record<string, unknown>;
+    return {
+      ...doc,
+      saveVersion: 4,
+      player: {
+        ...player,
+        profile: { name: profile.name, avatarKey: profile.avatarKey },
+        claimedAchievements: [],
+        stats: { battlesLost: 0 },
+      },
+    };
+  },
 };
 
 export class SaveMigrationError extends Error {

@@ -6,9 +6,10 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0–4 are complete** — the game is
-playable end to end with full collection depth, a live economy and an endless three-biome road, and
-deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 5 (profile & records) is next.
+Questions answered and development started **2026-08-26**. **Phases 0–5 are complete** — the game is
+playable end to end with full collection depth, a live economy, an endless three-biome road and a player
+record with achievements, and deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 6 (polish &
+feel) is next.
 
 ---
 
@@ -92,10 +93,17 @@ region star chests; and a road that loops the biomes at a compounding difficulty
 v2 → v3 with a fixture test. 333 tests green, including a balance guard that walks every combat stage on both
 sides of every fork; verified at 390×844 and 360×640.
 
-## Phase 5 — Profile & records
+## Phase 5 — Profile & records ✅ COMPLETE
 
 - Player profile (stats, records), achievements-lite (Q23: Profile + Settings are the only meta screens in first release)
 - Locked-state facades polished for deferred systems (RANK/TRAIT/FOIL/artifact sets)
+
+**Exit:** ✅ a More hub leading to Profile and Settings; a profile that reads the journey, the collection and
+the battle record **out of the save rather than a parallel tally**; seventeen achievements over eighteen named
+metrics, each with a claimable earned payout; a commander level derived from stars, so the badge on the HUD
+can never disagree with what the player has done; and every deferred system — Rank, Trait, Foil, artifact
+sets, Events, Season pass, local records — visible, locked, and able to explain itself. Save migrated
+v3 → v4 with a fixture test. 353 tests green; verified at 390×844 and 360×640.
 
 ## Phase 6 — Polish & feel
 

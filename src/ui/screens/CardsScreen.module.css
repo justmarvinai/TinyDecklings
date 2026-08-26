@@ -361,3 +361,34 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/* Systems the sheet shows but does not have yet (Q22) — set apart from the live
+   actions so nothing here competes with what the player can actually do. */
+.deferred {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--outline-width-thin) solid var(--outline-dark);
+}
+
+.deferredLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-secondary);
+}
+
+.deferredRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-1);
+}
+
+.deferredButton {
+  min-height: 48px;
+  padding: 0 4px;
+  gap: 3px;
+  font-size: 11px;
+  opacity: 0.8;
+}

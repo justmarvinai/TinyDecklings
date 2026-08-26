@@ -75,6 +75,14 @@ const MANIFEST = {
   'map.chest': 'chest',
   'map.chestLocked': 'locked-chest',
 
+  'profile.player': 'person',
+  'award.trophy': 'trophy',
+  'award.laurels': 'laurels',
+  'award.medal': 'ribbon-medal',
+  'award.spark': 'sparkles',
+  'record.steps': 'footsteps',
+  'record.progress': 'progression',
+
   'nav.map': 'treasure-map',
   'nav.cards': 'card-play',
   'nav.summon': 'portal',

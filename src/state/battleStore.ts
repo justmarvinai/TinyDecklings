@@ -9,7 +9,12 @@ import { create } from 'zustand';
 import { CONTENT } from '@/content';
 import { starsForResult } from '@/content/schemas';
 import { createRng } from '@/engine/rng';
-import { applyRewardBonus, applyStarBonus, rollLoot, type RewardBundle } from '@/engine/economy/rewards';
+import {
+  applyRewardBonus,
+  applyStarBonus,
+  rollLoot,
+  type RewardBundle,
+} from '@/engine/economy/rewards';
 import { lootTableForStage } from '@/engine/map/generate';
 import { usePlayerStore } from './playerStore';
 import { useRunStore } from './runStore';
@@ -140,6 +145,10 @@ export const useBattleStore = create<BattleSlice>((set, get) => ({
     // A boon from the vignette before this stage is spent by the fight that used
     // it, win or lose (Phase 4).
     run.takeBoon();
+
+    // Wins are readable from the stage records; a loss leaves no other trace, so
+    // it is the one thing the profile has to be told about (Phase 5).
+    if (state.outcome === 'defeat') player.recordDefeat();
 
     let rewards: RewardBundle = { currencies: {}, cardXp: 0, gear: [], cards: [], fragments: [] };
     if (state.outcome === 'victory') {

@@ -8,6 +8,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-26 — **Phase 5: profile & records** (`IMPLEMENTATION_PLAN.md` 5.1–5.4).
+  - **A profile that is derived, not tallied** — furthest stage, stars, flawless clears, regions and chests,
+    vignettes walked, risky roads taken, laps of the endless road, the collection by rarity, gear held and
+    summons made are all computed from the save on read. The only stored record is battles lost, because a
+    loss is the one thing that leaves no other trace. Nothing here can drift out of step with what the player
+    actually did
+  - **Commander level derived from stars** — one per three earned. The badge on the HUD is now a summary of
+    the journey rather than a second number that never advanced
+  - **Achievements-lite (Q23)** — seventeen across three groups, each naming one of eighteen profile metrics
+    and a target, so authoring one is a data entry. Because the metrics are derived, an achievement added
+    later is correctly already earned by a player who did the thing months ago. Each carries a small payout,
+    claimed by hand, in currency the player earns
+  - **A More hub** — Profile and Settings, the only meta screens in the first release (Q23), with a badge
+    when a reward is waiting
+  - **Locked facades polished (Q22)** — Rank, Trait, Foil and artifact sets on the card sheet; Events, Season
+    pass and local records in the More tab. Each is visible, locked, and explains what it would have been and
+    why it is not here, from one shared description rather than three drifting copies
+  - **A new pipeline guard** — an achievement may not ask for more than the shipped content can give: more
+    cards than exist, more regions than are authored, more chests than there are. A test also pins "Full
+    Roster" to the real size of the roster, so adding a card cannot quietly turn it into a lie
+  - 353 tests green; verified at 390×844 and 360×640
+
 - 2026-08-26 — **Phase 4: the endless road** (`IMPLEMENTATION_PLAN.md` 4.1–4.7).
   - **Three authored biomes** — Sunken Isles, Ashfall Reach and Verdant Wound, each ten stages with its own
     palette, tagline and **node plan**: where the elite lands and where you get to breathe is now a content
@@ -63,6 +85,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   - 277 tests green; verified at 390×844 and 360×640
 
 ### Changed
+
+- 2026-08-26 — **Save format v3 → v4**: added `player.claimedAchievements` and `player.stats`, and **dropped**
+  `player.profile.level` and `player.profile.xp`. Nothing is lost — the commander level is now derived from
+  stars earned, which the save has kept all along, and those two fields never advanced. Existing saves migrate
+  automatically; a fixture test walks a v3 document forward, and the v1 fixture now walks the whole chain.
+- 2026-08-26 — The engine gained `engine/records`, which describes what it reads structurally rather than
+  importing the save module — its tests build their own fixture, so the purity rule is proven rather than
+  asserted.
 
 - 2026-08-26 — **Save format v2 → v3**: added `run.branches` (which side of each fork was taken),
   `run.pendingBoon` and `player.claimedChests`. The road itself is still derived from the run seed — only the

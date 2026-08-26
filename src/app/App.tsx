@@ -9,6 +9,7 @@ import {
 } from '@/state/screenStore';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
+import { commanderLevel, totalStarsOf } from '@/engine/records/profile';
 import { TabBar, type TabBarItem } from '@/ui/components/TabBar';
 import { TopHud, type HudResource } from '@/ui/components/TopHud';
 import { Button } from '@/ui/design/primitives';
@@ -36,6 +37,12 @@ const ShopScreen = lazy(() =>
 );
 const SettingsScreen = lazy(() =>
   import('@/ui/screens/SettingsScreen').then((m) => ({ default: m.SettingsScreen })),
+);
+const MoreScreen = lazy(() =>
+  import('@/ui/screens/MoreScreen').then((m) => ({ default: m.MoreScreen })),
+);
+const ProfileScreen = lazy(() =>
+  import('@/ui/screens/ProfileScreen').then((m) => ({ default: m.ProfileScreen })),
 );
 const KitchenSinkScreen = lazy(() =>
   import('@/ui/screens/KitchenSinkScreen').then((m) => ({ default: m.KitchenSinkScreen })),
@@ -72,19 +79,6 @@ function useEnergyTick() {
 
   void save;
   return useEconomyStore.getState().energy();
-}
-
-/** Placeholder for screens that land in later phases, so navigation is walkable now. */
-function ComingSoon({ title, phase }: { title: string; phase: string }) {
-  return (
-    <div className={styles.placeholder}>
-      <h1 className={styles.placeholderTitle}>{title}</h1>
-      <p className={styles.placeholderBody}>
-        This screen is built in {phase}. The shell, design system and content pipeline it stands on
-        are in place.
-      </p>
-    </div>
-  );
 }
 
 export function App() {
@@ -149,7 +143,9 @@ export function App() {
 
   return (
     <div className={styles.app}>
-      {immersive ? null : <TopHud playerLevel={save.player.profile.level} resources={resources} />}
+      {immersive ? null : (
+        <TopHud playerLevel={commanderLevel(totalStarsOf(save))} resources={resources} />
+      )}
 
       <main className={styles.content}>
         <Suspense fallback={<div className={styles.loading}>Loading…</div>}>
@@ -165,10 +161,12 @@ export function App() {
             <SummonScreen />
           ) : screen.kind === 'shop' ? (
             <ShopScreen />
-          ) : screen.kind === 'settings' || screen.kind === 'more' ? (
+          ) : screen.kind === 'more' ? (
+            <MoreScreen />
+          ) : screen.kind === 'settings' ? (
             <SettingsScreen />
           ) : (
-            <ComingSoon title="Profile" phase="Phase 5" />
+            <ProfileScreen />
           )}
         </Suspense>
 

@@ -25,6 +25,7 @@ import { ENEMY_GROUP_DEFS } from './enemies';
 import { REGION_DEFS } from './map/regions';
 import { ENCOUNTER_DEFS } from './map/encounters';
 import { STAGE_MODIFIER_DEFS } from './map/modifiers';
+import { ACHIEVEMENT_DEFS } from './achievements';
 
 export const CONTENT_SOURCE: ContentSource = {
   cards: CARD_DEFS,
@@ -37,6 +38,7 @@ export const CONTENT_SOURCE: ContentSource = {
   regions: REGION_DEFS,
   encounters: ENCOUNTER_DEFS,
   stageModifiers: STAGE_MODIFIER_DEFS,
+  achievements: ACHIEVEMENT_DEFS,
   lootTables: LOOT_TABLE_DEFS,
   summonPools: SUMMON_POOL_DEFS,
   growthCurves: GROWTH_CURVE_DEFS,

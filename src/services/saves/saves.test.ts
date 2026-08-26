@@ -188,6 +188,8 @@ describe('migrations', () => {
     expect(migrated.player.shop).toEqual({ dayKey: '', purchased: {} });
     expect(migrated.player.summonCounts).toEqual({});
     expect(migrated.player.claimedChests).toEqual([]);
+    expect(migrated.player.claimedAchievements).toEqual([]);
+    expect(migrated.player.stats).toEqual({ battlesLost: 0 });
     expect(migrated.run.branches).toEqual({});
     expect(migrated.run.pendingBoon).toBeNull();
   });
@@ -208,7 +210,7 @@ describe('migrations', () => {
 
     const migrated = saveDoc.parse(migrate(v2, CURRENT_SAVE_VERSION));
 
-    expect(migrated.saveVersion).toBe(3);
+    expect(migrated.saveVersion).toBe(CURRENT_SAVE_VERSION);
     // A v2 save has walked no forks, carries nothing and has opened no chests...
     expect(migrated.run.branches).toEqual({});
     expect(migrated.run.pendingBoon).toBeNull();
@@ -222,6 +224,29 @@ describe('migrations', () => {
     );
   });
 
+  it('migrates a v3 save forward to v4, gaining the profile records', () => {
+    const v3 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 3,
+    } as Record<string, unknown>;
+    const player = v3.player as Record<string, unknown>;
+    player.currencies = { ...(player.currencies as object), gems: 42 };
+    player.stageRecords = { '12': { bestStars: 3, clears: 4 } };
+    delete player.claimedAchievements;
+    delete player.stats;
+
+    const migrated = saveDoc.parse(migrate(v3, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(4);
+    // Losses are genuinely unknown for an older save, so they start at zero rather
+    // than being invented.
+    expect(migrated.player.stats).toEqual({ battlesLost: 0 });
+    expect(migrated.player.claimedAchievements).toEqual([]);
+    // Everything the profile derives from is untouched.
+    expect(migrated.player.currencies.gems).toBe(42);
+    expect(migrated.player.stageRecords['12']).toEqual({ bestStars: 3, clears: 4 });
+  });
+
   it('loads a stored v1 save through the service without losing progress', async () => {
     const storage = createMemoryStorageService();
     const v1 = {
@@ -231,6 +256,8 @@ describe('migrations', () => {
     delete (v1.player as Record<string, unknown>).shop;
     delete (v1.player as Record<string, unknown>).summonCounts;
     delete (v1.player as Record<string, unknown>).claimedChests;
+    delete (v1.player as Record<string, unknown>).claimedAchievements;
+    delete (v1.player as Record<string, unknown>).stats;
     delete (v1.run as Record<string, unknown>).branches;
     delete (v1.run as Record<string, unknown>).pendingBoon;
     await storage.write(SAVE_KEY, JSON.stringify(v1));

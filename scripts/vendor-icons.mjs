@@ -87,6 +87,14 @@ const SOURCES = [
   'crossroad',
   'chest',
   'locked-chest',
+  // profile & achievements (Phase 5)
+  'person',
+  'trophy',
+  'laurels',
+  'footsteps',
+  'progression',
+  'ribbon-medal',
+  'sparkles',
   // navigation & ui
   'treasure-map',
   'card-play',
