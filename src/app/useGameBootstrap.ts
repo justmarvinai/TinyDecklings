@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBattleStore } from '@/state/battleStore';
+import { useDeckStore } from '@/state/deckStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useSettingsStore } from '@/state/settingsStore';
@@ -36,9 +37,12 @@ export function useGameBootstrap(services: GameServices): void {
 
       usePlayerStore.getState().hydrate(result.save);
       useRunStore.getState().hydrate(result.save);
+      useDeckStore.getState().hydrate(result.save);
 
       if (result.status === 'new' || result.status === 'corrupt') {
         usePlayerStore.getState().grantStarterCollection();
+        // A fresh player gets a ready-to-fight deck rather than an empty one.
+        useDeckStore.getState().autoBuild(0);
         await services.saves.save(usePlayerStore.getState().getSave());
       }
     })();
@@ -69,11 +73,13 @@ export function useGameBootstrap(services: GameServices): void {
     const unsubRun = useRunStore.subscribe(write);
     const unsubSettings = useSettingsStore.subscribe(write);
     const unsubBattle = useBattleStore.subscribe(write);
+    const unsubDeck = useDeckStore.subscribe(write);
     return () => {
       unsubPlayer();
       unsubRun();
       unsubSettings();
       unsubBattle();
+      unsubDeck();
     };
   }, [services]);
 }

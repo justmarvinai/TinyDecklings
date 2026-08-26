@@ -1,9 +1,12 @@
 /**
- * Slice skills (Q18: one skill per card in the vertical slice).
+ * Skills.
  *
  * Every skill is a bundle of effect primitives — no bespoke engine code per card
  * (CLAUDE.md rule 3). Cooldowns are in rounds; the battle card's badge counts them
  * down (Q4).
+ *
+ * Cards carry up to five, each gated behind a star grade, so ascension always
+ * unlocks something concrete (Q18).
  */
 import type { SkillDef } from '../schemas';
 
@@ -175,5 +178,105 @@ export const SKILL_DEFS: readonly SkillDef[] = [
       },
     ],
     scaling: { flatPerLevel: 0, multiplierPerLevel: 1.12 },
+  },
+  {
+    id: 'skill.riptide_slash',
+    name: 'Riptide Slash',
+    description: 'One brutal strike that ignores nothing and forgives less.',
+    iconKey: 'attackType.melee',
+    cooldown: 3,
+    maxLevel: 5,
+    effects: [
+      {
+        trigger: 'onCast',
+        target: { side: 'enemy', scope: 'single' },
+        action: { kind: 'damage', amount: { percentOfAttack: 210 } },
+      },
+    ],
+    scaling: { flatPerLevel: 0, multiplierPerLevel: 1.14 },
+  },
+  {
+    id: 'skill.chill_wind',
+    name: 'Chill Wind',
+    description: 'Saps the strength from every enemy on the board.',
+    iconKey: 'status.weaken',
+    cooldown: 4,
+    maxLevel: 5,
+    effects: [
+      {
+        trigger: 'onCast',
+        target: { side: 'enemy', scope: 'all' },
+        action: { kind: 'modifyStat', stat: 'attack', percent: -22, duration: 2 },
+      },
+      {
+        trigger: 'onCast',
+        target: { side: 'enemy', scope: 'all' },
+        action: { kind: 'applyStatus', status: 'weaken', duration: 2 },
+      },
+    ],
+    scaling: { flatPerLevel: 0, multiplierPerLevel: 1.06 },
+  },
+  {
+    id: 'skill.spore_burst',
+    name: 'Spore Burst',
+    description: 'Chokes an enemy column with creeping rot.',
+    iconKey: 'status.poison',
+    cooldown: 3,
+    maxLevel: 5,
+    effects: [
+      {
+        trigger: 'onCast',
+        target: { side: 'enemy', scope: 'column' },
+        action: { kind: 'damage', amount: { percentOfAttack: 80 } },
+      },
+      {
+        trigger: 'onCast',
+        target: { side: 'enemy', scope: 'column' },
+        action: { kind: 'applyStatus', status: 'poison', duration: 3 },
+      },
+    ],
+    scaling: { flatPerLevel: 0, multiplierPerLevel: 1.12 },
+  },
+  {
+    id: 'skill.second_wind',
+    name: 'Second Wind',
+    description: 'Shakes off what ails you and closes your wounds.',
+    iconKey: 'status.regen',
+    cooldown: 4,
+    maxLevel: 5,
+    effects: [
+      {
+        trigger: 'onCast',
+        target: { side: 'self', scope: 'single' },
+        action: { kind: 'cleanse', statuses: 'all' },
+      },
+      {
+        trigger: 'onCast',
+        target: { side: 'self', scope: 'single' },
+        action: { kind: 'heal', amount: { percentOfStrength: 30, of: 'self' } },
+      },
+    ],
+    scaling: { flatPerLevel: 0, multiplierPerLevel: 1.1 },
+  },
+  {
+    id: 'skill.bulwark_call',
+    name: 'Bulwark Call',
+    description: 'Plants your feet and dares them to come.',
+    iconKey: 'status.taunt',
+    cooldown: 4,
+    maxLevel: 5,
+    effects: [
+      {
+        trigger: 'onCast',
+        target: { side: 'self', scope: 'single' },
+        action: { kind: 'taunt', duration: 2 },
+      },
+      {
+        trigger: 'onCast',
+        target: { side: 'self', scope: 'single' },
+        action: { kind: 'shield', amount: { percentOfStrength: 25, of: 'self' }, duration: 2 },
+      },
+    ],
+    scaling: { flatPerLevel: 0, multiplierPerLevel: 1.1 },
   },
 ];

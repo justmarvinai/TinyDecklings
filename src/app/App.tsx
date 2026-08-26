@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { ENERGY_CONFIG } from '@/content';
 import {
   activeTab,
@@ -7,14 +7,39 @@ import {
   useScreenStore,
   type TabId,
 } from '@/state/screenStore';
+import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { TabBar, type TabBarItem } from '@/ui/components/TabBar';
 import { TopHud, type HudResource } from '@/ui/components/TopHud';
 import { Button } from '@/ui/design/primitives';
-import { BattleScreen } from '@/ui/screens/BattleScreen';
-import { CardsScreen } from '@/ui/screens/CardsScreen';
-import { KitchenSinkScreen } from '@/ui/screens/KitchenSinkScreen';
 import { MapScreen } from '@/ui/screens/MapScreen';
+
+/**
+ * Screens beyond the map load on demand.
+ *
+ * Map is the home screen, so it ships in the initial bundle; everything else is a
+ * separate chunk fetched the first time the player opens it. That keeps cold start
+ * on a mid-range phone about the map and the battle it leads to
+ * (ARCHITECTURE.md §9).
+ */
+const BattleScreen = lazy(() =>
+  import('@/ui/screens/BattleScreen').then((m) => ({ default: m.BattleScreen })),
+);
+const CardsScreen = lazy(() =>
+  import('@/ui/screens/CardsScreen').then((m) => ({ default: m.CardsScreen })),
+);
+const SummonScreen = lazy(() =>
+  import('@/ui/screens/SummonScreen').then((m) => ({ default: m.SummonScreen })),
+);
+const ShopScreen = lazy(() =>
+  import('@/ui/screens/ShopScreen').then((m) => ({ default: m.ShopScreen })),
+);
+const SettingsScreen = lazy(() =>
+  import('@/ui/screens/SettingsScreen').then((m) => ({ default: m.SettingsScreen })),
+);
+const KitchenSinkScreen = lazy(() =>
+  import('@/ui/screens/KitchenSinkScreen').then((m) => ({ default: m.KitchenSinkScreen })),
+);
 import { createGameServices } from './gameServices';
 import { useAutosaveLifecycle } from './useAutosaveLifecycle';
 import { useBackButton } from './useBackButton';
@@ -29,6 +54,25 @@ const TAB_ITEMS: readonly TabBarItem<TabId>[] = [
   { id: 'shop', label: 'Shop', icon: 'nav.shop' },
   { id: 'more', label: 'More', icon: 'nav.more' },
 ];
+
+/**
+ * Keeps the energy pill current.
+ *
+ * Regen is derived from the clock rather than ticked, so this only needs to nudge a
+ * re-render occasionally — a minute is plenty for a bar that fills every two.
+ */
+function useEnergyTick() {
+  const save = usePlayerStore((s) => s.save);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  void save;
+  return useEconomyStore.getState().energy();
+}
 
 /** Placeholder for screens that land in later phases, so navigation is walkable now. */
 function ComingSoon({ title, phase }: { title: string; phase: string }) {
@@ -49,6 +93,8 @@ export function App() {
   const switchTab = useScreenStore((s) => s.switchTab);
   const pop = useScreenStore((s) => s.pop);
   const save = usePlayerStore((s) => s.save);
+  // Ticks once a minute so the HUD counts down without a per-second timer.
+  const energy = useEnergyTick();
 
   useBackButton();
   useAutosaveLifecycle(services.saves);
@@ -75,11 +121,9 @@ export function App() {
 
   const resources: HudResource[] = [
     {
-      // Energy is wired up in Phase 3 (Q14b); until then the slot shows the cap so
-      // the HUD matches its final shape.
       key: 'energy',
       icon: 'currency.energy',
-      value: `${Math.floor(save.player.energy.current)}/${ENERGY_CONFIG.cap}`,
+      value: `${Math.floor(energy.current)}/${ENERGY_CONFIG.cap}`,
       color: 'var(--accent-info)',
       label: 'Energy',
     },
@@ -108,21 +152,25 @@ export function App() {
       {immersive ? null : <TopHud playerLevel={save.player.profile.level} resources={resources} />}
 
       <main className={styles.content}>
-        {screen.kind === 'devKitchenSink' ? (
-          <KitchenSinkScreen />
-        ) : screen.kind === 'battle' ? (
-          <BattleScreen stage={screen.stage} />
-        ) : screen.kind === 'map' ? (
-          <MapScreen />
-        ) : screen.kind === 'cards' ? (
-          <CardsScreen />
-        ) : screen.kind === 'summon' ? (
-          <ComingSoon title="Summon" phase="Phase 3" />
-        ) : screen.kind === 'shop' ? (
-          <ComingSoon title="Shop" phase="Phase 3" />
-        ) : (
-          <ComingSoon title="More" phase="Phase 2" />
-        )}
+        <Suspense fallback={<div className={styles.loading}>Loading…</div>}>
+          {screen.kind === 'devKitchenSink' ? (
+            <KitchenSinkScreen />
+          ) : screen.kind === 'battle' ? (
+            <BattleScreen stage={screen.stage} />
+          ) : screen.kind === 'map' ? (
+            <MapScreen />
+          ) : screen.kind === 'cards' ? (
+            <CardsScreen />
+          ) : screen.kind === 'summon' ? (
+            <SummonScreen />
+          ) : screen.kind === 'shop' ? (
+            <ShopScreen />
+          ) : screen.kind === 'settings' || screen.kind === 'more' ? (
+            <SettingsScreen />
+          ) : (
+            <ComingSoon title="Profile" phase="Phase 5" />
+          )}
+        </Suspense>
 
         {canGoBack && screen.kind !== 'battle' ? (
           <Button

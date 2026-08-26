@@ -76,6 +76,26 @@ export const energyConfig = z.strictObject({
 });
 export type EnergyConfig = z.infer<typeof energyConfig>;
 
+/**
+ * Shop offers (Q13: everything is bought with earned currency — there is no
+ * real-money path anywhere in this game).
+ */
+export const shopOfferDef = z.strictObject({
+  id: id('offer'),
+  name: displayName,
+  /** What the player pays. */
+  price: z.strictObject({ currency: currencyId, amount: positiveInt }),
+  /** What they get. */
+  reward: rewardDef,
+  /** `daily` offers reroll each day; `permanent` ones are always stocked. */
+  rotation: z.enum(['daily', 'permanent']),
+  /** Purchases allowed per rotation; 0 means unlimited. */
+  limit: nonNegativeInt.default(1),
+  /** Relative chance of appearing in a daily rotation. */
+  weight: positiveInt.default(1),
+});
+export type ShopOfferDef = z.infer<typeof shopOfferDef>;
+
 /** Level/XP growth curve referenced by cards. */
 export const growthCurveDef = z.strictObject({
   id: id('growth'),

@@ -8,6 +8,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-26 — **Phase 3: economy, summon & energy** (`IMPLEMENTATION_PLAN.md` 3.1–3.6).
+  - **Summoning** — four pools (three unit tiers plus heroes) with **working pity counters**: a test proves
+    a player can never exceed a pool's threshold without the promised rarity, and the registry now refuses
+    content where a pity rule could never pay out. ×10 pulls carry pity across the batch and cost 10% less.
+    Every pull is deterministic per (pool, pulls made), so reloading a save cannot re-roll a lucky batch (Q13)
+  - **Duplicates and fragments** — a duplicate pull pays fragments scaled by rarity, and fragments buy a
+    card of your choosing outright. Nothing pulled is ever wasted
+  - **Energy (Q14b)** — cap 30, one point every two minutes, battle 5 / elite 6 / boss 8, vignettes free.
+    Regen is _derived from an injected clock_, not ticked: no timer runs, a week offline settles in one
+    step, and rewards may overflow the cap. Combat stages are gated with a sheet that says how much is
+    missing and when the next point arrives, rather than a dead button
+  - **Shop** — a daily rotation derived from the day and run seed (so no scheduler is needed) plus always-
+    stocked staples: energy flasks, tomes and summon tokens. Purchase limits reset at the day boundary
+  - **Economy tuning** — tokens, tomes, gems and fragments now drop from ordinary battles, with a test
+    asserting every system the game asks you to engage with is reachable by playing
+  - **Three new chase cards** and a legendary hero, added because the content pipeline caught that the
+    top-tier pools had nothing to offer
+  - **Screens are code-split**, cutting the initial bundle from 160 KB to 84 KB gzip
+  - 277 tests green; verified at 390×844 and 360×640
+
+### Changed
+
+- 2026-08-26 — **Save format v1 → v2**: added `player.shop` and `player.summonCounts`. Existing saves
+  migrate automatically; a fixture test walks a full v1 document forward and asserts nothing is lost.
+
+- 2026-08-26 — **Phase 2: collection & progression depth** (`IMPLEMENTATION_PLAN.md` 2.1–2.7).
+  - **Full gear system** — all eight slots live plus the Artifact slot gated behind a 6★ card; 38 items
+    spanning the whole gear rarity ladder; substats shown on a gear sheet; **gold enhancement** with a
+    per-rarity cap and rising cost (Q11: guaranteed upgrades, never a gamble)
+  - **Ascension (EVOLVE)** — feed same-grade cards plus gold to gain a star, up to 6★. Every star raises
+    stats, the level cap and unlocks a skill slot. Favourites and cards sitting in a deck are never eaten,
+    and the sheet says plainly what is missing rather than greying out with no reason (Q8)
+  - **Skill ladder** — every card carries five skills, one unlocked per star, upgraded with gold + tomes;
+    five new skills authored to fill the ladders; the battle bar now shows one button per unlocked skill
+    with its own cooldown (Q18)
+  - **Deck builder** — six decks of 1 hero + 8 units, no duplicates within a deck, deck power, auto-build
+    and clear, page dots; battles now fight with the active deck instead of auto-picking (Q6).
+    No defense deck: that is multiplayer furniture and this game is single-player
+  - **Settings screen** — audio toggles, battle speed, reduced motion, language, in the reference's
+    label-above-control layout; no accounts or sign-in, because there is no server
+  - **Collection QoL** — Units/Heroes/Deck tabs, sort by power/level/stars/name, favourites filter and
+    marker; the deck tab shows the collection beneath the builder, as in the reference
+  - 207 tests green; verified at 390×844 and 360×640 with no overflow
+
 - 2026-08-26 — **Phase 1: the vertical slice** — the core loop runs end to end
   (`IMPLEMENTATION_PLAN.md` 1.1–1.18). A new player can walk the map, fight, win rewards, level a card,
   equip gear and take on the next stage.
@@ -76,6 +120,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   - `USER_QUESTIONS.md` — the owner-decision gate (Q1–Q30)
 
 ### Fixed
+
+- 2026-08-26 — Enemy formations opened with their reserves already deployed (see Phase 1 note) and, in the
+  same class of bug, a Zustand selector that built a fresh array (`ascensionFodder`) crashed the card sheet
+  with an infinite render loop. Both derived helpers are now pure exported functions memoised on the save,
+  and the hazard is documented in `CLAUDE.md` so it stops recurring.
 
 - 2026-08-26 — Battle could stall when every enemy was dead but a reinforcement was still queued: the
   acting card had no legal target and the turn loop waited forever for an impossible intent. Cards with

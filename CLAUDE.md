@@ -2,12 +2,13 @@
 
 Guidance for AI assistants and human contributors working in this repository.
 
-## Current project status: Phase 1 complete — the vertical slice is playable
+## Current project status: Phase 3 complete — economy, summon & energy
 
 `USER_QUESTIONS.md` Q1–Q30 were **answered on 2026-08-26** (all recommendations accepted; Q14 → option (b),
-the energy pacing system). **Phase 0 (Foundation)** and **Phase 1 (Vertical slice)** are both done: the core
-loop — Map → Battle → Rewards → Progression → Continue — runs end to end on a phone, and the app deploys to
-Vercel for live review (`DEPLOYMENT.md`). Next up is **Phase 2 — collection & progression depth** in
+the energy pacing system). **Phases 0–3 are done**: the core loop runs end to end, cards ascend and equip
+across all eight gear slots, decks are built by hand, and the economy is live — summoning with pity meters,
+a fragment exchange, the energy pacing system and a daily shop, all paid for in currency the player earns.
+The app deploys to Vercel for live review (`DEPLOYMENT.md`). Next up is **Phase 4 — the endless road** in
 `IMPLEMENTATION_PLAN.md`. New owner-preference ambiguities go into `USER_QUESTIONS.md` → "Open questions"
 instead of being silently decided.
 
@@ -65,6 +66,8 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 9. **Typography:** Saira, ALL CAPS for UI labels/titles; normal case where caps hurt readability (lore, prose).
 10. **Capacitor later, never now.** Keep platform concerns behind `services/` interfaces; no Capacitor work until the owner schedules it.
 11. **Single-player only.** No multiplayer, PvP, accounts, servers or online leaderboards. Saves are local.
+12. **No real money, anywhere.** Every price is in a currency the player earns (Q13). Never add an IAP,
+    a purchase bundle, or urgency framing designed to push a wallet.
 
 ## Conventions
 
@@ -73,6 +76,9 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 - Components: PascalCase in `ui/`; stores `xxxStore.ts`; one Zustand store per domain slice.
 - Styling: CSS Modules + tokens from `ui/design/tokens.css`; no inline hex values — tokens only.
 - Tests colocated `*.test.ts`; engine changes ship with tests (goldens for battle/map determinism).
+- **Never pass a store method that builds a fresh object/array to a Zustand selector** (e.g. `statsFor`,
+  `ascensionFodder`) — it re-renders forever. Subscribe to `save` and use the pure helpers
+  (`computeCardStats`, `ascensionFodderFor`) inside `useMemo`.
 - Commits: imperative subject, scope prefix when useful (`engine: add burn tick`), update `CHANGELOG.md` for user-visible changes. Do not mention AI models in commit messages or code.
 - User-facing strings live centralized (future i18n), never scattered literals.
 

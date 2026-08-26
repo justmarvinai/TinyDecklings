@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
+import { CONTENT, CONTENT_SOURCE, ENERGY_CONFIG, validateContent } from '@/content';
+import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useScreenStore, type TabId } from '@/state/screenStore';
@@ -21,6 +22,7 @@ export function DevPanel() {
   const screen = useScreenStore();
   const settings = useSettingsStore();
   const player = usePlayerStore();
+  const economy = useEconomyStore();
   const run = useRunStore();
 
   if (!open) {
@@ -56,6 +58,7 @@ export function DevPanel() {
           stack: screen.stack.map((e) => e.screen.kind),
           settings: settings.toSave(),
           run: { seed: run.seed, currentStage: run.currentStage },
+          energy: economy.energy(),
           collection: player.cards().length,
           gear: player.gear().length,
           gold: player.currency('gold'),
@@ -127,6 +130,42 @@ export function DevPanel() {
           <Button variant="info" onClick={() => player.grantStarterCollection()}>
             Starter cards
           </Button>
+          <Button
+            variant="info"
+            onClick={() => {
+              // Enough duplicates to actually exercise ascension.
+              for (let i = 0; i < 4; i++) player.grantStarterCollection();
+              player.addCurrency('tome', 50);
+            }}
+          >
+            Fodder + tomes
+          </Button>
+          <Button
+            variant="info"
+            onClick={() => {
+              // One item per slot so every gear surface can be exercised.
+              const seen = new Set<string>();
+              for (const def of CONTENT.gear.values()) {
+                if (seen.has(def.slot)) continue;
+                seen.add(def.slot);
+                player.grantGear({ defId: def.id, substats: [] });
+              }
+            }}
+          >
+            Gear set
+          </Button>
+          <Button
+            variant="warning"
+            onClick={() => {
+              player.addCurrency('token_unit_t1', 30);
+              player.addCurrency('token_unit_t2', 30);
+              player.addCurrency('token_unit_t3', 30);
+              player.addCurrency('token_hero', 30);
+              player.addCurrency('fragment', 3000);
+            }}
+          >
+            Summon tokens
+          </Button>
         </div>
       </div>
 
@@ -168,10 +207,17 @@ export function DevPanel() {
         ) : null}
       </div>
 
-      <p className={styles.groupTitle}>
-        Currency, energy and stage-jump controls arrive with the systems they drive (Phases 1 and
-        3).
-      </p>
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>Energy</div>
+        <div className={styles.row}>
+          <Button variant="info" onClick={() => economy.grantEnergy(30)}>
+            +30 energy
+          </Button>
+          <Button variant="neutral" onClick={() => economy.grantEnergy(-economy.energy().current)}>
+            Drain energy
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

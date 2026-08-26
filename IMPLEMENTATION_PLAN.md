@@ -2,8 +2,8 @@
 
 > Status: **FINAL (2026-08-26)** — all former `▣Qn` blockers are resolved (`USER_QUESTIONS.md` decision log:
 > all recommendations accepted; Q14 → energy system). Decisions are inlined below; `(Qn)` marks provenance.
-> Development started **2026-08-26**. **Phases 0 and 1 are complete** (tasks 0.1–0.10 and 1.1–1.18 shipped,
-> plus Vercel deployment); work continues at Phase 2.
+> Development started **2026-08-26**. **Phases 0–3 are complete** (tasks 0.1–0.10, 1.1–1.18, 2.1–2.7 and
+> 3.1–3.6 shipped, plus Vercel deployment); work continues at Phase 4.
 > This plan is written so another experienced developer could execute it without re-deriving decisions.
 
 ## Conventions for this plan
@@ -64,7 +64,7 @@
 | 1.17 | Mid-battle resume (persist seed + intent log; replay on load)                                                                                           | AC: kill app mid-fight → resume exact state                                 |
 | 1.18 | Slice QA pass: device sweep (small/tall phones), perf budget check, feel pass on timings                                                                | AC: exit criteria of Phase 1 in `ROADMAP.md`                                |
 
-## Phase 2 — Collection & progression depth
+## Phase 2 — Collection & progression depth ✅ COMPLETE
 
 Scope decided: full 8+1 gear slots + rarity-scaled substats + gold enhancement, no reroll gambling (Q10/Q11) ·
 ascension to 6★ with duplicate fodder (Q8) · skills to 1+5 with gold+tome upgrades (Q18) ·
@@ -72,7 +72,7 @@ RANK/TRAIT/FOIL/artifact sets **deferred, shown locked** (Q22).
 
 2.1 Gear full slot set + substats + enhancement · 2.2 Ascension/EVOLVE + level caps + skill slot unlocks · 2.3 Skill upgrade UI + tome resource · 2.4 Deck builder (6 decks, leader+8, auto-build, power; no defense deck — Q6) · 2.5 Full card detail action bar with locked-system facades · 2.6 Settings screen · 2.7 Collection filter/sort/favorites/badges.
 
-## Phase 3 — Economy, summon & energy
+## Phase 3 — Economy, summon & energy ✅ COMPLETE
 
 Scope decided: gacha fully earnable, zero IAP (Q13) · energy system per Q14(b) · red-swords counter stays cut (Q15).
 
@@ -131,5 +131,14 @@ Phase 6 & 7 follow the last content phase shipped.
   outcomes), map generator, progression math, AI, player/run/battle stores, Map and Battle and Cards
   screens, canvas FX, reward ceremony, mid-battle resume. Plus **Vercel deployment** (`DEPLOYMENT.md`) so
   the live state of development is always viewable. `npm run verify` green; 153 tests.
-- **Phase 2 — next.** Full gear slots and substats, ascension, skill ladder, deck builder, settings screen,
-  collection QoL.
+- **Phase 2 — complete (2026-08-26).** All eight gear slots plus the 6★ Artifact slot, 38 gear items across
+  the rarity ladder, gold enhancement, ascension to 6★, five-slot skill ladders with gold+tome upgrades,
+  six-deck builder driving battles, multi-skill battle bar, settings screen, collection sort/favourites.
+  `npm run verify` green; 207 tests. No save migration was needed — the Phase 2 fields already existed in
+  save v1, and a round-trip test now guards them.
+- **Phase 3 — complete (2026-08-26).** Four summon pools with pity counters and a ×10 discount, duplicate
+  fragments and a fragment exchange, the energy system (Q14b) gating combat stages, a daily shop, an
+  economy tuning pass so tokens and tomes actually drop, and **save v2 with a real v1 → v2 migration**.
+  Screens are code-split, cutting the initial bundle from 160 KB to 84 KB gzip. 277 tests green.
+- **Phase 4 — next.** Region biomes, elites, boss modifiers, event/treasure/camp nodes, fork nodes, and the
+  light elemental affinity system.

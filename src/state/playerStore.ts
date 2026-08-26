@@ -8,7 +8,18 @@ import { create } from 'zustand';
 import { CONTENT, STARTER_CARD_IDS } from '@/content';
 import type { CurrencyId, GearSlot } from '@/content/schemas';
 import { CARD_RARITY_BASE_STARS } from '@/content/schemas';
-import { applyXp, levelUpGoldCost, powerRating, statAt } from '@/engine/progression';
+import {
+  applyXp,
+  ascendRequirement,
+  canAscend,
+  levelCap,
+  levelUpGoldCost,
+  powerRating,
+  skillUpgradeCost,
+  statAtGrade,
+  unlockedSkillSlots,
+} from '@/engine/progression';
+import { addGearContribution, emptyContribution, enhanceCap, enhanceCost } from '@/engine/gear';
 import type { GearDrop, RewardBundle } from '@/engine/economy/rewards';
 import type { SaveDoc, OwnedCard, OwnedGear } from '@/services/saves';
 
@@ -19,6 +30,11 @@ export interface CardStats {
   power: number;
 }
 
+/**
+ * ⚠ Selector hazard: `statsFor` and `ascensionFodder` build a fresh object/array on
+ * every call. Never pass them to `usePlayerStore(...)` as a selector — subscribe to
+ * `save` and use the pure `computeCardStats` / `ascensionFodderFor` helpers instead.
+ */
 export interface PlayerState {
   save: SaveDoc | null;
   hydrate: (save: SaveDoc) => void;
@@ -45,6 +61,21 @@ export interface PlayerState {
   canLevelUp: (uid: string) => boolean;
   levelUp: (uid: string) => boolean;
 
+  /** Cards that may be fed to `uid` to raise its star grade (Q8). */
+  ascensionFodder: (uid: string) => OwnedCard[];
+  canAscend: (uid: string) => boolean;
+  /** Consumes the chosen fodder and gold; returns false if the cost is not met. */
+  ascend: (uid: string, fodderUids: readonly string[]) => boolean;
+
+  /** How many of the card's five skill slots are unlocked at its current grade. */
+  skillSlots: (uid: string) => number;
+  canUpgradeSkill: (uid: string, index: number) => boolean;
+  upgradeSkill: (uid: string, index: number) => boolean;
+
+  canEnhance: (gearUid: string) => boolean;
+  enhanceCostFor: (gearUid: string) => number;
+  enhance: (gearUid: string) => boolean;
+
   equip: (cardUid: string, gearUid: string) => void;
   unequip: (cardUid: string, slot: GearSlot) => void;
 
@@ -65,26 +96,41 @@ export interface GearBonuses {
 }
 
 export function gearBonusesFor(save: SaveDoc, card: OwnedCard): GearBonuses {
-  const flat = { strength: 0, attack: 0, speed: 0 };
-  const percent = { strength: 0, attack: 0, speed: 0 };
+  const total = emptyContribution();
 
   for (const gearUid of Object.values(card.equippedGear)) {
     const owned = save.player.gear.find((g) => g.uid === gearUid);
-    if (!owned) continue;
-    const def = CONTENT.gear.get(owned.defId);
+    const def = owned ? CONTENT.gear.get(owned.defId) : undefined;
     const slotDef = def ? CONTENT.gearSlots.get(def.slot) : undefined;
-    if (!def || !slotDef) continue;
-
-    // Enhancement adds 12% of the base main stat per level (Q11).
-    flat[slotDef.mainStat] += Math.round(def.mainStatBase * (1 + owned.enhanceLevel * 0.12));
-
-    for (const sub of owned.substats) {
-      if (sub.isPercent) percent[sub.stat] += sub.value;
-      else flat[sub.stat] += sub.value;
-    }
+    if (!owned || !def || !slotDef) continue;
+    addGearContribution(total, def, slotDef, owned.enhanceLevel, owned.substats);
   }
 
-  return { flat, percent };
+  return { flat: total.flat, percent: total.percent };
+}
+
+/**
+ * Cards that may be fed to `uid` to raise its star grade (Q8).
+ *
+ * Pure and exported for the same reason as `computeCardStats`: it builds a fresh
+ * array, so using it directly as a Zustand selector would re-render forever.
+ * Components memoise it on `save`.
+ */
+export function ascensionFodderFor(save: SaveDoc, uid: string): OwnedCard[] {
+  const card = save.player.cards.find((c) => c.uid === uid);
+  if (!card) return [];
+
+  const inDecks = new Set<string>();
+  for (const deck of save.player.decks) {
+    if (deck.heroUid) inDecks.add(deck.heroUid);
+    for (const unit of deck.unitUids) if (unit) inDecks.add(unit);
+  }
+
+  // Fodder must match the card's current grade, and must never be the card itself,
+  // a favourite, or something the player has slotted into a deck.
+  return save.player.cards.filter(
+    (c) => c.uid !== uid && c.stars === card.stars && !c.favorite && !inDecks.has(c.uid),
+  );
 }
 
 /**
@@ -103,8 +149,11 @@ export function computeCardStats(save: SaveDoc, uid: string): CardStats {
   const withGear = (base: number, stat: 'strength' | 'attack' | 'speed') =>
     Math.round((base + flat[stat]) * (1 + percent[stat] / 100));
 
-  const strength = withGear(statAt(def.baseStats.strength, card.level, curve), 'strength');
-  const attack = withGear(statAt(def.baseStats.attack, card.level, curve), 'attack');
+  const baseStars = CARD_RARITY_BASE_STARS[def.rarity];
+  const graded = (base: number) => statAtGrade(base, card.level, card.stars, baseStars, curve);
+
+  const strength = withGear(graded(def.baseStats.strength), 'strength');
+  const attack = withGear(graded(def.baseStats.attack), 'attack');
   const speed = withGear(def.baseStats.speed, 'speed');
 
   return {
@@ -246,7 +295,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     const def = CONTENT.cards.get(card.defId);
     const curve = def ? CONTENT.growthCurves.get(def.growth) : undefined;
     if (!curve) return false;
-    if (card.level >= curve.levelsPerStar * card.stars) return false;
+    if (card.level >= levelCap(card.stars, curve)) return false;
     return get().currency('gold') >= get().levelUpCost(uid);
   },
 
@@ -260,6 +309,111 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         c.uid === uid ? { ...c, level: c.level + 1, xp: 0 } : c,
       );
       return { save: { ...s.save, player: { ...s.save.player, cards } } };
+    });
+    return true;
+  },
+
+  ascensionFodder: (uid) => ascensionFodderFor(get().getSave(), uid),
+
+  canAscend: (uid) => {
+    const card = get().card(uid);
+    if (!card || !canAscend(card.stars)) return false;
+    const need = ascendRequirement(card.stars);
+    return get().ascensionFodder(uid).length >= need.fodder && get().currency('gold') >= need.gold;
+  },
+
+  ascend: (uid, fodderUids) => {
+    const card = get().card(uid);
+    if (!card || !canAscend(card.stars)) return false;
+    const need = ascendRequirement(card.stars);
+
+    const eligible = new Set(
+      get()
+        .ascensionFodder(uid)
+        .map((c) => c.uid),
+    );
+    const chosen = [...new Set(fodderUids)].filter((f) => eligible.has(f));
+    if (chosen.length < need.fodder) return false;
+    if (!get().spendCurrency('gold', need.gold)) return false;
+
+    const consumed = new Set(chosen.slice(0, need.fodder));
+    set((s) => {
+      if (!s.save) return s;
+      // Consumed cards simply drop their gear references; the items themselves stay
+      // in the inventory to be re-equipped.
+      const cards = s.save.player.cards
+        .filter((c) => !consumed.has(c.uid))
+        .map((c) => (c.uid === uid ? { ...c, stars: c.stars + 1 } : c));
+      return { save: { ...s.save, player: { ...s.save.player, cards } } };
+    });
+    return true;
+  },
+
+  skillSlots: (uid) => {
+    const card = get().card(uid);
+    return card ? unlockedSkillSlots(card.stars) : 0;
+  },
+
+  canUpgradeSkill: (uid, index) => {
+    const card = get().card(uid);
+    if (!card || index >= get().skillSlots(uid)) return false;
+    const def = CONTENT.cards.get(card.defId);
+    const skillId = def?.skills[index]?.skillId;
+    const skill = skillId ? CONTENT.skills.get(skillId) : undefined;
+    if (!skill) return false;
+    const level = card.skillLevels[index] ?? 1;
+    if (level >= skill.maxLevel) return false;
+    const cost = skillUpgradeCost(level);
+    return get().currency('gold') >= cost.gold && get().currency('tome') >= cost.tomes;
+  },
+
+  upgradeSkill: (uid, index) => {
+    if (!get().canUpgradeSkill(uid, index)) return false;
+    const card = get().card(uid)!;
+    const cost = skillUpgradeCost(card.skillLevels[index] ?? 1);
+    if (!get().spendCurrency('gold', cost.gold)) return false;
+    if (!get().spendCurrency('tome', cost.tomes)) {
+      get().addCurrency('gold', cost.gold); // refund; never take one currency without the other
+      return false;
+    }
+    set((s) => {
+      if (!s.save) return s;
+      const cards = s.save.player.cards.map((c) => {
+        if (c.uid !== uid) return c;
+        const levels = [...c.skillLevels];
+        while (levels.length <= index) levels.push(1);
+        levels[index] = (levels[index] ?? 1) + 1;
+        return { ...c, skillLevels: levels };
+      });
+      return { save: { ...s.save, player: { ...s.save.player, cards } } };
+    });
+    return true;
+  },
+
+  enhanceCostFor: (gearUid) => {
+    const owned = get().gearItem(gearUid);
+    const def = owned ? CONTENT.gear.get(owned.defId) : undefined;
+    if (!owned || !def) return 0;
+    return enhanceCost(def, owned.enhanceLevel);
+  },
+
+  canEnhance: (gearUid) => {
+    const owned = get().gearItem(gearUid);
+    const def = owned ? CONTENT.gear.get(owned.defId) : undefined;
+    if (!owned || !def) return false;
+    if (owned.enhanceLevel >= enhanceCap(def.rarity)) return false;
+    return get().currency('gold') >= get().enhanceCostFor(gearUid);
+  },
+
+  enhance: (gearUid) => {
+    if (!get().canEnhance(gearUid)) return false;
+    if (!get().spendCurrency('gold', get().enhanceCostFor(gearUid))) return false;
+    set((s) => {
+      if (!s.save) return s;
+      const gear = s.save.player.gear.map((g) =>
+        g.uid === gearUid ? { ...g, enhanceLevel: g.enhanceLevel + 1 } : g,
+      );
+      return { save: { ...s.save, player: { ...s.save.player, gear } } };
     });
     return true;
   },

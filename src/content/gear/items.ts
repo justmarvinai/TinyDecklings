@@ -6,7 +6,8 @@
  * / CLAUDE.md rule 5) — items are distinguished by name, slot, rarity colour, stars
  * and stats alone. The schema rejects an icon field outright.
  *
- * Slice activates four slots (Q10): weapon, helmet, armor, boots.
+ * All eight slots carry items across the six gear rarities (Q9/Q10); the Artifact
+ * slot opens on a 6-star card and has its own short list.
  */
 import type { GearDef } from '../schemas';
 
@@ -145,5 +146,192 @@ export const GEAR_DEFS: readonly GearDef[] = [
     rarity: 'ornate',
     stars: 4,
     mainStatBase: 9,
+  },
+  // --- shields (main stat: strength) ---
+  {
+    id: 'gear.driftwood_buckler',
+    name: 'Driftwood Buckler',
+    slot: 'shield',
+    rarity: 'worn',
+    stars: 1,
+    mainStatBase: 40,
+  },
+  {
+    id: 'gear.barnacle_guard',
+    name: 'Barnacle Guard',
+    slot: 'shield',
+    rarity: 'sturdy',
+    stars: 2,
+    mainStatBase: 74,
+  },
+  {
+    id: 'gear.tidewall',
+    name: 'Tidewall',
+    slot: 'shield',
+    rarity: 'refined',
+    stars: 3,
+    mainStatBase: 126,
+  },
+  {
+    id: 'gear.leviathan_bulwark',
+    name: 'Leviathan Bulwark',
+    slot: 'shield',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 232,
+  },
+
+  // --- gauntlets (main stat: attack) ---
+  {
+    id: 'gear.frayed_wraps',
+    name: 'Frayed Wraps',
+    slot: 'gauntlets',
+    rarity: 'worn',
+    stars: 1,
+    mainStatBase: 5,
+  },
+  {
+    id: 'gear.crabclaw_grips',
+    name: 'Crabclaw Grips',
+    slot: 'gauntlets',
+    rarity: 'sturdy',
+    stars: 2,
+    mainStatBase: 9,
+  },
+  {
+    id: 'gear.riptide_gauntlets',
+    name: 'Riptide Gauntlets',
+    slot: 'gauntlets',
+    rarity: 'ornate',
+    stars: 4,
+    mainStatBase: 24,
+  },
+  {
+    id: 'gear.kraken_clutch',
+    name: 'Kraken Clutch',
+    slot: 'gauntlets',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 38,
+  },
+
+  // --- rings (main stat: attack) ---
+  {
+    id: 'gear.pitted_band',
+    name: 'Pitted Band',
+    slot: 'ring',
+    rarity: 'worn',
+    stars: 1,
+    mainStatBase: 4,
+  },
+  {
+    id: 'gear.seaglass_ring',
+    name: 'Seaglass Ring',
+    slot: 'ring',
+    rarity: 'refined',
+    stars: 3,
+    mainStatBase: 15,
+  },
+  {
+    id: 'gear.stormcallers_signet',
+    name: "Stormcaller's Signet",
+    slot: 'ring',
+    rarity: 'ornate',
+    stars: 4,
+    mainStatBase: 23,
+  },
+  {
+    id: 'gear.tyrants_seal',
+    name: "Tyrant's Seal",
+    slot: 'ring',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 36,
+  },
+
+  // --- amulets (main stat: strength) ---
+  {
+    id: 'gear.knotted_cord',
+    name: 'Knotted Cord',
+    slot: 'amulet',
+    rarity: 'worn',
+    stars: 1,
+    mainStatBase: 30,
+  },
+  {
+    id: 'gear.pearl_pendant',
+    name: 'Pearl Pendant',
+    slot: 'amulet',
+    rarity: 'sturdy',
+    stars: 2,
+    mainStatBase: 58,
+  },
+  {
+    id: 'gear.deeptide_charm',
+    name: 'Deeptide Charm',
+    slot: 'amulet',
+    rarity: 'ornate',
+    stars: 4,
+    mainStatBase: 164,
+  },
+  {
+    id: 'gear.drowned_heart',
+    name: 'Drowned Heart',
+    slot: 'amulet',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 250,
+  },
+
+  // --- artifacts (main stat: attack) — the 6-star slot ---
+  {
+    id: 'gear.tidebound_idol',
+    name: 'Tidebound Idol',
+    slot: 'artifact',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 30,
+  },
+  {
+    id: 'gear.heart_of_the_deep',
+    name: 'Heart of the Deep',
+    slot: 'artifact',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 44,
+  },
+
+  // --- higher-rarity fills for the original four slots ---
+  {
+    id: 'gear.tyrantfang',
+    name: 'Tyrantfang',
+    slot: 'weapon',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 42,
+  },
+  {
+    id: 'gear.abyss_crown',
+    name: 'Abyss Crown',
+    slot: 'helmet',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 268,
+  },
+  {
+    id: 'gear.tyrantscale_plate',
+    name: 'Tyrantscale Plate',
+    slot: 'armor',
+    rarity: 'mythic',
+    stars: 5,
+    mainStatBase: 296,
+  },
+  {
+    id: 'gear.deepwalkers',
+    name: 'Deepwalkers',
+    slot: 'boots',
+    rarity: 'exalted',
+    stars: 5,
+    mainStatBase: 12,
   },
 ];

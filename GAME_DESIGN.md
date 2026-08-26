@@ -136,18 +136,21 @@ Reference detail screen shows the full ladder: LEVEL UP, RANK, EVOLVE, TRAIT, FO
 - Cards gain **XP** from battles (and later, XP items). Level raises Strength/Attack along a per-rarity curve.
 - **Level cap scales with stars** (e.g. cap = 10 × stars), creating the level → ascend → level rhythm.
 
-### 6.2 Stars / Ascension ("EVOLVE") **[DECIDED — Q8; lands Phase 2]**
+### 6.2 Stars / Ascension ("EVOLVE") **[DECIDED — Q8; shipped Phase 2]**
 
-- Ascending consumes **duplicates or class-fodder** to raise the star grade (up to **6★**; the reference shows a 5★ card with a 6th empty slot and a gear slot locked behind "6★").
-- Each star: stat multiplier + level cap raise; milestone stars unlock skill slots / the Artifact gear slot.
+- Ascending consumes **cards of the same star grade** — duplicates included — plus gold, raising the grade up to **6★**.
+- Fodder required = the card's current grade (a 3★ card needs three 3★ cards); gold scales with the grade.
+- **Favourites and cards sitting in a deck are never eligible as fodder**, so nothing the player values can be fed away by accident.
+- Each star: **×1.15 stats**, a level-cap raise, and one more skill slot; 6★ also opens the Artifact gear slot.
 
 ### 6.3 Skills **[DECIDED — Q18]**
 
 - Each card has **1 basic attack + up to 5 skills** (reference shows a 6-slot skill grid; higher slots unlock by stars).
 - Skills level up with **gold + a skill resource ("tomes")** earned from elites/events.
+- Slot _n_ unlocks at _n_ stars, so every ascension adds a usable skill (shipped Phase 2).
 - Skills have **cooldowns measured in rounds** — the **"2" badge** on battle cards is the rounds-until-ready counter **[DECIDED — Q4]**.
 - Skills are data-driven effect bundles (see `CONTENT_SCHEMA.md`), never bespoke code per card.
-- Vertical slice ships **1 skill per card**; full ladder in Phase 2.
+- The vertical slice shipped 1 skill per card; the **full five-slot ladder shipped in Phase 2**, and the battle bar shows one button per unlocked skill.
 
 ### 6.4 Deferred systems **[DECIDED — Q22]**
 
@@ -219,7 +222,7 @@ Full reference set, **8 slots + 1 unlockable**:
 
 **Weapon, Helmet, Shield, Gauntlets, Armor, Boots, Ring, Amulet** + **Artifact** slot (unlocks at 6★).
 
-The vertical slice activates **4 slots** (Weapon, Helmet, Armor, Boots); the rest switch on through Phase 2.
+The vertical slice activated 4 slots; **Phase 2 switched on all eight**. The Artifact slot stays gated behind a 6★ card — a progression lock, not a phase lock.
 
 ### 9.2 Iconography — fixed per slot **[DECIDED — owner directive]**
 
@@ -245,7 +248,7 @@ Gear uses its **own tier names and color scale**, deliberately distinct from car
 ### 9.4 Gear stats & progression **[DECIDED — Q11]**
 
 - A gear item has a **main stat** (by slot type) and **substats scaled by rarity**, plus **gear stars** (item grade shown in reference).
-- **Enhancement**: +levels bought with gold. **No RNG substat rerolls/gambling** — Raid-flavor without its darkest grind.
+- **Enhancement**: +levels bought with gold, each adding 12% of the item's base main stat, capped by rarity (worn +3 … mythic +15). **No RNG substat rerolls/gambling** — Raid-flavour without its darkest grind.
 - **Artifact sets** (equip N pieces for a bonus): deferred past first release (Q22).
 
 ### 9.5 Acquisition **[DECIDED]**
@@ -268,7 +271,7 @@ Currencies and their roles:
 | **Player XP**     | —                             | Account level (avatar badge) gating features                                                      |
 | ~~Battle tokens~~ | ~~Red swords (10/10)~~        | **Cut for v1 [DECIDED — Q15]** — HUD slot removed _(conscious divergence from the reference HUD)_ |
 
-### 10.1 Energy pacing **[DECIDED — Q14 → option (b); system lands Phase 3]**
+### 10.1 Energy pacing **[DECIDED — Q14 → option (b); shipped Phase 3]**
 
 A **generous, fast-refilling energy system** for session pacing (mobile-typical), matching the HUD's 30/30 bolt:
 
@@ -277,7 +280,8 @@ A **generous, fast-refilling energy system** for session pacing (mobile-typical)
 - Defeat does **not** refund the attempt — the generous regen is the cushion.
 - Energy from rewards/level-ups may **overflow the cap** (regen pauses while above cap).
 - Out-of-energy → a friendly sheet showing time-to-next-attempt (and later, shop refill options — gems only, still no real money).
-- Until the system lands in Phase 3, dev builds run with energy off; the dev panel can grant/toggle it.
+- Regen is **derived, never ticked**: the save stores the value plus the moment it was settled, so closing
+  the app loses nothing and no timer runs. The dev panel can grant or drain energy for testing.
 
 **Summon** (reference `Card_Summon.png`): token-gated pools, single & ×10 (discounted), **pity counters** per Epic/Legendary, reveal ceremony. **[DECIDED — Q13]:** the gacha is an _earnable reward cadence_ — tokens/gems come from play; **zero real-money IAP; the game is fully offline.**
 

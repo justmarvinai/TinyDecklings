@@ -1,0 +1,127 @@
+/** Deck builder — leader card large on the left, eight units in a 2×4 grid. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.powerPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+}
+
+.powerLabel {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: var(--fw-bold);
+}
+
+.powerValue {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: var(--space-2);
+}
+
+.units {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-1);
+}
+
+.slot {
+  position: relative;
+}
+
+.slotLabel {
+  display: block;
+  text-align: center;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.emptySlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  border: 3px dashed var(--surface-slot);
+  border-radius: var(--radius-card);
+  background: var(--surface-slot-deep);
+  color: var(--text-muted);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-black);
+  padding: 0;
+}
+
+/* Deck page dots, as in the reference deck screen. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: 50%;
+  background: var(--surface-slot);
+}
+
+.dotActive {
+  background: var(--accent-warning);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pickerList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  max-height: 55svh;
+  overflow-y: auto;
+}
+
+.pickerTile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inDeck {
+  opacity: 0.45;
+}
+
+.muted {
+  color: var(--text-secondary);
+  text-transform: none;
+  font-size: var(--fs-label);
+  line-height: 1.4;
+}

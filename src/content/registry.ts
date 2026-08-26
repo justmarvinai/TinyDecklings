@@ -21,6 +21,7 @@ import {
   skillDef,
   statusDef,
   summonPoolDef,
+  shopOfferDef,
   type AttackPatternDef,
   type CardDef,
   type EncounterDef,
@@ -33,6 +34,7 @@ import {
   type SkillDef,
   type StatusDef,
   type SummonPoolDef,
+  type ShopOfferDef,
 } from './schemas';
 import { ICON_KEYS, type IconKey } from './schemas/iconKeys';
 
@@ -49,6 +51,7 @@ export interface ContentSource {
   lootTables: readonly unknown[];
   summonPools: readonly unknown[];
   growthCurves: readonly unknown[];
+  shopOffers: readonly unknown[];
 }
 
 export interface Content {
@@ -64,6 +67,7 @@ export interface Content {
   lootTables: ReadonlyMap<string, LootTableDef>;
   summonPools: ReadonlyMap<string, SummonPoolDef>;
   growthCurves: ReadonlyMap<string, GrowthCurveDef>;
+  shopOffers: ReadonlyMap<string, ShopOfferDef>;
 }
 
 export class ContentValidationError extends Error {
@@ -116,6 +120,7 @@ export function buildContent(source: ContentSource): Content {
   const lootTables = parseTable('loot', lootTableDef, source.lootTables, problems);
   const summonPools = parseTable('pool', summonPoolDef, source.summonPools, problems);
   const growthCurves = parseTable('growth', growthCurveDef, source.growthCurves, problems);
+  const shopOffers = parseTable('offer', shopOfferDef, source.shopOffers, problems);
 
   const iconKeys = new Set<string>(ICON_KEYS);
   const need = (ok: boolean, message: string): void => {
@@ -259,6 +264,21 @@ export function buildContent(source: ContentSource): Content {
     }
   }
 
+  // Shop offers must pay out something the game can actually grant.
+  for (const offer of shopOffers.values()) {
+    if (offer.reward.kind === 'card' || offer.reward.kind === 'fragment') {
+      need(
+        cards.has(offer.reward.cardId),
+        `offer "${offer.id}": unknown card "${offer.reward.cardId}"`,
+      );
+    }
+    if (offer.reward.kind === 'gearDrop') {
+      for (const slot of offer.reward.slots) {
+        need(gearSlots.has(slot), `offer "${offer.id}": unknown gear slot "${slot}"`);
+      }
+    }
+  }
+
   if (problems.length > 0) throw new ContentValidationError(problems);
 
   return {
@@ -274,6 +294,7 @@ export function buildContent(source: ContentSource): Content {
     lootTables,
     summonPools,
     growthCurves,
+    shopOffers,
   };
 }
 

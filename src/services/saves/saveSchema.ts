@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { CURRENCY_IDS, GEAR_SLOTS, statKey } from '@/content/schemas';
 
 /** Bump on every shape change and add a migration in migrations.ts. */
-export const CURRENT_SAVE_VERSION = 1;
+export const CURRENT_SAVE_VERSION = 2;
 
 export const ownedGear = z.strictObject({
   uid: z.string().min(1),
@@ -50,6 +50,15 @@ export const energyState = z.strictObject({
   regenAnchorMs: z.number().int().min(0),
 });
 
+/**
+ * What the shop needs to remember. The line-up itself is derived from the day and
+ * the run seed, so only purchases are stored (save v2).
+ */
+export const shopState = z.strictObject({
+  dayKey: z.string(),
+  purchased: z.record(z.string(), z.number().int().min(0)),
+});
+
 export const saveDoc = z.strictObject({
   saveVersion: z.number().int().positive(),
   createdAtMs: z.number().int().min(0),
@@ -81,6 +90,9 @@ export const saveDoc = z.strictObject({
     unlocks: z.array(z.string()).default([]),
     /** pool id -> rarity -> pulls since the last hit. */
     pity: z.record(z.string(), z.record(z.string(), z.number().int().min(0))).default({}),
+    /** pool id -> total pulls made, so each batch draws a fresh rng stream. */
+    summonCounts: z.record(z.string(), z.number().int().min(0)).default({}),
+    shop: shopState,
   }),
 
   run: z.strictObject({
@@ -114,8 +126,10 @@ export type OwnedCard = z.infer<typeof ownedCard>;
 export type OwnedGear = z.infer<typeof ownedGear>;
 export type DeckConfig = z.infer<typeof deckConfig>;
 export type EnergyState = z.infer<typeof energyState>;
+export type ShopState = z.infer<typeof shopState>;
 
 export function createNewSave(nowMs: number, seed: number, energyCap: number): SaveDoc {
+  const today = new Date(nowMs).toISOString().slice(0, 10);
   return saveDoc.parse({
     saveVersion: CURRENT_SAVE_VERSION,
     createdAtMs: nowMs,
@@ -141,6 +155,8 @@ export function createNewSave(nowMs: number, seed: number, energyCap: number): S
       stageRecords: {},
       unlocks: [],
       pity: {},
+      summonCounts: {},
+      shop: { dayKey: today, purchased: {} },
     },
     run: { seed, currentStage: 1, generatedWindow: [], pendingBattle: null },
     settings: {},

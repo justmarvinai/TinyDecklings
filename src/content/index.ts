@@ -16,6 +16,8 @@ import { ATTACK_PATTERN_DEFS } from './battle/patterns';
 import { STATUS_DEFS } from './battle/statuses';
 import { GROWTH_CURVE_DEFS } from './economy/growth';
 import { LOOT_TABLE_DEFS } from './economy/loot';
+import { SUMMON_POOL_DEFS } from './economy/summon';
+import { SHOP_OFFER_DEFS } from './economy/shop';
 import { CARD_DEFS } from './cards';
 import { SKILL_DEFS } from './skills';
 import { ENEMY_GROUP_DEFS } from './enemies';
@@ -32,14 +34,17 @@ export const CONTENT_SOURCE: ContentSource = {
   regions: REGION_DEFS,
   encounters: [],
   lootTables: LOOT_TABLE_DEFS,
-  summonPools: [],
+  summonPools: SUMMON_POOL_DEFS,
   growthCurves: GROWTH_CURVE_DEFS,
+  shopOffers: SHOP_OFFER_DEFS,
 };
 
 export const CONTENT: Content = buildContent(CONTENT_SOURCE);
 
 export { ENERGY_CONFIG } from './economy/energy';
 export { STARTER_CARD_IDS } from './cards';
+export { DUPLICATE_FRAGMENTS, FRAGMENT_EXCHANGE_COST } from './economy/summon';
+export { DAILY_OFFER_COUNT } from './economy/shop';
 export { BOSS_LOOT_TABLE } from './map/regions';
 export { DIFFICULTY_CURVE } from './economy/difficulty';
 export { buildContent, validateContent, ContentValidationError } from './registry';

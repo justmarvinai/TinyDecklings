@@ -13,7 +13,21 @@ export type UnknownSave = Record<string, unknown>;
 
 /** Keyed by the version being migrated FROM. */
 export const MIGRATIONS: Readonly<Record<number, (doc: UnknownSave) => UnknownSave>> = {
-  // 1: (doc) => ({ ...doc, saveVersion: 2, /* ...new fields... */ }),
+  /**
+   * v1 → v2: the shop and summoning arrived (Phase 3), so the save gained
+   * `player.shop` and `player.summonCounts`.
+   *
+   * An empty day key means "no rotation seen yet"; the shop rolls over on first
+   * read, which is exactly what a returning player should get.
+   */
+  1: (doc) => {
+    const player = (doc.player ?? {}) as Record<string, unknown>;
+    return {
+      ...doc,
+      saveVersion: 2,
+      player: { ...player, shop: { dayKey: '', purchased: {} }, summonCounts: {} },
+    };
+  },
 };
 
 export class SaveMigrationError extends Error {

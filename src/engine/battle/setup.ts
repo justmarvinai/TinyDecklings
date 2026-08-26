@@ -9,7 +9,8 @@
 import type { Content } from '@/content';
 import type { CardDef } from '@/content/schemas';
 import { deriveSeed } from '../rng';
-import { statAt } from '../progression';
+import { statAtGrade } from '../progression';
+import { CARD_RARITY_BASE_STARS } from '@/content/schemas';
 import {
   BOARD_SLOTS,
   type BattleCard,
@@ -56,8 +57,11 @@ function buildCard(
   if (!curve) throw new Error(`Card "${def.id}" references unknown growth curve "${def.growth}"`);
 
   const gear = spec.gearBonuses ?? { strength: 0, attack: 0, speed: 0 };
-  const strength = statAt(def.baseStats.strength, spec.level, curve) + gear.strength;
-  const attack = statAt(def.baseStats.attack, spec.level, curve) + gear.attack;
+  const baseStars = CARD_RARITY_BASE_STARS[def.rarity];
+  const graded = (base: number) => statAtGrade(base, spec.level, spec.stars, baseStars, curve);
+
+  const strength = graded(def.baseStats.strength) + gear.strength;
+  const attack = graded(def.baseStats.attack) + gear.attack;
   const speed = def.baseStats.speed + gear.speed;
 
   return {

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { CONTENT } from '@/content';
 import type { BattleSetup, CombatantSpec } from '@/engine/battle';
 import { enemyLevelBonus } from '@/engine/map/generate';
+import { useDeckStore } from '@/state/deckStore';
 import { gearBonusesFor, usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 
@@ -12,8 +13,9 @@ import { useRunStore } from '@/state/runStore';
  * the setup from live store state would rebuild it the moment victory rewards land,
  * restarting the battle you just won.
  *
- * Deck selection is simple in the slice — the strongest cards owned, hero first.
- * The full deck builder lands in Phase 2 (Q6).
+ * The lineup comes from the player's active deck (Q6). If that deck is empty — a
+ * brand-new save, or every member ascended away — it falls back to the strongest
+ * cards owned, so a battle is never unwinnable for want of a deck.
  */
 export function useBattleSetupFactory(): (stage: number) => BattleSetup | null {
   return useCallback((stage: number) => {
@@ -32,7 +34,17 @@ export function useBattleSetupFactory(): (stage: number) => BattleSetup | null {
       return { defId: owned.defId, level: owned.level, stars: owned.stars, gearBonuses: flat };
     };
 
-    const ranked = save.player.cards
+    // The lineup is the player's active deck (Q6); an empty deck falls back to the
+    // whole collection so a battle is never unwinnable for want of a deck.
+    const lineupUids = useDeckStore.getState().lineup();
+    const chosen =
+      lineupUids.length > 0
+        ? lineupUids
+            .map((uid) => save.player.cards.find((c) => c.uid === uid))
+            .filter((c): c is NonNullable<typeof c> => Boolean(c))
+        : save.player.cards;
+
+    const ranked = chosen
       .map((card) => ({
         card,
         power: player.statsFor(card.uid).power,

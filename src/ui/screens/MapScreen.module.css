@@ -199,3 +199,15 @@
     animation: none;
   }
 }
+
+.costPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--surface-pill);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+}
