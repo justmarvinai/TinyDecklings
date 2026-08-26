@@ -1,0 +1,201 @@
+/**
+ * The endless road.
+ *
+ * Reads bottom-to-top like the reference map: the player climbs the screen as they
+ * progress, so "up" always means "further".
+ */
+.screen {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 20% 90%, rgb(90 30 30 / 0.6), transparent 45%),
+    radial-gradient(circle at 80% 20%, rgb(40 60 110 / 0.55), transparent 50%),
+    linear-gradient(180deg, var(--bg-app-deep), var(--bg-app) 40%, var(--bg-app-warm));
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  padding: var(--space-6) var(--space-4);
+  gap: var(--space-1);
+}
+
+.node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  min-height: 96px;
+}
+
+/* Alternate the medallion side so the path snakes, as in the reference. */
+.node:nth-child(odd) {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-self: flex-end;
+  padding-right: var(--space-5);
+}
+
+.node:nth-child(even) {
+  align-self: flex-start;
+  padding-left: var(--space-5);
+}
+
+.medallion {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  flex: none;
+  padding: 0;
+  border: 5px solid var(--ring, var(--surface-slot));
+  border-radius: 50%;
+  background: var(--surface-panel);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    var(--shadow-drop);
+  transition: transform var(--dur-micro) var(--ease-out);
+}
+
+.medallion:active {
+  transform: scale(0.94);
+}
+
+.medallionArt {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.current {
+  --ring: var(--accent-header-bright);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.cleared {
+  --ring: var(--accent-positive);
+}
+
+.boss {
+  --ring: var(--accent-warning);
+  width: 96px;
+  height: 96px;
+}
+
+.locked {
+  filter: grayscale(0.7) brightness(0.55);
+}
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.namePill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: 6px;
+  background: var(--surface-pill);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  white-space: nowrap;
+  box-shadow: var(--shadow-drop-sm);
+}
+
+.bossTag {
+  color: var(--accent-warning);
+}
+
+/* Dotted trail between medallions. */
+.trail {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.35);
+}
+
+.header {
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: rgb(0 0 0 / 0.35);
+  border-bottom: var(--outline-width-thin) solid var(--outline-dark);
+}
+
+.regionName {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sheetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.enemyRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.muted {
+  color: var(--text-secondary);
+  text-transform: none;
+  line-height: 1.4;
+  font-size: var(--fs-label);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--outline-dark),
+      var(--shadow-drop);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--outline-dark),
+      0 0 18px var(--accent-header-bright),
+      var(--shadow-drop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current {
+    animation: none;
+  }
+}

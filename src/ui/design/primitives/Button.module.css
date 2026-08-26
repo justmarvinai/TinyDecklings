@@ -1,0 +1,88 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-button);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-primary);
+  text-shadow: var(--text-shadow-hard);
+  background: var(--btn-bg);
+  box-shadow: var(--bevel), var(--shadow-drop);
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-micro) var(--ease-out),
+    filter var(--dur-micro) var(--ease-out);
+}
+
+/* Touch-first press feedback: the button sinks onto its own shadow. */
+.button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: var(--bevel-bottom);
+  filter: brightness(0.94);
+}
+
+.positive {
+  --btn-bg: linear-gradient(var(--accent-positive-bright), var(--accent-positive));
+}
+.info {
+  --btn-bg: linear-gradient(var(--accent-info-bright), var(--accent-info));
+}
+.warning {
+  --btn-bg: linear-gradient(var(--accent-warning-bright), var(--accent-warning));
+  color: var(--text-on-light);
+  text-shadow: none;
+}
+.danger {
+  --btn-bg: linear-gradient(var(--accent-danger-bright), var(--accent-danger));
+}
+.neutral {
+  --btn-bg: linear-gradient(var(--surface-slot), var(--surface-slot-deep));
+  color: var(--text-secondary);
+}
+.header {
+  --btn-bg: linear-gradient(var(--accent-header-bright), var(--accent-header));
+}
+
+.button:disabled {
+  --btn-bg: linear-gradient(var(--surface-slot), var(--surface-slot-deep));
+  color: var(--text-muted);
+  filter: saturate(0.15);
+  box-shadow: var(--bevel-bottom), var(--shadow-drop-sm);
+  cursor: not-allowed;
+}
+
+/* Icon-above-label, as in the card-detail action bar (LEVEL UP / EVOLVE / EQUIP). */
+.stacked {
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  font-size: var(--fs-micro);
+  line-height: 1.1;
+}
+
+.block {
+  width: 100%;
+}
+
+.iconOnly {
+  padding: var(--space-2);
+  border-radius: var(--radius-pill);
+}
+
+.lockHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}

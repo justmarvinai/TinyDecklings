@@ -1,179 +1,51 @@
-# TinyDecklings — Open Questions for the Owner
+# TinyDecklings — Owner Decisions
 
-> ⛔ **Development is gated on this file.** These are the decisions that materially shape design, architecture,
-> scope, or feel. Each question has options and a **bold recommendation**.
+> **Gate status:** Q1–Q30 **answered on 2026-08-26** — the owner accepted **all recommendations, except
+> Q14 → option (b)** (energy pacing system). All docs are updated to the decided state.
 >
-> **Fast path:** reply *"accept all recommendations, except: …"* and list only deviations, e.g. `Q14: b`.
-> Priorities: 🔴 blocks the vertical slice · 🟡 shapes Phases 2–4 · 🟢 later phases.
+> ⛔ **Implementation still requires the owner's explicit "start development" instruction** (owner directive).
+> When it arrives, work begins with Phase 0 of `IMPLEMENTATION_PLAN.md`.
+>
+> This file remains the intake for **future** owner decisions: new ambiguities get appended under
+> "Open questions" instead of being silently decided (see `CLAUDE.md` workflow).
 
----
+## Decision log (2026-08-26)
 
-## A. Game model & map
+_(Q19 was never assigned — numbering gap, not a missing decision.)_
 
-**Q1 🔴 — What persists? (biggest single decision)**
-The references (permanent card levels, gacha, gear inventory) imply a persistent-collection game; the brief says "roguelike".
-a) **Persistent collection + endless stage journey** — cards/gear/currencies never reset; the endless map, procedural encounters, and choice events carry the roguelike feel. *(Black Deck / Raid-like)*
-b) True roguelike runs — deck resets on death; meta-unlocks only. *(Slay-the-Spire-like; contradicts summon/level/gear screens)*
-c) Hybrid: persistent collection **plus** a separate rotating "Expedition" roguelike mode later.
-**Recommendation: (a), with (c)'s Expedition mode as a Phase 5+ candidate.**
+| Q   | Topic                         | Decision                                                                                                                                        |
+| --- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | Persistence model             | **(a)** Persistent collection + endless stage journey; "Expedition" roguelike mode = post-release backlog candidate                             |
+| Q2  | Map structure                 | **(a)** Linear endless chain; occasional 2-way forks rejoin after 1–3 stages (Phase 4)                                                          |
+| Q3  | Combat control                | **(a)** Manual targeting by default; AUTO toggle; X1/X2 speed                                                                                   |
+| Q4  | "2" badge meaning             | **(a)** Rounds-until-skill-ready cooldown counter                                                                                               |
+| Q5  | Stat model                    | **(a)** Strength (max HP) + visible Attack (+ Speed later); no DEF/dodge/crit in v1                                                             |
+| Q6  | Deck & battlefield            | **(a)** 1 Hero + 8 Units; 2×3 per side; no dupes in deck; 6 saved decks; Defense deck cut                                                       |
+| Q7  | Reinforcements & rows         | **(a)** Queue refills empty slots next round; melee locked to living front row, ranged free; patterns widen hits                                |
+| Q8  | Card rarity ladder            | Common 1★ gray · Uncommon 2★ green · Rare 3★ blue · Epic 4★ magenta · Legendary 5★ gold; ascension to 6★                                        |
+| Q9  | Gear rarity ladder            | Worn gray · Sturdy green · Refined blue · Ornate pink · Exalted orange · Mythic red (independent from cards)                                    |
+| Q10 | Gear slots                    | **(a)** All 8 + Artifact@6★; slice activates Weapon/Helmet/Armor/Boots                                                                          |
+| Q11 | Gear depth                    | **(a)** Main stat by slot + rarity-scaled substats + gold enhancement; no substat-reroll gambling                                               |
+| Q12 | Heroes                        | Confirmed: leader-class card, one per deck, fights + Leader Skill, own summon pool                                                              |
+| Q13 | Gacha & money                 | **(a)** Summon fully earnable; **zero real-money IAP**; fully offline                                                                           |
+| Q14 | Energy                        | **(b) — owner deviation:** generous fast-refill energy (cap 30, 1/2min regen; costs battle 5 / elite 6 / boss 8, vignettes free; lands Phase 3) |
+| Q15 | Red-swords 10/10 counter      | **(a)** Cut for v1 (HUD slot removed)                                                                                                           |
+| Q16 | Node mix                      | Battle / Elite (~5th) / Boss (~10th) / Event / Treasure / Camp; regions ≈10 stages; slice = Battle+Boss                                         |
+| Q17 | Stars & replay                | **(a)** 3★ flawless · 2★ ≤2 deaths · 1★ any win; replay/farming allowed; records permanent                                                      |
+| Q18 | Skills                        | 1 basic + up to 5 skills (unlock by stars); upgrades cost gold + tomes; slice ships 1 skill/card                                                |
+| Q20 | Status effects                | Burn, Poison, Freeze/Stun, Shield, Taunt, Weaken, Strengthen, Regen (slice ~3)                                                                  |
+| Q21 | Elements                      | **(a)** Light stage-affinity: counter-element cards +10–15% on themed stages (Phase 4)                                                          |
+| Q22 | RANK/TRAIT/FOIL/artifact sets | **(a)** All deferred past first release; buttons visible but locked                                                                             |
+| Q23 | Meta screens in first release | **(a)** Profile + Settings only; Events/Pass → backlog; Leaderboard cut (local records = backlog candidate)                                     |
+| Q24 | Navigation                    | **(a)** Bottom tab bar (MAP·CARDS·SUMMON·SHOP·MORE) + persistent top HUD; Map is home                                                           |
+| Q25 | Onboarding                    | **(a)** Guided first 2 stages, then free (Phase 6)                                                                                              |
+| Q26 | Audio                         | **(a)** Full pass in Phase 6 (per-region music + complete SFX); hooks wired from the slice                                                      |
+| Q27 | Saves                         | Local, versioned, auto-migrating + manual export/import in Phase 7                                                                              |
+| Q28 | Accessibility floor           | Reduced-motion, color-blind-safe rarity cues, ≥11px text, ≥48px targets                                                                         |
+| Q29 | First-release content scope   | ~30 units + 6 heroes, ~40 gear items, 3 authored regions + endless generation, 1 boss/region                                                    |
+| Q30 | Language                      | **(a)** English-only; strings centralized for later i18n                                                                                        |
 
-**Q2 🔴 — Map structure**
-`Map.png` shows a strictly linear numbered path (…28→34…).
-a) **Linear endless chain, occasional 2-way fork that rejoins after 1–3 stages (risk/reward)** — keeps the reference look, adds choice.
-b) Strictly linear only.
-c) Full branching graph per region (Slay-the-Spire style web).
-**Recommendation: (a).** *(Forks land in Phase 4; the slice is linear either way.)*
+## Open questions
 
-**Q16 🟡 — Stage/node mix**
-Proposed kinds: Battle, Elite (~every 5th), Boss (~every 10th), Event (choice vignette), Treasure, Camp (heal/buff before hard fights). Regions ≈ 10 stages.
-**Recommendation: approve this mix**; slice ships Battle + Boss only. Trim/add kinds here if you want.
-
-**Q17 🟡 — Stars & replay**
-a) **3★ = win with no card deaths · 2★ = ≤2 deaths · 1★ = any win; beaten stages replayable for farming; star records permanent.**
-b) Different criteria (tell me), or no replay (pushes economy into events/idle income).
-**Recommendation: (a).**
-
-## B. Combat
-
-**Q3 🔴 — Player control model**
-a) **Manual by default** — on your turn each card acts in order; you tap the target (or tap a ready skill, then target); **AUTO toggle** hands it to AI; X1/X2 speed. *(Matches the AUTO/X1 buttons in `Battle.png`)*
-b) Full auto-battler — you only build the deck/formation; battles play themselves.
-c) Hearthstone-style hand + mana card play *(clashes with the brief's "meaningfully different" and the references)*.
-**Recommendation: (a).**
-
-**Q4 🔴 — The "2" badge & skills in battle**
-I read the square top-left badge on battle cards as **rounds until the card's skill is ready** (cooldown counter).
-a) **Confirm**: skills auto-charge; in manual mode you choose fire/hold; in AUTO the AI fires when ready.
-b) It should mean something else (deploy cost, attack-every-N-rounds, …) — describe.
-**Recommendation: (a).**
-
-**Q5 🔴 — Stat model**
-a) **Strength (max HP, the big visible number) + Attack (separate stat, visible in detail) + later Speed; no defense/dodge/crit in v1** — mitigation via effects (Shield/Weaken).
-b) Attack derived from Strength (single-stat purity).
-c) Fuller RPG sheet now (DEF/crit/accuracy…).
-**Recommendation: (a).**
-
-**Q6 🔴 — Deck & battlefield shape**
-Confirm: deck = **1 Hero + 8 Units**, battlefield **2×3 per side**, no duplicate cards in a deck, up to 6 saved decks. The reference's "DEFENSE deck" toggle looks multiplayer-flavored.
-a) **Confirm all; cut the Defense deck.**
-b) Adjust numbers (tell me which).
-**Recommendation: (a).**
-
-**Q7 🔴 — Reinforcements & rows**
-Confirm two proposals: dead slots refill from the **reinforcement queue** (the deck counters on screen) at the next round start; **melee must target the front row while it lives, ranged targets anywhere**, attack patterns widen hits.
-a) **Confirm both.**  b) Adjust (describe).
-**Recommendation: (a).**
-
-**Q20 🟡 — Status effect starter set**
-Proposed: Burn, Poison, Freeze/Stun, Shield, Taunt, Weaken, Strengthen, Regen.
-**Recommendation: approve** (slice ships ~3 of these; rest by Phase 2–4).
-
-**Q21 🟡 — Elements**
-Map badges show element-ish icons (nature/fire/ice/lightning/dark…).
-a) **Light version: stages have an element theme; cards of the counter-element get a small bonus (+10–15%)** — flavor + gentle deck-variety pressure, cheap to build.
-b) Full advantage wheel with per-matchup multipliers everywhere.
-c) Purely cosmetic badges.
-**Recommendation: (a), introduced Phase 4.**
-
-## C. Cards, rarity, progression
-
-**Q8 🔴 — Card rarity ladder**
-Proposed (independent from gear): **Common 1★ gray · Uncommon 2★ green · Rare 3★ blue · Epic 4★ magenta · Legendary 5★ gold** — rarity fixes base stars; ascension can push any card to 6★.
-**Recommendation: approve** (rename/recolor freely — colors follow the references).
-
-**Q12 🟡 — Heroes**
-Confirm: Hero = leader-class card; exactly one per deck; fights on the field **and** carries a passive Leader Skill; own summon pool.
-**Recommendation: confirm.**
-
-**Q18 🟡 — Skills per card & upgrade cost**
-Proposed: 1 basic attack + up to 5 skills (slots unlock by stars); skills level up with **gold + a skill resource** (tomes) from elites/events.
-**Recommendation: approve; slice ships 1 skill per card.**
-
-**Q22 🟡 — The long progression tail (scope check)**
-The detail screen shows RANK, TRAIT, FOIL, Artifact sets. These are big retention systems but heavy.
-a) **Defer all four past first release** (buttons visible but locked, like the reference's locked states).
-b) Pick some for Phase 5 (tell me which).
-**Recommendation: (a).**
-
-## D. Gear
-
-**Q9 🔴 — Gear rarity ladder (must differ from cards — your directive)**
-Proposed 6 tiers: **Worn gray · Sturdy green · Refined blue · Ornate pink · Exalted orange · Mythic red**.
-**Recommendation: approve names/colors or supply your own** (count can change; colors keep gear visually distinct from card frames).
-
-**Q10 🔴 — Gear slots**
-Reference shows 8 + 1 locked: Weapon, Helmet, Shield, Gauntlets, Armor, Boots, Ring, Amulet (+ Artifact at 6★).
-a) **Keep all 8+1** (slice activates 3–4; rest unlock through Phase 2).
-b) Trim to 6 (drop Shield + Gauntlets).
-**Recommendation: (a)** — matches the reference sheet; icons are fixed per slot everywhere (your directive, already locked into the schema).
-
-**Q11 🟡 — Gear depth**
-a) **Main stat by slot + rarity-scaled substats + enhancement levels (+gold), no RNG substat *upgrades*** — Raid-flavor without its darkest grind.
-b) Simpler: main stat only.
-c) Deeper: substat reroll/gambling systems.
-**Recommendation: (a).**
-
-## E. Economy & monetization
-
-**Q13 🔴 — Gacha & money**
-a) **Keep the summon/gacha as an *earnable* reward cadence (tokens/gems from play); zero real-money IAP; game fully offline.**
-b) Plan IAP hooks for later (affects economy design now).
-**Recommendation: (a)** — single-player premium feel; nothing blocks revisiting later.
-
-**Q14 🔴 — Energy (30/30 bolt in the HUD)**
-a) **No energy gate** — play freely; pacing comes from difficulty walls. *(HUD slot shows something else, e.g. current region progress)*
-b) Generous fast-refill energy for session pacing (mobile-typical).
-**Recommendation: (a)** for a premium single-player feel — but this is taste; pick (b) if you want classic mobile pacing.
-
-**Q15 🟢 — The red-swords 10/10 counter**
-Unidentified in the reference.
-a) **Cut for v1.**  b) Make it boss/elite tickets. c) Other meaning you have in mind?
-**Recommendation: (a).**
-
-## F. Screens, UX, platform
-
-**Q24 🔴 — Navigation**
-a) **Bottom tab bar: MAP · CARDS · SUMMON · SHOP · MORE, persistent top HUD, modals for details, Map as home.**
-b) Hub-and-back-button only (reference screens show back buttons, no tab bar).
-**Recommendation: (a)** — fewer taps for the core loop on tall phones.
-
-**Q23 🟢 — Meta screens for first release**
-Events hub, Season pass, Leaderboard, Profile exist as references. Offline single-player makes real leaderboards impossible without a backend.
-a) **First release: Profile + Settings only; Events/Pass in a later phase; Leaderboard cut (or local records).**
-b) Different mix (tell me).
-**Recommendation: (a).**
-
-**Q25 🟡 — Onboarding**
-a) **Guided first 2 stages (forced simple deck, tooltip beats), then free.**
-b) None / just a help sheet.
-**Recommendation: (a), built in Phase 6.**
-
-**Q26 🟢 — Audio ambition**
-a) **Full pass in Phase 6: per-region music loops + complete SFX set** (placeholder-silent until then, hooks wired from the slice).
-b) Minimal SFX only.
-**Recommendation: (a).**
-
-**Q27 🟢 — Saves**
-Local, versioned, auto-migrating (already decided). Add **manual export/import (file/clipboard)** as a backup in Phase 7?
-**Recommendation: yes.**
-
-**Q28 🟢 — Accessibility floor**
-Proposed: reduced-motion mode, color-blind-safe rarity cues (icons/labels accompany color), min 11px text, 48px targets.
-**Recommendation: approve.**
-
-**Q29 🟡 — Content scope for first release** (drives production volume)
-Proposed: **~30 units + 6 heroes, ~40 gear items, ~10 skills-per-element-of-variety, 3 regions/biomes authored + endless generation, 1 boss per region.**
-Adjust up/down?
-
-**Q30 🟢 — Language**
-a) **English-only UI, strings centralized for later i18n.**  b) German+English from day one.
-**Recommendation: (a).** *(Strings live in one module either way, so (b) is cheap to add later.)*
-
----
-
-## How to answer
-
-Reply in chat or edit this file. Shorthand welcome: `Q1:a, Q2:a, Q9: my names are …`. Anything unanswered
-follows the recommendation **only after you say "accept remaining recommendations"** — otherwise it stays open.
-After your answers I will: update all affected docs, list exactly which docs changed, reconcile contradictions,
-finalize `IMPLEMENTATION_PLAN.md`, and only then begin implementation (per the project brief's hard stop).
+_None currently._ New owner-preference ambiguities discovered during development are appended here
+(with context, options, and a recommendation) rather than silently decided.

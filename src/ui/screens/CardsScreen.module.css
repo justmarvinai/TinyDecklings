@@ -1,0 +1,230 @@
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--bg-app), var(--bg-app-deep));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.title {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.count {
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-bold);
+}
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-3);
+  padding-bottom: var(--space-7);
+  align-content: start;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tileMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.level {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* ---- detail sheet ---- */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detailTop {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: var(--space-3);
+}
+
+.detailInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.detailName {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+}
+
+.statLabel {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.statValue {
+  margin-left: auto;
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionTitle {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-warning);
+}
+
+/* Gear grid: rarity is the TILE BACKGROUND, and the icon is fixed per slot. */
+.gearGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.gearSlot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--tile, var(--surface-slot-deep));
+  color: var(--text-primary);
+  box-shadow: var(--bevel), var(--shadow-drop-sm);
+  padding: 0;
+}
+
+.gearEmpty {
+  color: var(--text-muted);
+}
+
+.gearEmpty::after {
+  content: '+';
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-info);
+  color: var(--text-primary);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  line-height: 1;
+}
+
+.gearLocked {
+  opacity: 0.5;
+}
+
+.gearSlotLabel {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.inventoryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 50svh;
+  overflow-y: auto;
+}
+
+.inventoryRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-pill);
+  text-align: left;
+  width: 100%;
+}
+
+.inventoryName {
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  font-size: var(--fs-label);
+}
+
+.inventoryMeta {
+  margin-left: auto;
+  text-align: right;
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-secondary);
+  text-transform: none;
+  line-height: 1.45;
+  font-size: var(--fs-label);
+}

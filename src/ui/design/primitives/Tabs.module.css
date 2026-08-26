@@ -1,0 +1,55 @@
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+/* Skewed tab shapes are a signature of the reference UI; the label counter-skews. */
+.tab {
+  position: relative;
+  flex: 1;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-tile);
+  background: var(--surface-slot-deep);
+  color: var(--text-secondary);
+  transform: skewX(var(--skew-tab));
+  box-shadow: var(--shadow-drop-sm);
+  transition: background var(--dur-micro) var(--ease-out);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transform: skewX(calc(var(--skew-tab) * -1));
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  line-height: 1.1;
+}
+
+.count {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  color: inherit;
+  opacity: 0.85;
+}
+
+.active {
+  background: linear-gradient(var(--accent-warning-bright), var(--accent-warning));
+  color: var(--text-on-light);
+  box-shadow: var(--bevel), var(--shadow-drop);
+}
+
+.straight {
+  transform: none;
+}
+
+.straight .inner {
+  transform: none;
+}

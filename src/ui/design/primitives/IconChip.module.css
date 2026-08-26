@@ -1,0 +1,18 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  background: var(--chip-bg, var(--surface-slot));
+  color: var(--chip-fg, var(--text-primary));
+  box-shadow: var(--bevel-top), var(--shadow-drop-sm);
+  flex: none;
+}
+
+.round {
+  border-radius: var(--radius-pill);
+}
+
+.square {
+  border-radius: var(--radius-tile);
+}

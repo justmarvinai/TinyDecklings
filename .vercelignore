@@ -1,0 +1,6 @@
+assets/examples
+node_modules
+dist
+coverage
+*.md
+!README.md

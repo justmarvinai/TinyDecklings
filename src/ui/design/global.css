@@ -1,0 +1,111 @@
+/* Global base styles. Tokens come from tokens.css — never hardcode values here. */
+@import '@fontsource/saira/400.css';
+@import '@fontsource/saira/500.css';
+@import '@fontsource/saira/600.css';
+@import '@fontsource/saira/700.css';
+@import '@fontsource/saira/900.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  background: var(--bg-app-deep);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* Portrait, touch-first: no text inflation, no double-tap zoom, no rubber band. */
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-first: nothing depends on hover (CLAUDE.md rule 1). */
+:focus-visible {
+  outline: 3px solid var(--accent-info-bright);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/**
+ * Type utilities.
+ * ALL CAPS is the default for UI labels/titles; `.prose` opts out for lore and
+ * multi-sentence copy where caps hurt readability (CLAUDE.md rule 9).
+ */
+.u-caps {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.u-prose {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+}
+
+/* Outlined headline type over busy art — the reference's signature title look. */
+.u-outlined {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 4px var(--outline-dark);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.u-number {
+  font-weight: var(--fw-black);
+  letter-spacing: var(--tracking-number);
+  font-variant-numeric: tabular-nums;
+  text-shadow: var(--text-shadow-hard);
+}
+
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Long scroll surfaces (map, collection) keep momentum but never bounce the page. */
+.u-scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}

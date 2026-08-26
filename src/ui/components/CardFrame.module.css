@@ -1,0 +1,236 @@
+/**
+ * The card, in every context it appears.
+ *
+ * Rarity lives on the FRAME for cards — gear expresses rarity as a tile background
+ * instead, so the two systems never look alike (CLAUDE.md rule 4).
+ */
+.card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  border: 4px solid var(--frame, var(--rarity-card-common));
+  border-radius: var(--radius-card);
+  background: var(--surface-panel);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    var(--shadow-drop);
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-micro) var(--ease-out);
+  padding: 0;
+  display: block;
+  text-align: left;
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Legendary frames get a slow sheen, as in the reference summon screen. */
+.legendary {
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    0 0 16px var(--rarity-card-legendary-glow),
+    var(--shadow-drop);
+}
+
+.boss {
+  border-color: var(--accent-warning);
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    0 0 14px var(--accent-warning),
+    var(--shadow-drop);
+}
+
+/* The reference tags the boss card with a gold banner across its top edge. */
+.bossTag {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(var(--accent-warning-bright), var(--accent-warning));
+  color: var(--text-on-light);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.hp {
+  position: absolute;
+  left: 5px;
+  bottom: 3px;
+  font-size: var(--fs-section);
+  color: var(--text-primary);
+}
+
+.hpLow {
+  color: var(--number-damage);
+}
+
+.hpBar {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: rgb(0 0 0 / 0.55);
+}
+
+.hpBarFill {
+  height: 100%;
+  background: var(--accent-positive);
+  transition: width var(--dur-standard) var(--ease-out);
+}
+
+.hpBarLow {
+  background: var(--accent-danger);
+}
+
+.type {
+  position: absolute;
+  right: 4px;
+  bottom: 6px;
+}
+
+/* The rounds-until-skill-ready badge (Q4). */
+.cooldown {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  min-width: 22px;
+  padding: 0 4px;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: 6px;
+  background: var(--surface-pill);
+  color: var(--text-primary);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  text-align: center;
+}
+
+.ready {
+  background: var(--accent-warning);
+  color: var(--text-on-light);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.statuses {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shield {
+  position: absolute;
+  left: 4px;
+  bottom: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  color: var(--accent-info-bright);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.name {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 2px 4px 6px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.88));
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Whose turn it is — a pulsing yellow ring, like the reference's active card. */
+.acting {
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    0 0 0 6px var(--accent-warning),
+    var(--shadow-drop);
+  animation: bob 1s ease-in-out infinite;
+}
+
+/* A legal target while the player is choosing — taps here land the attack. */
+.targetable {
+  cursor: pointer;
+  box-shadow:
+    0 0 0 3px var(--outline-dark),
+    0 0 0 5px var(--accent-danger-bright),
+    var(--shadow-drop);
+}
+
+.targetable:active {
+  transform: scale(0.96);
+}
+
+.dead {
+  filter: grayscale(1) brightness(0.4);
+  opacity: 0.55;
+}
+
+.empty {
+  border-style: dashed;
+  border-color: var(--surface-slot);
+  background: var(--surface-slot-deep);
+  box-shadow: none;
+}
+
+.small .hp {
+  font-size: var(--fs-label);
+}
+
+/**
+ * Battlefield sizing: the board has a fixed height, so cards are driven by height
+ * and centred in their column rather than stretching the row.
+ */
+.fill {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acting,
+  .ready {
+    animation: none;
+  }
+}

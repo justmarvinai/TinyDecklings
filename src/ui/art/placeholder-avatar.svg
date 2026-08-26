@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Placeholder card art">
+  <defs>
+    <linearGradient id="pa-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5B4BC4"/>
+      <stop offset="100%" stop-color="#2A1E52"/>
+    </linearGradient>
+    <linearGradient id="pa-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8FA9FF"/>
+      <stop offset="100%" stop-color="#4C63C7"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="260" fill="url(#pa-sky)"/>
+  <circle cx="100" cy="86" r="62" fill="#000" opacity=".18"/>
+  <!-- hooded deckling bust: one shared stand-in for every card until final art lands -->
+  <path d="M100 40c30 0 52 22 52 52 0 18-8 31-20 41l8 20H60l8-20c-12-10-20-23-20-41 0-30 22-52 52-52z" fill="url(#pa-body)" stroke="#141024" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M100 40c30 0 52 22 52 52 0 6-1 11-3 16-14-12-30-18-49-18s-35 6-49 18c-2-5-3-10-3-16 0-30 22-52 52-52z" fill="#B9C8FF" opacity=".55"/>
+  <ellipse cx="79" cy="96" rx="9" ry="11" fill="#141024"/>
+  <ellipse cx="121" cy="96" rx="9" ry="11" fill="#141024"/>
+  <ellipse cx="82" cy="92" rx="3" ry="4" fill="#fff"/>
+  <ellipse cx="124" cy="92" rx="3" ry="4" fill="#fff"/>
+  <path d="M86 120c8 7 20 7 28 0" fill="none" stroke="#141024" stroke-width="6" stroke-linecap="round"/>
+  <path d="M46 176h108l14 44H32z" fill="#3A2F72" stroke="#141024" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M64 196h72" stroke="#6E7FD6" stroke-width="8" stroke-linecap="round"/>
+</svg>
