@@ -101,6 +101,27 @@
   position: absolute;
   right: 4px;
   bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/*
+ * With a damage number the badge becomes a pill: icon on the left saying where the
+ * card stands, number on the right saying how hard it hits. Both facts, one glance,
+ * one element — and the dark plate keeps it legible over any art.
+ */
+.typeWithAttack {
+  gap: 3px;
+  padding: 1px 6px 1px 1px;
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--surface-pill);
+  box-shadow: var(--shadow-drop-sm);
+}
+
+.attackValue {
+  font-size: var(--fs-label);
+  color: var(--number-damage);
 }
 
 /* The rounds-until-skill-ready badge (Q4). */
@@ -156,7 +177,24 @@
   font-weight: var(--fw-bold);
   text-transform: uppercase;
   text-align: center;
+  /* The name lands on whatever art the owner supplies, so it carries its own edge. */
+  text-shadow: var(--text-shadow-hard);
   pointer-events: none;
+}
+
+/*
+ * A named card that also carries numbers.
+ *
+ * The name band doubles as the footer scrim: it keeps its place at the bottom edge
+ * so the gradient covers the whole strip, and the text is pushed up by its own
+ * padding to sit above the strength and attack. The band renders before them in the
+ * DOM, so it darkens the art behind the numbers rather than printing over them.
+ */
+.named .name {
+  /* Clears the stat row below it — measured, not guessed: the attack pill is the
+     tallest thing down there, and the band sits inside the card's bottom border. */
+  padding-bottom: 34px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.72) 35%, rgb(0 0 0 / 0.93) 72%);
 }
 
 /* Whose turn it is — a pulsing yellow ring, like the reference's active card. */
@@ -195,6 +233,10 @@
 
 .small .hp {
   font-size: var(--fs-label);
+}
+
+.small .attackValue {
+  font-size: var(--fs-micro);
 }
 
 /**

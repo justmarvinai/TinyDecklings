@@ -1,0 +1,139 @@
+/**
+ * The hold-to-read bubble.
+ *
+ * Built like a small panel rather than a system tooltip: the same outline, bevel and
+ * hard shadow as everything else, so it reads as part of the game and not as the
+ * browser talking.
+ */
+.bubble {
+  position: fixed;
+  z-index: var(--z-modal);
+  max-width: min(300px, calc(100vw - 16px));
+  padding: var(--space-2) var(--space-3);
+  border: var(--outline-width) solid var(--outline-dark);
+  border-radius: var(--radius-panel);
+  background: var(--surface-panel);
+  box-shadow: var(--bevel-top), var(--shadow-panel);
+  /* Purely informational: it must never eat the press that dismisses it. */
+  pointer-events: none;
+  animation: tip-in 140ms var(--ease-out) both;
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble {
+    animation: none;
+  }
+}
+
+/* --- the shapes the bubble is filled with ---------------------------------- */
+
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.subtitle {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--tone, var(--text-secondary));
+}
+
+/* Numbers first: this is the reason the player held down in the first place. */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  border: var(--outline-width-thin) solid var(--outline-dark);
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+}
+
+.body {
+  margin-top: var(--space-2);
+  font-size: var(--fs-label);
+  line-height: 1.4;
+  text-transform: none;
+  color: var(--text-secondary);
+}
+
+.rule {
+  height: var(--outline-width-thin);
+  margin: var(--space-2) 0;
+  background: var(--outline-dark);
+}
+
+.skill {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.skill + .skill {
+  margin-top: var(--space-2);
+}
+
+.skillText {
+  min-width: 0;
+}
+
+.skillName {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.skillCooldown {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  color: var(--accent-warning);
+}
+
+.skillBody {
+  font-size: var(--fs-micro);
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--text-secondary);
+}
+
+/* The line that tells you the gesture worked, so holding feels deliberate. */
+.hint {
+  margin-top: var(--space-2);
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-muted);
+}

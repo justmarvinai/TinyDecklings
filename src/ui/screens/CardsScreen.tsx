@@ -7,14 +7,16 @@ import { MAX_STARS, ascendRequirement, skillUpgradeCost } from '@/engine/progres
 import { ascensionFodderFor, computeCardStats, usePlayerStore } from '@/state/playerStore';
 import type { OwnedCard } from '@/services/saves';
 import { gearRarityColor } from '@/ui/design/rarity';
-import { Button, IconChip, Modal, Panel, StarRow, Tabs } from '@/ui/design/primitives';
+import { Button, IconChip, Modal, Panel, StarRow, Tabs, useHoldTip } from '@/ui/design/primitives';
 import { TitleBanner } from '@/ui/design/primitives';
 import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
+import { CardTip } from '@/ui/components/Tips';
 import { DeckScreen } from './DeckScreen';
 import { LockedFeatureSheet } from '@/ui/components/LockedFeatureSheet';
 import { useSfx } from '@/ui/audio/audioContext';
 import { deferredLabel, type DeferredFeatureId } from '@/ui/text/deferred';
+import { attackTypeLabel } from '@/ui/text/labels';
 import styles from './CardsScreen.module.css';
 
 type CollectionTab = 'units' | 'heroes' | 'deck';
@@ -670,30 +672,69 @@ function CollectionGrid({
 }) {
   return (
     <div className={[styles.grid, scroll ? 'u-scroll-y' : ''].filter(Boolean).join(' ')}>
-      {cards.map((card) => {
-        const def = CONTENT.cards.get(card.defId);
-        if (!def) return null;
-        return (
-          <div key={card.uid} className={`${styles.tile} ${styles.gridItem}`}>
-            <span className={styles.tileWrap}>
-              <CardFrame
-                defId={card.defId}
-                rarity={def.rarity}
-                size="small"
-                showName
-                onClick={() => onOpen(card.uid)}
-              />
-              {card.favorite ? (
-                <Icon name="ui.star" size={14} className={styles.favouriteMark} />
-              ) : null}
-            </span>
-            <span className={styles.tileMeta}>
-              <StarRow value={card.stars} max={6} size={11} />
-              <span className={styles.level}>Lvl {card.level}</span>
-            </span>
-          </div>
-        );
-      })}
+      {cards.map((card) => (
+        <CollectionTile key={card.uid} card={card} onOpen={() => onOpen(card.uid)} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * One card in the collection, with the numbers on its face.
+ *
+ * The grid used to show art, name, stars and level — everything except what the
+ * card actually does. Strength and attack now ride on the card the same way they do
+ * on the battlefield, so a tile reads identically in both places, and holding it
+ * gives the skills without the trip into the sheet.
+ */
+function CollectionTile({ card, onOpen }: { card: OwnedCard; onOpen: () => void }) {
+  const save = usePlayerStore((s) => s.save);
+  const def = CONTENT.cards.get(card.defId);
+  const stats = useMemo(() => (save ? computeCardStats(save, card.uid) : null), [save, card.uid]);
+  const { bind, tip } = useHoldTip(
+    def && stats ? (
+      <CardTip
+        name={def.name}
+        rarity={def.rarity}
+        attackType={def.attackType}
+        attack={stats.attack}
+        hp={stats.strength}
+        maxHp={stats.strength}
+        speed={stats.speed}
+        level={card.level}
+        // Only the rungs this card has actually unlocked — the ladder is gated on
+        // stars, and promising a skill it cannot use would be a lie.
+        skills={def.skills
+          .filter((entry) => entry.unlockStars <= card.stars)
+          .map((entry) => ({ skillId: entry.skillId }))}
+        note={def.leaderSkill?.description}
+      />
+    ) : null,
+  );
+  if (!def) return null;
+
+  return (
+    <div className={`${styles.tile} ${styles.gridItem}`}>
+      <span className={styles.tileWrap}>
+        <CardFrame
+          defId={card.defId}
+          rarity={def.rarity}
+          size="small"
+          showName
+          hp={stats?.strength}
+          maxHp={stats?.strength}
+          attack={stats?.attack}
+          onClick={onOpen}
+          bind={bind}
+          ariaLabel={`${def.name}, level ${card.level}, ${stats?.strength ?? 0} strength, ${stats?.attack ?? 0} attack, ${attackTypeLabel(def.attackType)}`}
+        />
+        {card.favorite ? <Icon name="ui.star" size={14} className={styles.favouriteMark} /> : null}
+      </span>
+      <span className={styles.tileMeta}>
+        <StarRow value={card.stars} max={6} size={11} />
+        <span className={styles.level}>Lvl {card.level}</span>
+      </span>
+      {tip}
     </div>
   );
 }

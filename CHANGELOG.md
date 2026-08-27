@@ -8,6 +8,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **The numbers that decide a fight are now on screen, and holding
+  anything explains it.**
+  - **Damage on every card.** Strength was on the face; attack was not, so the one
+    number that decides whether a swing kills was only reachable by leaving the
+    battle. Every card — battlefield and collection — now carries strength
+    bottom-left and an attack pill bottom-right: the attack-type icon saying where
+    the card stands, the damage saying how hard it hits. On the battlefield it is
+    the _effective_ attack, buffs and debuffs included, not the printed one.
+  - **Press and hold to be told more** (`useHoldTip`). A styled bubble after ~320ms:
+    a card gives full stats and its skill list, a skill button gives what the spell
+    actually does, and stage modifiers and element affinities give the sentence that
+    was already authored for them and until now sat in a `title` attribute no phone
+    can open. A hold never also fires the tap underneath — inspecting an enemy must
+    not swing at it — and releasing closes it, so reading costs exactly as long as
+    you hold and nothing has to be dismissed.
+  - **The collection tile says what a card is.** Strength, damage and front-row /
+    ranged, without opening the sheet; holding a tile adds its skills.
+  - New `attackTypeLabel()`: "Front row" and "Ranged" rather than the engine's
+    melee/ranged, named in `ui/text/labels.ts` with the rest of the vocabulary.
+
+### Fixed
+
+- 2026-08-27 — **Holding anything on a phone started selecting text.** The game is
+  played with long presses, and the platform answered them with the magnifier and a
+  Copy callout over the board. Selection is off (`user-select`, `-webkit-touch-callout`)
+  everywhere except inputs and `.u-selectable`, which keeps the save code copyable —
+  the one flow that has no other route.
+
 - 2026-08-27 — **A wallpaper for the map screen.** Drop an image into
   `src/ui/art/map/` and it becomes the map's backdrop — no import, no map entry, no
   code, the same rule as card portraits and icons. One file named `default` covers

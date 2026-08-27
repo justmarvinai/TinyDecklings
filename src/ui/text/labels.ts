@@ -6,7 +6,14 @@
  * conventions). The engine never builds prose — it hands back structured facts and
  * this module turns them into words.
  */
-import type { CardRarity, CurrencyId, ElementId, GearRarity, StageKind } from '@/content/schemas';
+import type {
+  AttackType,
+  CardRarity,
+  CurrencyId,
+  ElementId,
+  GearRarity,
+  StageKind,
+} from '@/content/schemas';
 import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 
 export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
@@ -23,6 +30,21 @@ export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
 
 export function currencyLabel(currency: CurrencyId | string): string {
   return CURRENCY_LABELS[currency as CurrencyId] ?? String(currency).replace(/_/g, ' ');
+}
+
+/**
+ * How a card fights, said in words rather than in an icon.
+ *
+ * "Melee" and "ranged" are jargon for where a unit stands; the reference calls them
+ * what they are, and so does the collection tile the player reads at a glance.
+ */
+export const ATTACK_TYPE_LABELS: Readonly<Record<AttackType, string>> = {
+  melee: 'Front row',
+  ranged: 'Ranged',
+};
+
+export function attackTypeLabel(type: AttackType): string {
+  return ATTACK_TYPE_LABELS[type];
 }
 
 export const ELEMENT_LABELS: Readonly<Record<ElementId, string>> = {

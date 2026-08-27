@@ -114,6 +114,15 @@ Sampled off the reference's own buttons. These are meant to be loud — a muted 
 
 Two systems must be tellable apart at a glance: **cards carry rarity on the frame**, **gear carries rarity as tile background** behind the fixed slot icon.
 
+### 3.5 Reading without tapping
+
+Touch has no hover, so information that a desktop game puts in a tooltip has nowhere to live. Two rules keep it reachable:
+
+- **The numbers that decide a decision are on the face.** Every card — battlefield and collection alike — carries strength bottom-left and an attack pill bottom-right: the attack-type icon saying where it stands, and the damage in `--number-damage` saying how hard it hits. Same two facts, same two places, both screens.
+- **Everything else is a press away.** `useHoldTip` shows a styled bubble after a ~320ms press: cards give full stats and their skill list, skill buttons give what the spell does, stage modifiers and element affinities give the sentence that was already authored for them. A hold never also fires the tap underneath, and releasing closes it, so it costs nothing and can never be mistaken for an action.
+
+Text selection is off everywhere (`user-select: none`) except inputs and `.u-selectable` — a long press is a game gesture, and the platform's copy callout over the board is not.
+
 ## 4. Typography
 
 - **Family:** Saira (self-hosted). Display/headers: **Saira Bold/Black Italic**; UI labels: SemiBold; body: Medium.

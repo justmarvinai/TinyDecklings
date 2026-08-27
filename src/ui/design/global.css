@@ -54,6 +54,30 @@ body {
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
+
+  /*
+   * A long press is an in-game gesture — hold a card to inspect it — not a text
+   * selection. Without this, holding anything on iOS pops the magnifier and the
+   * Copy callout over the board, and on Android the selection handles.
+   */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/*
+ * Except where the text *is* the point.
+ *
+ * The save code has to be selectable to be copied out by hand, and a typed value
+ * has to be editable — losing selection there would break the one flow that has no
+ * other route (Q27).
+ */
+input,
+textarea,
+.u-selectable {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
 }
 
 #root {
