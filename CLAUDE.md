@@ -69,7 +69,8 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
    Game Icons (keep CC-BY attribution in `CREDITS.md`). The owner supplies final art by **dropping files into
    two folders**, and nothing else: `src/ui/art/cards/<artKey>.png` is that card's portrait, and
    `src/ui/icons/custom/<icon-key>.svg` (then `npm run vendor:icons`) replaces that meaning everywhere it is
-   drawn. Both are discovered by file name at build time, so a swap is never a code, content or schema
+   drawn, and `src/ui/art/map/<themeToken>.jpg` (or one file named `default`) is the map's wallpaper. All
+   three are discovered by file name at build time, so a swap is never a code, content or schema
    change — keep it that way: never add a hand-written import or map entry per asset. Missing files fall back
    to the placeholder; a misnamed one fails `npm run test` rather than going quietly inert. Sound works the
    same way: `services/audio/soundManifest.ts` names meanings, and today they resolve to synthesized voices

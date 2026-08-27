@@ -6,11 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ## [Unreleased]
 
+### Added
+
+- 2026-08-27 — **A wallpaper for the map screen.** Drop an image into
+  `src/ui/art/map/` and it becomes the map's backdrop — no import, no map entry, no
+  code, the same rule as card portraits and icons. One file named `default` covers
+  the whole road; a file named after a region's `themeToken` (`theme-isles.jpg`)
+  gives that biome its own. It resolves region → `default` → the painted gradient, so
+  a single image is enough and none at all still looks finished.
+  - The image replaces the biome's gradient rather than layering over it (the glows
+    are a stand-in for art, and are in the way once there is art), and is anchored to
+    the screen rather than the scroller, so the road travels across a still backdrop.
+  - A slight scrim at the top and bottom edges only: the name pills and medallions
+    carry their own contrast, but the dotted path between them is translucent and
+    would vanish into a busy photograph. The middle of the image is left alone.
+  - A file named after no region fails `npm run test` and names the file, rather than
+    sitting in the folder doing nothing. The dev panel's **Art coverage** button
+    lists which regions are still on the gradient.
+  - `src/ui/art/map/README.md` documents naming, formats, sizing and weight.
+
 ### Changed
 
 - 2026-08-27 — **The palette, rebuilt from the reference screenshots.** The game was a
   dark maroon app wearing the reference's shapes; the reference is not a dark game.
-  Colours are now *sampled* out of `assets/examples/` rather than approximated:
+  Colours are now _sampled_ out of `assets/examples/` rather than approximated:
   - **Every screen stands on its own bright, saturated ground** — cyan ocean for the
     map (`Map.png`), rust for the collection (`Decks.png`), magenta for summoning
     (`Card_Summon.png`), blue for the shop, profile, more and settings (`Shop.png`,
@@ -28,7 +47,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
     a locked stage now dims only its portrait — dimming whole medallions had put a grey
     wash over most of the road.
   - **Panels are neutral grey** (`#303030`), untinted: on a coloured ground a tinted
-    panel reads as a smudge. New `--surface-inset` for tiles pressed *into* the ground,
+    panel reads as a smudge. New `--surface-inset` for tiles pressed _into_ the ground,
     which comes out navy on blue and deep rust on the collection.
 
   `UI_STYLE_GUIDE.md` §2–3 rewritten with the sampled values and where each came from.
@@ -37,12 +56,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 - 2026-08-27 — **A ground defined as a token silently ignored every screen that set
   one.** `--ground-wash` held the gradient formula on `:root`, and a custom property
-  containing `var()` has those references resolved *where it is declared* — so every
+  containing `var()` has those references resolved _where it is declared_ — so every
   screen inherited the already-substituted default and came out rust no matter which
   triple it chose. The formula is a class (`.u-ground`) now, which resolves on the
   element that uses it. Screen glow overlays also moved behind the content
   (`z-index: -1`); as absolutely-positioned pseudo-elements they had been painting
-  over every in-flow child and tinting whole screens.
+  over every in-flow child and tinting whole screens. A negative `z-index` only lands
+  above the parent's own background when the parent forms a stacking context, which
+  `position: relative` alone does not — so the map, summon and battle screens now
+  carry `isolation: isolate`, without which the glows (and the map wallpaper) painted
+  behind an opaque ground and were invisible.
 
 - 2026-08-27 — **A bare strip below the tab bar on an installed home-screen app.**
   The shell was sized with `height: 100%`, which resolves against the layout viewport

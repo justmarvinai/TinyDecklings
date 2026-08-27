@@ -17,6 +17,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
 }
@@ -26,13 +27,40 @@
   content: '';
   position: absolute;
   inset: 0;
-  /* Behind the content: an absolutely-positioned pseudo otherwise paints over
-     every in-flow child and tints the whole screen. */
+  /*
+   * Behind the content, above the ground. An absolutely-positioned pseudo with no
+   * z-index paints over every in-flow child and tints the whole screen; a negative
+   * one only lands above the parent's own background if the parent forms a stacking
+   * context, which `position: relative` alone does not — hence `isolation` below.
+   */
   z-index: -1;
   background:
     radial-gradient(circle at 78% 16%, rgb(255 255 255 / 0.2), transparent 42%),
     radial-gradient(circle at 14% 64%, rgb(255 255 255 / 0.16), transparent 36%);
   pointer-events: none;
+}
+
+/**
+ * The owner's wallpaper, when one has been dropped in.
+ *
+ * It replaces the painted gradient rather than sitting over it — the biome glows
+ * are a stand-in for art, and once there is art they are in the way. The image is
+ * anchored to the screen, not the scroller, so the road travels across it.
+ *
+ * The scrim is deliberately slight, and only at the two edges: the name pills and
+ * medallions carry their own contrast, but the path dots between them are
+ * translucent and would vanish into a busy photograph.
+ */
+.wallpapered::before {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(0 0 0 / 0.3),
+      rgb(0 0 0 / 0.04) 26%,
+      rgb(0 0 0 / 0.04) 74%,
+      rgb(0 0 0 / 0.36)
+    ),
+    var(--wallpaper) center / cover no-repeat;
 }
 
 /* Sunken Isles — the brilliant cyan ocean of Map.png. */

@@ -11,6 +11,7 @@
   --ground-deep: var(--ground-arcane-deep);
 
   position: relative;
+  isolation: isolate;
 }
 
 /* The summoning glow, over the shared ground rather than replacing it. */
@@ -18,8 +19,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  /* Behind the content: an absolutely-positioned pseudo otherwise paints over
-     every in-flow child and tints the whole screen. */
+  /*
+   * Behind the content, above the ground. An absolutely-positioned pseudo with no
+   * z-index paints over every in-flow child and tints the whole screen; a negative
+   * one only lands above the parent's own background if the parent forms a stacking
+   * context, which `position: relative` alone does not — hence `isolation` below.
+   */
   z-index: -1;
   background: radial-gradient(circle at 50% 38%, rgb(255 80 220 / 0.45), transparent 62%);
   pointer-events: none;

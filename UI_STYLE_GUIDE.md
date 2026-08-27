@@ -55,6 +55,8 @@ Sampled from the reference screenshots. A screen sets the three and composes `.u
 | Azure   | `#2B8BFF` `#0B63DD` `#0345AD` | Shop, profile, more, settings   | `Shop.png`, profile page |
 | Crimson | `#A3040F` `#6B0210` `#35000B` | Battle arena                    | `Battle.png`             |
 
+The map's ground is a **stand-in for art**. Dropping an image into `src/ui/art/map/` — named after a region's `themeToken`, or `default` for all of them — replaces that biome's gradient with a painted backdrop, anchored to the screen so the road travels across it. Everything on the road (name pills, medallion rings, outlined stars) carries its own contrast, so nothing needs redesigning when the art lands.
+
 ### 3.1b Chrome & surfaces
 
 | Token              | Approx             | Use                                                  |

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { CONTENT, ENERGY_CONFIG } from '@/content';
 import type { ElementId, ForkBranch, GeneratedStage } from '@/content/schemas';
 import {
@@ -18,7 +18,7 @@ import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useScreenStore } from '@/state/screenStore';
-import { PLACEHOLDER_AVATAR } from '@/ui/art/artManifest';
+import { PLACEHOLDER_AVATAR, mapWallpaper } from '@/ui/art/artManifest';
 import { Button, IconChip, Modal, Panel, StarRow } from '@/ui/design/primitives';
 import { RewardList } from '@/ui/components/RewardList';
 import { useSfx } from '@/ui/audio/audioContext';
@@ -50,6 +50,7 @@ export function MapScreen() {
   const currentRef = useRef<HTMLButtonElement>(null);
 
   const region = useMemo(() => regionForStage(CONTENT, currentStage), [currentStage]);
+  const wallpaper = mapWallpaper(region.themeToken);
 
   const progress = useMemo(
     () =>
@@ -98,7 +99,13 @@ export function MapScreen() {
   const claimable = progress ? claimableChests(progress) : [];
 
   return (
-    <div className={styles.screen} data-theme={region.themeToken}>
+    <div
+      className={[styles.screen, wallpaper ? styles.wallpapered : ''].filter(Boolean).join(' ')}
+      data-theme={region.themeToken}
+      // The URL is per-region and hashed at build time, so it has to reach CSS as a
+      // custom property; the styling itself stays in the stylesheet.
+      style={wallpaper ? ({ '--wallpaper': `url("${wallpaper}")` } as CSSProperties) : undefined}
+    >
       <div className={styles.header}>
         <div className={styles.headerText}>
           <span className={styles.regionName}>{region.name}</span>

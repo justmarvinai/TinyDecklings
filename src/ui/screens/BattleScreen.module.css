@@ -8,6 +8,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   padding-top: var(--safe-top);
@@ -25,8 +26,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  /* Behind the content: an absolutely-positioned pseudo otherwise paints over
-     every in-flow child and tints the whole screen. */
+  /*
+   * Behind the content, above the ground. An absolutely-positioned pseudo with no
+   * z-index paints over every in-flow child and tints the whole screen; a negative
+   * one only lands above the parent's own background if the parent forms a stacking
+   * context, which `position: relative` alone does not — hence `isolation` below.
+   */
   z-index: -1;
   background:
     radial-gradient(circle at 50% 98%, rgb(255 110 30 / 0.45), transparent 50%),
