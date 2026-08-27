@@ -120,6 +120,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   slots. Audited across every screen at 390×844 and 360×640: nothing player-facing
   is under the floor.
 
+- 2026-08-27 — The tutorial told new players "×2 doubles the speed", which stopped
+  being true the moment ×2 became 1.7×. It says "runs it quicker" now — prose that
+  quotes no constant cannot drift from one. Walked the whole guided opening to find
+  it: seven beats, no errors, and the coach still steps aside whenever a sheet is up.
+
 - 2026-08-27 — The battle result sheet said "Victory" in its banner directly above
   "Victory!" in its body — the same word twice, on the sheet a player sees after
   every single fight. The banner carries the stage's name instead, which says
