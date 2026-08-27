@@ -12,10 +12,27 @@
   box-sizing: border-box;
 }
 
+/**
+ * The shell fills what you can actually see.
+ *
+ * `100%` resolves against the layout viewport, which in an installed PWA can stop
+ * short of the screen — that left a strip of bare page below the tab bar over the
+ * home indicator. `dvh` is the visible viewport, insets included, so the tab bar
+ * ends where the screen does. The page itself never scrolls (every surface scrolls
+ * inside itself), so `dvh` cannot twitch here the way it would on a long document.
+ */
 html,
 body,
 #root {
   height: 100%;
+}
+
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
 }
 
 body {
@@ -24,7 +41,12 @@ body {
   font-size: var(--fs-body);
   font-weight: var(--fw-medium);
   color: var(--text-primary);
-  background: var(--bg-app-deep);
+  /*
+   * Chrome colour, not game colour: this is what shows in the safe areas and behind
+   * an overscroll, where it should read as the HUD rather than as a seam. It also
+   * matches <meta name="theme-color">, so the frame is one colour edge to edge.
+   */
+  background: var(--bg-hud);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 

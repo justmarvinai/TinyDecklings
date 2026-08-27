@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, TUTORIAL_FINISHED, beatAt, type CoachContext } from './beats';
+import { BEATS, TUTORIAL_FINISHED, beatAt, coachPlacement, type CoachContext } from './beats';
 
 /**
  * The guided opening is a script, and a script that can get stuck is worse than no
@@ -71,5 +71,40 @@ describe('the tutorial script', () => {
 
   it('names every beat once', () => {
     expect(new Set(BEATS.map((b) => b.id)).size).toBe(BEATS.length);
+  });
+
+  /**
+   * The coach must never cover what it is pointing at.
+   *
+   * Stage 1 is the last node on the road, so the map runs out of scroll with it
+   * still low on the screen and a bottom card lands right on top of it — which is
+   * exactly what a player hit: the tutorial said "tap stage 1" over the stage 1
+   * they could no longer see.
+   */
+  describe('card placement', () => {
+    const VIEWPORT = 844;
+    const CARD_HEIGHT = 200;
+
+    it('goes to the top when the anchor is low on the screen', () => {
+      // Stage 1, sitting near the bottom because the map cannot scroll further.
+      expect(coachPlacement({ top: 638, height: 84 }, VIEWPORT)).toBe('top');
+    });
+
+    it('stays at the bottom when the anchor is high on the screen', () => {
+      // The battle screen's AUTO button.
+      expect(coachPlacement({ top: 52, height: 48 }, VIEWPORT)).toBe('bottom');
+    });
+
+    it('never picks the half the anchor is in', () => {
+      for (let top = 0; top + 84 <= VIEWPORT; top += 20) {
+        const anchor = { top, height: 84 };
+        const side = coachPlacement(anchor, VIEWPORT);
+        // The card occupies its half from the edge inward; the anchor's centre must
+        // fall outside it however the card is sized.
+        const centre = top + 42;
+        const covered = side === 'top' ? centre < CARD_HEIGHT : centre > VIEWPORT - CARD_HEIGHT;
+        expect(covered, `anchor at ${top} covered by a ${side} card`).toBe(false);
+      }
+    });
   });
 });
