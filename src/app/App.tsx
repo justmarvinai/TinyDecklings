@@ -10,6 +10,7 @@ import {
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { commanderLevel, totalStarsOf } from '@/engine/records/profile';
+import { compactNumber } from '@/ui/text/labels';
 import { AudioProvider } from '@/ui/audio/AudioProvider';
 import { useMotionPreference } from '@/ui/fx/useReducedMotion';
 import { OnboardingCoach } from '@/ui/onboarding/OnboardingCoach';
@@ -120,21 +121,21 @@ export function App() {
     {
       key: 'energy',
       icon: 'currency.energy',
-      value: `${Math.floor(energy.current)}/${ENERGY_CONFIG.cap}`,
+      value: `${compactNumber(Math.floor(energy.current))}/${compactNumber(ENERGY_CONFIG.cap)}`,
       color: 'var(--accent-info)',
       label: 'Energy',
     },
     {
       key: 'gold',
       icon: 'currency.gold',
-      value: String(save.player.currencies.gold ?? 0),
+      value: compactNumber(save.player.currencies.gold ?? 0),
       color: 'var(--accent-warning)',
       label: 'Gold',
     },
     {
       key: 'gems',
       icon: 'currency.gems',
-      value: String(save.player.currencies.gems ?? 0),
+      value: compactNumber(save.player.currencies.gems ?? 0),
       color: 'var(--rarity-card-epic)',
       label: 'Gems',
     },

@@ -29,6 +29,15 @@
   animation: screen-in 180ms var(--ease-out, ease-out) both;
 }
 
+/*
+ * The `to` frame deliberately declares no transform.
+ *
+ * The animation fills forwards, so a `translate3d(0, 0, 0)` written here would stay
+ * on the element after it finished — and any transform, identity or not, makes its
+ * element the containing block for `position: fixed` descendants. That silently
+ * trapped every modal inside the screen it was opened from. Omitting it lets the
+ * final value fall back to the element's own `none`.
+ */
 @keyframes screen-in {
   from {
     opacity: 0;
@@ -36,7 +45,6 @@
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 

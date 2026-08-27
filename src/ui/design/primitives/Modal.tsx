@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { TitleBanner } from './TitleBanner';
 import { pushModal } from './modalState';
 import styles from './Modal.module.css';
@@ -24,7 +25,17 @@ export function Modal({ title, onClose, children, placement = 'sheet' }: ModalPr
   // aside (see `modalState.ts`).
   useEffect(() => pushModal(), []);
 
-  return (
+  /*
+   * Portalled to the body rather than rendered where it was opened.
+   *
+   * A sheet is `position: fixed` and sized against the viewport (`88svh`), so it has
+   * to be laid out against the viewport too. Rendered in place, one transformed
+   * ancestor — a screen-transition animation, a `will-change`, a container — makes
+   * that ancestor the containing block instead, and the sheet quietly overflows the
+   * screen's box rather than the phone's. React events still bubble through the
+   * portal, so nothing at the call site changes.
+   */
+  return createPortal(
     <div
       className={[styles.backdrop, placement === 'centered' ? styles.centered : '']
         .filter(Boolean)
@@ -38,6 +49,7 @@ export function Modal({ title, onClose, children, placement = 'sheet' }: ModalPr
         <TitleBanner title={title} onClose={onClose} />
         <div className={styles.body}>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

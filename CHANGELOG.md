@@ -48,6 +48,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Fixed
 
+- 2026-08-27 — **Every modal was laid out inside the screen that opened it.** The
+  screen-transition keyframes ended on `transform: translate3d(0, 0, 0)` and filled
+  forwards, so an identity transform stayed on the element — and any transform makes
+  its element the containing block for `position: fixed` descendants. A sheet sized
+  against the viewport (`88svh`) was therefore taller than the box it was trapped in
+  and overflowed upward under the HUD, slicing its own title bar off. The final
+  keyframe no longer declares a transform, and modals portal to the body, so a
+  future transformed ancestor cannot do it again.
+
+- 2026-08-27 — **A currency you could not read.** Three pills, an avatar and the shop
+  shortcut did not fit a 360px phone, and the row silently scrolled — with no
+  affordance, so gems just looked cut off mid-number. Values run through
+  `compactNumber` (`10K`, not `10000`), the pill chrome is trimmed, and the row now
+  fits with room for a seven-figure gold total.
+
+- 2026-08-27 — **Touch targets below the floor (rule 1).** The eight gear slots on a
+  card were 36px buttons floating inside 76px columns — the tile was sizing to its
+  icon rather than filling its cell — and the HUD's avatar and `+` were 44 and 40.
+  All of them are ≥48px now, and the gear grid reads like the reference's chunky
+  slots. Audited across every screen at 390×844 and 360×640: nothing player-facing
+  is under the floor.
+
+- 2026-08-27 — Settings toggles left dead rail: the two halves were content-sized
+  inside a full-width track, so ON sat in a corner of a mostly empty control. They
+  split it evenly now, and battle speed is the same twin control (×1/×2) rather than
+  a button that cycled — in the info accent, because neither speed is the "off" one
+  and red on a plain choice reads as a warning about a setting that carries none.
+
 - 2026-08-27 — **The enemy's front row was drawn behind its back row.** Slots 0–2 are
   the melee rank on both sides, and both boards were laid out top-left to
   bottom-right — which put the player's front line nearest the divider and the
