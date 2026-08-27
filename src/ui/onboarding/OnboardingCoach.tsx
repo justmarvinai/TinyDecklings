@@ -3,7 +3,14 @@ import { usePlayerStore } from '@/state/playerStore';
 import { currentScreen, useScreenStore } from '@/state/screenStore';
 import { Button } from '@/ui/design/primitives';
 import { useModalOpen } from '@/ui/design/primitives/modalState';
-import { BEATS, TUTORIAL_FINISHED, beatAt, type CoachContext } from './beats';
+import {
+  BEATS,
+  TUTORIAL_FINISHED,
+  beatAt,
+  coachPlacement,
+  type CoachContext,
+  type CoachPlacement,
+} from './beats';
 import styles from './OnboardingCoach.module.css';
 
 interface Rect {
@@ -14,22 +21,31 @@ interface Rect {
 }
 
 /**
- * Follows an anchored element as the map scrolls under it.
+ * Follows an anchored element as the map scrolls under it, and picks a side to
+ * speak from.
  *
  * A rAF loop rather than a resize/scroll listener: the anchor can move because a
  * list scrolled, a sheet opened or a medallion animated, and one cheap read per
  * frame is simpler than chasing every cause. State is only written from inside the
  * frame callback, never synchronously from the effect body.
+ *
+ * The placement is latched on the first measurement and held for the rest of the
+ * beat. Deciding it every frame would let the card flip sides mid-sentence as the
+ * map drifts under it, which reads as a glitch.
  */
-function useAnchorRect(anchor: string | undefined): Rect | null {
-  const [rect, setRect] = useState<Rect | null>(null);
+function useAnchor(anchor: string | undefined): { rect: Rect | null; placement: CoachPlacement } {
+  const [state, setState] = useState<{ rect: Rect | null; placement: CoachPlacement }>({
+    rect: null,
+    placement: 'bottom',
+  });
 
   useEffect(() => {
+    setState({ rect: null, placement: 'bottom' });
     if (!anchor) return;
-    // Bring the thing being pointed at into the middle of the screen once: the
-    // coach card owns the bottom of the viewport, and a ring the player has to
-    // scroll to find is worse than no ring.
+    // Bring the thing being pointed at into the middle of the screen once, so the
+    // ring is not something the player has to go looking for.
     let centred = false;
+    let placement: CoachPlacement | null = null;
     let frame = requestAnimationFrame(function measure() {
       const el = document.querySelector<HTMLElement>(`[data-coach="${anchor}"]`);
       if (el && !centred) {
@@ -42,18 +58,22 @@ function useAnchorRect(anchor: string | undefined): Rect | null {
             return { top: r.top, left: r.left, width: r.width, height: r.height };
           })()
         : null;
-      setRect((prev) => {
-        if (prev === next) return prev;
+      // Centring can fail, so the side comes from where the anchor actually landed.
+      if (next && placement === null) placement = coachPlacement(next, window.innerHeight);
+      const side = placement ?? 'bottom';
+      setState((prev) => {
         if (
-          prev &&
+          prev.placement === side &&
+          prev.rect &&
           next &&
-          prev.top === next.top &&
-          prev.left === next.left &&
-          prev.width === next.width
+          prev.rect.top === next.top &&
+          prev.rect.left === next.left &&
+          prev.rect.width === next.width
         ) {
           return prev;
         }
-        return next;
+        if (prev.placement === side && prev.rect === null && next === null) return prev;
+        return { rect: next, placement: side };
       });
       frame = requestAnimationFrame(measure);
     });
@@ -62,7 +82,7 @@ function useAnchorRect(anchor: string | undefined): Rect | null {
 
   // Ignored entirely when nothing is anchored, so a stale measurement from the
   // previous beat can never draw a ring around the wrong thing.
-  return anchor ? rect : null;
+  return anchor ? state : { rect: null, placement: 'bottom' };
 }
 
 /**
@@ -138,7 +158,7 @@ export function OnboardingCoach() {
   // is behind a backdrop anyway. Stepping aside is not optional: the coach used to
   // sit on top of the stage sheet's Fight button.
   const anchored = beat?.screen === screen && !modalOpen ? beat.anchor : undefined;
-  const rect = useAnchorRect(anchored);
+  const { rect, placement } = useAnchor(anchored);
 
   if (!save || !beat || modalOpen) return null;
   // The beat waits quietly until the player is where it can speak.
@@ -162,7 +182,10 @@ export function OnboardingCoach() {
         />
       ) : null}
 
-      <div className={styles.card} role="status">
+      <div
+        className={`${styles.card} ${placement === 'top' ? styles.atTop : styles.atBottom}`}
+        role="status"
+      >
         <div className={styles.head}>
           <span className={styles.step}>
             {step + 1} of {BEATS.length}

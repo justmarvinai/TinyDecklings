@@ -3,3 +3,4 @@ node_modules
 coverage
 src/ui/icons/svg
 assets
+src/ui/icons/generated

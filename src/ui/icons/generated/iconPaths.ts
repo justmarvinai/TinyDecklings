@@ -1,7 +1,9 @@
 // GENERATED FILE — do not edit by hand. Run `npm run vendor:icons` to regenerate.
 // Source art: Game Icons (game-icons.net / Open Game Icons), CC BY 3.0 — see CREDITS.md.
-// All of it is placeholder art; dropping a replacement .svg into src/ui/icons/svg
-// and re-running the script swaps it with no code change.
+// All of it is placeholder art. Two ways to replace a piece, neither touching code:
+//   - drop <icon-key>.svg into src/ui/icons/custom/  (preferred — named by meaning)
+//   - overwrite src/ui/icons/svg/<source-name>.svg   (edits the vendored placeholder)
+// then re-run the script.
 
 export interface IconPath {
   readonly viewBox: string;
@@ -84,3 +86,13 @@ export const ICON_PATHS = {
 } as const satisfies Record<string, IconPath>;
 
 export type IconSourceName = keyof typeof ICON_PATHS;
+
+/**
+ * Owner art from src/ui/icons/custom/, keyed by semantic icon key.
+ *
+ * Deliberately a loose Record rather than a const object: these files come and go
+ * as the art lands, and `iconPath()` falls back to the placeholder for any key
+ * that has none. `iconManifest.test.ts` rejects a file whose name is not a real
+ * icon key, so a typo fails the build rather than silently doing nothing.
+ */
+export const ICON_OVERRIDES: Readonly<Record<string, IconPath>> = {};

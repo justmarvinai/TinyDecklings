@@ -19,7 +19,6 @@
   position: fixed;
   left: var(--space-3);
   right: var(--space-3);
-  bottom: calc(var(--space-3) + 76px);
   z-index: calc(var(--z-modal) - 1);
   display: flex;
   flex-direction: column;
@@ -38,9 +37,29 @@
   pointer-events: none;
 }
 
-.card > .head,
+/*
+ * Only the buttons take input. The header row spans the full width, so leaving it
+ * live would put an invisible strip over whatever is behind the top of the card.
+ */
 .card button {
   pointer-events: auto;
+}
+
+/**
+ * The card speaks from whichever half the thing it is pointing at is not in.
+ *
+ * Ringing a target and then sitting on top of it is the one failure a coach must
+ * not have, and centring the target cannot always avoid it: stage 1 is the last
+ * node on the road, so the map runs out of scroll with it still near the bottom.
+ * `OnboardingCoach` picks the side; these just clear the chrome on that edge.
+ */
+.atBottom {
+  bottom: calc(var(--space-3) + var(--tabbar-height) + var(--safe-bottom));
+}
+
+.atTop {
+  top: calc(var(--space-3) + var(--hud-height) + var(--safe-top));
+  animation-name: coach-in-top;
 }
 
 .head {
@@ -101,6 +120,18 @@
   from {
     opacity: 0;
     transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Same arrival, from the edge it actually enters from. */
+@keyframes coach-in-top {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0);
   }
   to {
     opacity: 1;

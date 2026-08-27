@@ -93,3 +93,22 @@ export const TUTORIAL_FINISHED = 999;
 export function beatAt(step: number): Beat | null {
   return step >= 0 && step < BEATS.length ? BEATS[step] : null;
 }
+
+/** Which half of the screen the coach card speaks from. */
+export type CoachPlacement = 'top' | 'bottom';
+
+/**
+ * The card takes the half the thing it is ringing is not in.
+ *
+ * Centring the anchor first is the usual answer, and it is not enough: stage 1 is
+ * the last node on the road, so the map runs out of scroll with it still low on the
+ * screen — right where a bottom card lives. Pointing at something and then covering
+ * it is the one mistake a coach cannot make, so the side is chosen from where the
+ * anchor actually ended up.
+ */
+export function coachPlacement(
+  anchor: { top: number; height: number },
+  viewportHeight: number,
+): CoachPlacement {
+  return anchor.top + anchor.height / 2 > viewportHeight / 2 ? 'top' : 'bottom';
+}

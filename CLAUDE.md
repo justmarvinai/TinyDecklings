@@ -65,7 +65,13 @@ npm run vendor:icons   # re-extract placeholder icons and regenerate the icon mo
 3. **Data-driven content.** Cards/gear/enemies/encounters are data entries validated by Zod. Never hard-code a card as bespoke UI/engine logic; new behavior = new reusable effect primitive.
 4. **Cards and Gear have separate rarity systems.** Distinct enums, names, and color tokens (`CardRarity` ≠ `GearRarity`). Never mix or visually reuse one for the other.
 5. **Gear icons are fixed per slot type.** Every Boots item shows THE boots icon, every Helmet THE helmet icon — everywhere (inventory, equipment grid, drops). `GearDef` has **no** icon field; icons resolve via `gearSlotIcon(slot)` only. Items differ by name, stats, rarity color, stars.
-6. **All art and audio is swappable placeholder for now.** One shared avatar for every card; icons from Open Game Icons (keep CC-BY attribution in `CREDITS.md`). The owner will supply final per-card art and icons later — everything resolves through the semantic asset manifest (`iconManifest.ts` / `artKey`), so a swap is an asset drop, never a code or schema change. Sound works the
+6. **All art and audio is swappable placeholder for now.** One shared avatar for every card; icons from Open
+   Game Icons (keep CC-BY attribution in `CREDITS.md`). The owner supplies final art by **dropping files into
+   two folders**, and nothing else: `src/ui/art/cards/<artKey>.png` is that card's portrait, and
+   `src/ui/icons/custom/<icon-key>.svg` (then `npm run vendor:icons`) replaces that meaning everywhere it is
+   drawn. Both are discovered by file name at build time, so a swap is never a code, content or schema
+   change — keep it that way: never add a hand-written import or map entry per asset. Missing files fall back
+   to the placeholder; a misnamed one fails `npm run test` rather than going quietly inert. Sound works the
    same way: `services/audio/soundManifest.ts` names meanings, and today they resolve to synthesized voices
    rather than files — dropping in real audio is a manifest change with no call site touched.
 7. **Engine purity.** `src/engine` and `src/content` never import React/DOM; no `Math.random`/`Date.now` inside the engine — inject seeded RNG (named streams) and time.
