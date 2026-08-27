@@ -5,6 +5,7 @@ export * from './skills';
 export * from './cards';
 export * from './gear';
 export * from './map';
+export * from './records';
 export * from './economy';
 export * from './rarity';
 export * from './iconKeys';

@@ -123,6 +123,13 @@ export function rollLoot(content: Content, table: LootTableDef, rng: Rng): Rewar
   return bundle;
 }
 
+/** Rolls a single reward — for payouts that are one line rather than a table. */
+export function rollReward(content: Content, reward: RewardDef, rng: Rng): RewardBundle {
+  const bundle = emptyBundle();
+  applyReward(content, bundle, reward, rng);
+  return bundle;
+}
+
 /** Scales the countable part of a payout. Gear and cards are never multiplied. */
 function scaleBundle(bundle: RewardBundle, multiplier: number): RewardBundle {
   if (multiplier === 1) return bundle;

@@ -107,6 +107,9 @@ export function DevPanel() {
           >
             Speed x{settings.battleSpeed}
           </Button>
+          <Button variant="neutral" onClick={() => player.setTutorialStep(0)}>
+            Replay tutorial
+          </Button>
           <Button
             variant="neutral"
             onClick={() => settings.setReducedMotion(!settings.reducedMotion)}

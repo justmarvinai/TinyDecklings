@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { CURRENCY_IDS, GEAR_SLOTS, forkBranch, statKey, statusId } from '@/content/schemas';
 
 /** Bump on every shape change and add a migration in migrations.ts. */
-export const CURRENT_SAVE_VERSION = 3;
+export const CURRENT_SAVE_VERSION = 5;
 
 export const ownedGear = z.strictObject({
   uid: z.string().min(1),
@@ -51,6 +51,18 @@ export const energyState = z.strictObject({
 });
 
 /**
+ * The handful of records that cannot be derived from the rest of the save (v4).
+ *
+ * Everything the profile screen shows is worked out from what is already stored —
+ * stars, clears, the collection, summon counts. Only a loss leaves no trace
+ * anywhere else, so only a loss is counted here. Resist growing this: a number
+ * that can be derived should be.
+ */
+export const trackedStats = z.strictObject({
+  battlesLost: z.number().int().min(0),
+});
+
+/**
  * What the shop needs to remember. The line-up itself is derived from the day and
  * the run seed, so only purchases are stored (save v2).
  */
@@ -65,11 +77,14 @@ export const saveDoc = z.strictObject({
   updatedAtMs: z.number().int().min(0),
 
   player: z.strictObject({
+    /**
+     * Only what cannot be worked out from the rest of the save (v4). The commander
+     * level used to live here and is now derived from stars earned, so it can no
+     * longer disagree with the stage records.
+     */
     profile: z.strictObject({
       name: z.string().min(1).max(24).default('Deckling'),
       avatarKey: z.string().default('placeholder'),
-      level: z.number().int().min(1).default(1),
-      xp: z.number().int().min(0).default(0),
     }),
     currencies: z.record(z.enum(CURRENCY_IDS), z.number().min(0)),
     energy: energyState,
@@ -95,6 +110,17 @@ export const saveDoc = z.strictObject({
     shop: shopState,
     /** Region star chests already opened, as `<regionId>#<threshold>` (save v3). */
     claimedChests: z.array(z.string()).default([]),
+    /** Achievement ids whose reward has been taken (save v4). */
+    claimedAchievements: z.array(z.string()).default([]),
+    stats: trackedStats,
+    /**
+     * How far through the guided opening the player is (Q25, save v5).
+     *
+     * An index into the beat list; once it reaches the end the tutorial never runs
+     * again. Skipping jumps straight there, so "skipped" and "finished" are the
+     * same state — there is nothing to resume.
+     */
+    tutorialStep: z.number().int().min(0).default(0),
   }),
 
   run: z.strictObject({
@@ -135,6 +161,9 @@ export const saveDoc = z.strictObject({
   settings: z.strictObject({
     sfx: z.boolean().default(true),
     music: z.boolean().default(true),
+    /** Mix, 0-1 (save v5). The toggles above are the on/off; these are the level. */
+    sfxVolume: z.number().min(0).max(1).default(0.8),
+    musicVolume: z.number().min(0).max(1).default(0.45),
     battleSpeed: z.union([z.literal(1), z.literal(2)]).default(1),
     reducedMotion: z.boolean().default(false),
     language: z.string().default('en'),
@@ -147,6 +176,7 @@ export type OwnedGear = z.infer<typeof ownedGear>;
 export type DeckConfig = z.infer<typeof deckConfig>;
 export type EnergyState = z.infer<typeof energyState>;
 export type ShopState = z.infer<typeof shopState>;
+export type TrackedStats = z.infer<typeof trackedStats>;
 
 export function createNewSave(nowMs: number, seed: number, energyCap: number): SaveDoc {
   const today = new Date(nowMs).toISOString().slice(0, 10);
@@ -155,7 +185,7 @@ export function createNewSave(nowMs: number, seed: number, energyCap: number): S
     createdAtMs: nowMs,
     updatedAtMs: nowMs,
     player: {
-      profile: { name: 'Deckling', avatarKey: 'placeholder', level: 1, xp: 0 },
+      profile: { name: 'Deckling', avatarKey: 'placeholder' },
       currencies: {
         gold: 0,
         gems: 0,
@@ -178,6 +208,9 @@ export function createNewSave(nowMs: number, seed: number, energyCap: number): S
       summonCounts: {},
       shop: { dayKey: today, purchased: {} },
       claimedChests: [],
+      claimedAchievements: [],
+      stats: { battlesLost: 0 },
+      tutorialStep: 0,
     },
     run: {
       seed,

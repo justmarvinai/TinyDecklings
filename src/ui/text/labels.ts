@@ -6,7 +6,8 @@
  * conventions). The engine never builds prose — it hands back structured facts and
  * this module turns them into words.
  */
-import type { CurrencyId, ElementId, StageKind } from '@/content/schemas';
+import type { CardRarity, CurrencyId, ElementId, GearRarity, StageKind } from '@/content/schemas';
+import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 
 export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
   gold: 'Gold',
@@ -47,4 +48,20 @@ export const STAGE_KIND_LABELS: Readonly<Record<StageKind, string>> = {
 
 export function stageKindLabel(kind: StageKind): string {
   return STAGE_KIND_LABELS[kind];
+}
+
+/**
+ * Rarity names live in `content/schemas/rarity.ts` beside the ladders themselves,
+ * re-exported here so screens have one import for "what do I call this".
+ * Rarity is shown in colour everywhere, so it also has to be shown in words:
+ * colour is a cue, never the only one (Q28).
+ */
+export { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
+
+export function cardRarityLabel(rarity: CardRarity): string {
+  return CARD_RARITY_LABEL[rarity];
+}
+
+export function gearRarityLabel(rarity: GearRarity): string {
+  return GEAR_RARITY_LABEL[rarity];
 }

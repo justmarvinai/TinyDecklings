@@ -3,6 +3,7 @@ import { useBattleStore } from '@/state/battleStore';
 import { useDeckStore } from '@/state/deckStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
+import { useNoticeStore } from '@/state/noticeStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import type { GameServices } from './gameServices';
 
@@ -27,12 +28,22 @@ export function useGameBootstrap(services: GameServices): void {
           `[TinyDecklings] save unreadable, kept a backup at ${result.backupKey}`,
           result.reason,
         );
+        // Losing a save is the worst thing that can happen to a player here, so
+        // they are told plainly — and told the old one was kept, not deleted.
+        useNoticeStore.getState().notify({
+          id: 'save.corrupt',
+          tone: 'danger',
+          title: 'Your save could not be read',
+          body: 'A fresh one was started. The unreadable file was kept on this device rather than deleted, in case it can be recovered.',
+        });
       }
 
       useSettingsStore.getState().hydrate(result.save.settings);
       services.audio.setSettings({
         sfx: result.save.settings.sfx,
         music: result.save.settings.music,
+        sfxVolume: result.save.settings.sfxVolume,
+        musicVolume: result.save.settings.musicVolume,
       });
 
       usePlayerStore.getState().hydrate(result.save);

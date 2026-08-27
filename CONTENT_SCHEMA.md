@@ -377,6 +377,50 @@ interface EnergyConfig {
 }
 ```
 
+## 9.1 Achievements & profile metrics (Phase 5)
+
+```ts
+/**
+ * The named numbers an achievement may test. Every one is DERIVED from the save by
+ * `engine/records/profile.ts` — nothing is tallied as the player goes, so an
+ * achievement authored later is correctly already earned by a player who did it.
+ */
+type ProfileMetric =
+  | 'furthestStage'
+  | 'stagesCleared'
+  | 'totalStars'
+  | 'flawlessClears'
+  | 'battlesWon'
+  | 'regionsCleared'
+  | 'chestsOpened'
+  | 'vignettesResolved'
+  | 'riskyForksWalked'
+  | 'distinctCards'
+  | 'heroesOwned'
+  | 'legendaryCards'
+  | 'sixStarCards'
+  | 'highestCardLevel'
+  | 'gearOwned'
+  | 'fullyGearedCards'
+  | 'summonsMade'
+  | 'goldHeld';
+
+interface AchievementDef {
+  id: string; // 'achievement.first_steps'
+  name: string;
+  description: string; // reads as an instruction before it is earned
+  iconKey: IconKey;
+  group: 'journey' | 'collection' | 'mastery';
+  metric: ProfileMetric;
+  target: number;
+  reward?: RewardDef; // claimed by hand; earned currency only (rule 12)
+}
+```
+
+**Rule the registry enforces:** a target must be reachable by the content that ships. Metrics with a
+content-set ceiling — collectible cards, heroes, legendaries, regions, chests — are checked against it; the
+ones that climb forever (stars, wins, summons) are not.
+
 ## 10. Player save (versioned — see `ARCHITECTURE.md` §7)
 
 ```ts
@@ -385,7 +429,8 @@ interface SaveDoc {
   createdAt: string;
   updatedAt: string;
   player: {
-    profile: { name: string; avatarKey: string; level: number; xp: number };
+    // v4 — the commander level is derived from stars earned and no longer stored.
+    profile: { name: string; avatarKey: string };
     currencies: Record<CurrencyId, number>;
     energy: { current: number; regenAnchor: string }; // Q14b — lazy regen from anchor
     cards: OwnedCard[];
@@ -398,6 +443,9 @@ interface SaveDoc {
     summonCounts: Record<string, number>; // v2 — pulls per pool
     shop: { dayKey: string; purchased: Record<string, number> }; // v2
     claimedChests: string[]; // v3 — `<regionId>#<threshold>`
+    claimedAchievements: string[]; // v4
+    // v4 — the only records that cannot be derived from the rest of the save.
+    stats: { battlesLost: number };
   };
   run: {
     seed: number;

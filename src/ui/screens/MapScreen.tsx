@@ -21,6 +21,7 @@ import { useScreenStore } from '@/state/screenStore';
 import { PLACEHOLDER_AVATAR } from '@/ui/art/artManifest';
 import { Button, IconChip, Modal, Panel, StarRow } from '@/ui/design/primitives';
 import { RewardList } from '@/ui/components/RewardList';
+import { useSfx } from '@/ui/audio/audioContext';
 import { elementLabel, stageKindLabel } from '@/ui/text/labels';
 import { EncounterSheet } from './EncounterSheet';
 import styles from './MapScreen.module.css';
@@ -126,7 +127,13 @@ export function MapScreen() {
       </div>
 
       <div className={`${styles.scroll} u-scroll-y`}>
-        {[...rows].reverse().map((row) =>
+        {/*
+          Rendered in ascending order into a `column-reverse` list, which is what
+          puts stage 1 at the bottom and the road climbing away above it. Reversing
+          here as well would cancel that out and have the player walking *down* the
+          screen as they progress.
+        */}
+        {rows.map((row) =>
           row.kind === 'stage' ? (
             <div key={`s${row.stage.number}`}>
               <Trail />
@@ -226,6 +233,7 @@ function StageNode({
           .join(' ')}
         disabled={!unlocked}
         onClick={onOpen}
+        data-coach={isCurrent ? 'stage-current' : undefined}
         aria-label={`Stage ${stage.number}, ${stage.name}, ${stageKindLabel(stage.kind)}, ${stars} of 3 stars${unlocked ? '' : ', locked'}`}
       >
         <img className={styles.medallionArt} src={PLACEHOLDER_AVATAR} alt="" />
@@ -482,6 +490,15 @@ function StageSheet({
           </div>
         ) : null}
 
+        {deckSize === 0 ? (
+          <Panel tone="raised">
+            <p className={styles.muted}>
+              You have no cards to send. Summon or win one first — the Cards tab shows everything
+              you own.
+            </p>
+          </Panel>
+        ) : null}
+
         {!affordable && cost > 0 ? (
           <Panel tone="raised">
             <p className={styles.muted}>
@@ -508,6 +525,7 @@ function StageSheet({
  * A first-lap reward — the endless loops replay the fights, not the chests.
  */
 function ChestSheet({ regionId, onClose }: { regionId: string; onClose: () => void }) {
+  const sfx = useSfx();
   const save = usePlayerStore((s) => s.save);
   const branches = useRunStore((s) => s.branches);
   const seed = useRunStore((s) => s.seed);
@@ -540,6 +558,7 @@ function ChestSheet({ regionId, onClose }: { regionId: string; onClose: () => vo
     if (!table || !player.claimChest(key)) return;
     const rewards = rollLoot(CONTENT, table, createRng(deriveSeed(seed, `chest:${key}`)));
     player.applyRewards(rewards);
+    sfx('reward.chest');
     setOpened({ key, rewards });
   };
 

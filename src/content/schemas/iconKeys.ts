@@ -92,6 +92,15 @@ export const ICON_KEYS = [
   'map.chest',
   'map.chestLocked',
 
+  // profile & achievements (Phase 5)
+  'profile.player',
+  'award.trophy',
+  'award.laurels',
+  'award.medal',
+  'award.spark',
+  'record.steps',
+  'record.progress',
+
   // navigation
   'nav.map',
   'nav.cards',

@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { TitleBanner } from './TitleBanner';
+import { pushModal } from './modalState';
 import styles from './Modal.module.css';
 
 export interface ModalProps {
@@ -18,6 +19,10 @@ export function Modal({ title, onClose, children, placement = 'sheet' }: ModalPr
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // A modal owns the screen while it is up; anything floating over the app steps
+  // aside (see `modalState.ts`).
+  useEffect(() => pushModal(), []);
 
   return (
     <div

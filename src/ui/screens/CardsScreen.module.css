@@ -27,6 +27,17 @@
   font-weight: var(--fw-bold);
 }
 
+/**
+ * A collection can run to hundreds of cards, so off-screen ones are skipped
+ * entirely by the browser rather than laid out and painted (ARCHITECTURE.md §9).
+ * `contain-intrinsic-size` is the height of one card tile, so the scrollbar stays
+ * honest for what has not been rendered yet.
+ */
+.gridItem {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 132px;
+}
+
 .grid {
   flex: 1;
   min-height: 0;
@@ -360,4 +371,35 @@
   max-height: 40svh;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* Systems the sheet shows but does not have yet (Q22) — set apart from the live
+   actions so nothing here competes with what the player can actually do. */
+.deferred {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--outline-width-thin) solid var(--outline-dark);
+}
+
+.deferredLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-secondary);
+}
+
+.deferredRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-1);
+}
+
+.deferredButton {
+  min-height: 48px;
+  padding: 0 4px;
+  gap: 3px;
+  font-size: 11px;
+  opacity: 0.8;
 }

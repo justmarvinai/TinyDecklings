@@ -13,6 +13,8 @@ import { Button, IconChip, Modal, StarRow } from '@/ui/design/primitives';
 import { BattleCardFrame, EmptySlot } from '@/ui/components/CardFrame';
 import { RewardList } from '@/ui/components/RewardList';
 import { BattleFx, type BattleFxHandle } from '@/ui/fx/BattleFx';
+import { useScreenShake } from '@/ui/fx/useScreenShake';
+import { useSfx } from '@/ui/audio/audioContext';
 import { useBattleSetupFactory } from './useBattleSetup';
 import styles from './BattleScreen.module.css';
 
@@ -34,6 +36,8 @@ export function BattleScreen({ stage }: { stage: number }) {
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const result = useBattleStore((s) => s.result);
 
+  const sfx = useSfx();
+  const { ref: shakeRef, shake } = useScreenShake<HTMLDivElement>();
   const buildSetup = useBattleSetupFactory();
 
   /**
@@ -81,6 +85,7 @@ export function BattleScreen({ stage }: { stage: number }) {
             break;
           }
           case 'skillCast': {
+            sfx('battle.skill');
             setEffectOn({ uid: event.actorUid, kind: 'lunge' });
             await wait(BEAT.skill);
             setEffectOn(null);
@@ -88,10 +93,18 @@ export function BattleScreen({ stage }: { stage: number }) {
           }
           case 'damageDealt': {
             const at = centerOf(event.targetUid);
+            // "Heavy" is relative to the target: a hit that takes a quarter of what
+            // it has left lands differently from a scratch, and should sound and
+            // shake like it.
+            const target = state?.cards[event.targetUid];
+            const heavy = target ? event.amount >= target.maxHp * 0.22 : false;
+            sfx(event.amount > 0 ? (heavy ? 'battle.heavyHit' : 'battle.hit') : 'ui.error');
+            if (heavy && event.amount > 0) shake(0.6);
+
             if (at) {
-              fxRef.current?.burst(at.x, at.y, '#ff6a4a', 10);
+              fxRef.current?.burst(at.x, at.y, '#ff6a4a', heavy ? 18 : 10);
               if (event.amount > 0) {
-                fxRef.current?.float(at.x, at.y, `-${event.amount}`, '#ff5347');
+                fxRef.current?.float(at.x, at.y, `-${event.amount}`, '#ff5347', heavy);
               } else if (event.absorbed > 0) {
                 fxRef.current?.float(at.x, at.y, 'BLOCK', '#4fb4ff');
               }
@@ -115,14 +128,22 @@ export function BattleScreen({ stage }: { stage: number }) {
           }
           case 'cardDied': {
             const at = centerOf(event.uid);
+            sfx('battle.death');
+            shake(0.5);
             if (at) fxRef.current?.burst(at.x, at.y, '#b9b4c2', 22);
             await wait(BEAT.death);
             break;
           }
           case 'cardDeployed': {
             const at = centerOf(event.uid);
+            sfx('battle.deploy');
             if (at) fxRef.current?.burst(at.x, at.y, '#ffc21c', 10);
             await wait(BEAT.turn);
+            break;
+          }
+          case 'battleEnded': {
+            sfx(event.outcome === 'victory' ? 'battle.victory' : 'battle.defeat');
+            if (event.outcome === 'victory') shake(0.35);
             break;
           }
           case 'turnStarted':
@@ -134,7 +155,7 @@ export function BattleScreen({ stage }: { stage: number }) {
         }
       }
     },
-    [centerOf, speed],
+    [centerOf, speed, sfx, shake, state],
   );
 
   /**
@@ -253,7 +274,7 @@ export function BattleScreen({ stage }: { stage: number }) {
   );
 
   return (
-    <div className={styles.screen}>
+    <div className={styles.screen} ref={shakeRef}>
       <BattleFx handleRef={fxRef} />
 
       <div className={styles.controls}>
@@ -267,7 +288,11 @@ export function BattleScreen({ stage }: { stage: number }) {
           >
             x{speed}
           </Button>
-          <Button variant={auto ? 'warning' : 'neutral'} onClick={() => battle.setAuto(!auto)}>
+          <Button
+            variant={auto ? 'warning' : 'neutral'}
+            data-coach="auto"
+            onClick={() => battle.setAuto(!auto)}
+          >
             Auto
           </Button>
           <Button

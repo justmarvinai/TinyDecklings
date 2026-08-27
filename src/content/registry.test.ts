@@ -21,6 +21,7 @@ const emptySource = {
   regions: [],
   encounters: [],
   stageModifiers: [],
+  achievements: [],
   lootTables: [],
   summonPools: [],
   growthCurves: [],

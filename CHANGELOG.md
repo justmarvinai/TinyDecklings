@@ -8,6 +8,73 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-26 — **Phase 7: release readiness** (`IMPLEMENTATION_PLAN.md` 7.1–7.6).
+  - **The first-release roster (Q29)** — grown from 14 collectible cards to **36: 30 units and 6 heroes**
+    across both rarity ladders, plus ten new skills so a thirty-card roster is not five skills wearing thirty
+    names. Gear reaches 44 items, with an **exalted piece in every slot** — the boss and chest tables lean on
+    the top of the ladder, and without those the roller quietly fell back a rarity, which reads as a worse
+    drop than the sheet promised
+  - **Manual save backup (Q27)** — export a readable file or copy it to the clipboard; restore by pasting or
+    picking the file. The backup is checked before the warning is shown, confirmed before anything is
+    replaced, and the game reloads rather than swapping the world out from under itself. An older backup is
+    migrated forward; a damaged one is refused with a reason, not half-applied
+  - **A roster sweep** that puts every collectible card into a real fight with all five of its skills live.
+    Thirty-six cards times five skills is a lot of authored effect data, and this is the test that catches one
+    of them targeting something that is never there
+  - **A string contract (Q30)** — every repeated vocabulary (currencies, both rarity ladders, elements, node
+    kinds) is named in one place and guarded by a test, including that the two rarity ladders never share a
+    name. Prose that appears once still lives with the component that says it
+  - **Release bits** — a web manifest so the game installs to a home screen, and a diagnostics blob reachable
+    from Settings rather than only after a crash: version, seed and a few counts, no personal data, nothing
+    sent anywhere
+  - 384 tests green; verified at 390×844 and 360×640
+
+- 2026-08-26 — **Phase 6: polish & feel** (`IMPLEMENTATION_PLAN.md` 6.1–6.6).
+  - **The game is audible (Q26)** — a full sound set and per-biome music, all of it _synthesized_ rather than
+    sampled: short Web Audio envelopes for effects, slow generative chord beds for music. Nothing is
+    downloaded, so audio costs no bundle and carries no licensing, and it sits behind the same manifest the
+    owner's real files will use — dropping those in changes no call site. Effects are keyed by meaning, every
+    button clicks by default, and the bed follows the player (biome theme on the road, a battle bed in a
+    fight, a heavier one against a boss) so no screen can forget to start it
+  - **A mix, not just a switch** — volume sliders for effects and music in Settings
+  - **Juice** — heavy hits shake the screen and throw a bigger burst, deaths land, rewards arrive one at a
+    time instead of all at once, and screens enter rather than snap in. All transform/opacity, all dropped
+    entirely under reduced motion
+  - **A guided opening (Q25)** — seven beats across the first two stages, each pointing at what it is talking
+    about with a ring that follows the thing as the map scrolls. Skippable at every beat, and it can never
+    block the tap it is asking for
+  - **Edge states** — a device that refuses to save (private browsing, full storage) now says so and keeps
+    trying, instead of failing into a swallowed promise; an unreadable save says what happened and that the
+    old file was kept; a stage sheet explains why Fight is greyed out when you have no cards
+  - **Performance** — `content-visibility` on the collection grid, the road and the achievement list, so
+    off-screen rows are neither laid out nor painted. Initial bundle measured at 177 KB gz against a 300 KB
+    budget
+  - **Accessibility (Q28)** — reduced motion honoured from the device as well as the setting, no interface
+    text under 11px, no touch target under 48px, and every rarity named as well as tinted
+  - 369 tests green; verified at 390×844 and 360×640, with audio confirmed by instrumenting the Web Audio API
+
+- 2026-08-26 — **Phase 5: profile & records** (`IMPLEMENTATION_PLAN.md` 5.1–5.4).
+  - **A profile that is derived, not tallied** — furthest stage, stars, flawless clears, regions and chests,
+    vignettes walked, risky roads taken, laps of the endless road, the collection by rarity, gear held and
+    summons made are all computed from the save on read. The only stored record is battles lost, because a
+    loss is the one thing that leaves no other trace. Nothing here can drift out of step with what the player
+    actually did
+  - **Commander level derived from stars** — one per three earned. The badge on the HUD is now a summary of
+    the journey rather than a second number that never advanced
+  - **Achievements-lite (Q23)** — seventeen across three groups, each naming one of eighteen profile metrics
+    and a target, so authoring one is a data entry. Because the metrics are derived, an achievement added
+    later is correctly already earned by a player who did the thing months ago. Each carries a small payout,
+    claimed by hand, in currency the player earns
+  - **A More hub** — Profile and Settings, the only meta screens in the first release (Q23), with a badge
+    when a reward is waiting
+  - **Locked facades polished (Q22)** — Rank, Trait, Foil and artifact sets on the card sheet; Events, Season
+    pass and local records in the More tab. Each is visible, locked, and explains what it would have been and
+    why it is not here, from one shared description rather than three drifting copies
+  - **A new pipeline guard** — an achievement may not ask for more than the shipped content can give: more
+    cards than exist, more regions than are authored, more chests than there are. A test also pins "Full
+    Roster" to the real size of the roster, so adding a card cannot quietly turn it into a lie
+  - 353 tests green; verified at 390×844 and 360×640
+
 - 2026-08-26 — **Phase 4: the endless road** (`IMPLEMENTATION_PLAN.md` 4.1–4.7).
   - **Three authored biomes** — Sunken Isles, Ashfall Reach and Verdant Wound, each ten stages with its own
     palette, tagline and **node plan**: where the elite lands and where you get to breathe is now a content
@@ -63,6 +130,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   - 277 tests green; verified at 390×844 and 360×640
 
 ### Changed
+
+- 2026-08-26 — **The AI would not stop buffing.** A ready support skill fired whenever it was off cooldown, so
+  a card carrying four of them almost never swung — and two defensive sides shielded and rallied at each other
+  until the round counter gave up. Support now has to earn its turn (would this heal, shield, cleanse or buff
+  actually change anything?) and no card takes two support turns in a row. Found by the new roster sweep, not
+  by a player.
+- 2026-08-26 — Rarity labels were being defined twice: once beside the ladders in the content schemas and
+  again in `ui/text/labels.ts`. The UI module now re-exports the originals.
+
+- 2026-08-26 — **Save format v4 → v5**: added `settings.sfxVolume`, `settings.musicVolume` and
+  `player.tutorialStep`. A save from before the tutorial existed belongs to someone who has already played,
+  so it is marked finished rather than walking them through the opening again.
+- 2026-08-26 — **The map was running downhill.** Its rows were reversed in the markup _and_ laid out in a
+  `column-reverse` list, which cancelled out and put stage 1 at the top with the road descending — the
+  opposite of what the design and the stylesheet's own comment describe. It has read that way since Phase 1;
+  the fix is one removed `.reverse()`, found by measuring node positions rather than looking at a screenshot.
+- 2026-08-26 — **The back control moved into the top bar.** It used to float over the bottom-left of every
+  pushed screen, covering whatever was being scrolled past. It now takes the avatar's place in the HUD when
+  there is somewhere to go back to.
+- 2026-08-26 — Modals now announce themselves, so anything floating over the app (the onboarding coach) steps
+  aside rather than sitting on top of the button it is pointing at.
+
+- 2026-08-26 — **Save format v3 → v4**: added `player.claimedAchievements` and `player.stats`, and **dropped**
+  `player.profile.level` and `player.profile.xp`. Nothing is lost — the commander level is now derived from
+  stars earned, which the save has kept all along, and those two fields never advanced. Existing saves migrate
+  automatically; a fixture test walks a v3 document forward, and the v1 fixture now walks the whole chain.
+- 2026-08-26 — The engine gained `engine/records`, which describes what it reads structurally rather than
+  importing the save module — its tests build their own fixture, so the purity rule is proven rather than
+  asserted.
 
 - 2026-08-26 — **Save format v2 → v3**: added `run.branches` (which side of each fork was taken),
   `run.pendingBoon` and `player.claimedChests`. The road itself is still derived from the run seed — only the

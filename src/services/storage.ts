@@ -30,10 +30,21 @@ export function createLocalStorageService(
       }
     },
     async write(key, value) {
-      backend.setItem(PREFIX + key, value);
+      // Quota exhaustion and storage-disabled browsers both throw here. Rethrowing
+      // a recognisable error lets the save layer tell the player their progress is
+      // not being kept, instead of the write vanishing into a rejected promise.
+      try {
+        backend.setItem(PREFIX + key, value);
+      } catch (error) {
+        throw new StorageWriteError(key, error);
+      }
     },
     async remove(key) {
-      backend.removeItem(PREFIX + key);
+      try {
+        backend.removeItem(PREFIX + key);
+      } catch {
+        // Nothing useful to do: the key is either gone or unreachable.
+      }
     },
     async keys() {
       const out: string[] = [];
@@ -44,6 +55,17 @@ export function createLocalStorageService(
       return out;
     },
   };
+}
+
+/** Thrown when the device refuses a write — full storage, or private browsing. */
+export class StorageWriteError extends Error {
+  constructor(
+    readonly key: string,
+    override readonly cause: unknown,
+  ) {
+    super(`Could not write "${key}" to storage`);
+    this.name = 'StorageWriteError';
+  }
 }
 
 /** In-memory fallback: tests, SSR-ish contexts, and browsers with storage blocked. */

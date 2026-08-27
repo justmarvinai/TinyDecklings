@@ -6,9 +6,11 @@
 
 ## Status
 
-Questions answered and development started **2026-08-26**. **Phases 0–4 are complete** — the game is
-playable end to end with full collection depth, a live economy and an endless three-biome road, and
-deployable to Vercel for live review (`DEPLOYMENT.md`). Phase 5 (profile & records) is next.
+Questions answered and development started **2026-08-26**. **All seven phases are complete.** The game is
+playable end to end with the full first-release roster, a live economy, an endless three-biome road, a player
+record with achievements, a polish pass covering audio, juice and onboarding, and release readiness including
+manual save backup. It deploys to Vercel for live review (`DEPLOYMENT.md`). What is left is the owner's art
+and audio drop-in, and whatever the backlog below earns.
 
 ---
 
@@ -92,26 +94,49 @@ region star chests; and a road that loops the biomes at a compounding difficulty
 v2 → v3 with a fixture test. 333 tests green, including a balance guard that walks every combat stage on both
 sides of every fork; verified at 390×844 and 360×640.
 
-## Phase 5 — Profile & records
+## Phase 5 — Profile & records ✅ COMPLETE
 
 - Player profile (stats, records), achievements-lite (Q23: Profile + Settings are the only meta screens in first release)
 - Locked-state facades polished for deferred systems (RANK/TRAIT/FOIL/artifact sets)
 
-## Phase 6 — Polish & feel
+**Exit:** ✅ a More hub leading to Profile and Settings; a profile that reads the journey, the collection and
+the battle record **out of the save rather than a parallel tally**; seventeen achievements over eighteen named
+metrics, each with a claimable earned payout; a commander level derived from stars, so the badge on the HUD
+can never disagree with what the player has done; and every deferred system — Rank, Trait, Foil, artifact
+sets, Events, Season pass, local records — visible, locked, and able to explain itself. Save migrated
+v3 → v4 with a fixture test. 353 tests green; verified at 390×844 and 360×640.
+
+## Phase 6 — Polish & feel ✅ COMPLETE
 
 - Audio pass: music per region, full SFX set, mix + settings (Q26)
 - FX pass: particles, screen shake (with reduce-motion), transitions, reward ceremonies
-- **Onboarding: guided first 2 stages** (forced simple deck, tooltip beats), then free (Q25)
-- Edge/empty/error states, haptics hooks (web no-op)
-- Performance hardening to budget (`ARCHITECTURE.md` §9), device sweep
+- **Onboarding: guided first 2 stages** (tooltip beats), then free (Q25)
+- Edge/empty/error states
+- Performance hardening to budget (`ARCHITECTURE.md` §9)
 
-## Phase 7 — Release readiness
+**Exit:** ✅ the game is audible — a synthesized placeholder sound set and per-biome generative music beds
+behind the same keys the owner's real audio will use, with a mix in settings; hits shake the screen and
+rewards land one at a time, all of it dropping out under reduced motion; a seven-beat guided opening that
+points at what it is talking about and can never block the tap it is asking for; a device that refuses to
+save now says so instead of failing silently; and the long lists skip what is off screen. The map's reading
+direction was fixed — it had been running downhill since Phase 1. Save migrated v4 → v5 with a fixture test.
+369 tests green; verified at 390×844 and 360×640, with audio confirmed by instrumenting the Web Audio API.
+
+## Phase 7 — Release readiness ✅ COMPLETE
 
 - Balance pass across the full curve; content breadth to targets (Q29: ~30 units + 6 heroes, ~40 gear, 3 regions, 1 boss/region)
 - Accessibility pass (Q28: reduced-motion, color-blind-safe cues, size floors)
 - **Save export/import** (file/clipboard backup) (Q27)
 - English-only release; strings stay centralized (Q30)
-- Crash/bug reporting affordance; PWA install nicety (optional)
+- Crash/bug reporting affordance; PWA install nicety
+
+**Exit:** ✅ the first-release roster is authored — **30 collectible units and 6 heroes** across both rarity
+ladders, 44 gear items with an exalted piece in every slot, 23 skills; manual backup exports a readable file
+or copies to the clipboard, and restores through a check-then-confirm that reloads rather than swapping the
+world out mid-game; every repeated vocabulary is named in one place and guarded by a test; the game installs
+to a home screen; and diagnostics are reachable on purpose rather than only after a crash. The roster sweep
+caught a real AI stall — support skills fired whenever they were off cooldown, so a defensive deck could
+grind forever. 384 tests green; verified at 390×844 and 360×640.
 
 ## Post-first-release backlog (decided deferrals)
 

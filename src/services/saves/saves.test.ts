@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMemoryStorageService, type StorageService } from '../storage';
+import { createMemoryStorageService, StorageWriteError, type StorageService } from '../storage';
 import { createFixedClock } from '../clock';
-import { SaveService, SAVE_KEY } from './saveService';
+import { SaveImportError, SaveService, SAVE_KEY } from './saveService';
 import { CURRENT_SAVE_VERSION, createNewSave, saveDoc } from './saveSchema';
 import { MIGRATIONS, SaveMigrationError, migrate, type UnknownSave } from './migrations';
 
@@ -188,6 +188,9 @@ describe('migrations', () => {
     expect(migrated.player.shop).toEqual({ dayKey: '', purchased: {} });
     expect(migrated.player.summonCounts).toEqual({});
     expect(migrated.player.claimedChests).toEqual([]);
+    expect(migrated.player.claimedAchievements).toEqual([]);
+    expect(migrated.player.stats).toEqual({ battlesLost: 0 });
+    expect(migrated.player.tutorialStep).toBeGreaterThan(100);
     expect(migrated.run.branches).toEqual({});
     expect(migrated.run.pendingBoon).toBeNull();
   });
@@ -208,7 +211,7 @@ describe('migrations', () => {
 
     const migrated = saveDoc.parse(migrate(v2, CURRENT_SAVE_VERSION));
 
-    expect(migrated.saveVersion).toBe(3);
+    expect(migrated.saveVersion).toBe(CURRENT_SAVE_VERSION);
     // A v2 save has walked no forks, carries nothing and has opened no chests...
     expect(migrated.run.branches).toEqual({});
     expect(migrated.run.pendingBoon).toBeNull();
@@ -222,6 +225,54 @@ describe('migrations', () => {
     );
   });
 
+  it('migrates a v3 save forward to v4, gaining the profile records', () => {
+    const v3 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 3,
+    } as Record<string, unknown>;
+    const player = v3.player as Record<string, unknown>;
+    player.currencies = { ...(player.currencies as object), gems: 42 };
+    player.stageRecords = { '12': { bestStars: 3, clears: 4 } };
+    delete player.claimedAchievements;
+    delete player.stats;
+
+    const migrated = saveDoc.parse(migrate(v3, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(CURRENT_SAVE_VERSION);
+    // Losses are genuinely unknown for an older save, so they start at zero rather
+    // than being invented.
+    expect(migrated.player.stats).toEqual({ battlesLost: 0 });
+    expect(migrated.player.claimedAchievements).toEqual([]);
+    // Everything the profile derives from is untouched.
+    expect(migrated.player.currencies.gems).toBe(42);
+    expect(migrated.player.stageRecords['12']).toEqual({ bestStars: 3, clears: 4 });
+  });
+
+  it('migrates a v4 save forward to v5, gaining the mix and the tutorial', () => {
+    const v4 = {
+      ...createNewSave(0, 7, ENERGY_CAP),
+      saveVersion: 4,
+    } as Record<string, unknown>;
+    const player = v4.player as Record<string, unknown>;
+    const settings = v4.settings as Record<string, unknown>;
+    player.stageRecords = { '3': { bestStars: 2, clears: 1 } };
+    settings.music = false;
+    delete player.tutorialStep;
+    delete settings.sfxVolume;
+    delete settings.musicVolume;
+
+    const migrated = saveDoc.parse(migrate(v4, CURRENT_SAVE_VERSION));
+
+    expect(migrated.saveVersion).toBe(5);
+    expect(migrated.settings.sfxVolume).toBeGreaterThan(0);
+    expect(migrated.settings.musicVolume).toBeGreaterThan(0);
+    // Their own choices survive the upgrade...
+    expect(migrated.settings.music).toBe(false);
+    expect(migrated.player.stageRecords['3']).toEqual({ bestStars: 2, clears: 1 });
+    // ...and somebody who was already playing is not walked through the opening.
+    expect(migrated.player.tutorialStep).toBeGreaterThan(100);
+  });
+
   it('loads a stored v1 save through the service without losing progress', async () => {
     const storage = createMemoryStorageService();
     const v1 = {
@@ -231,6 +282,9 @@ describe('migrations', () => {
     delete (v1.player as Record<string, unknown>).shop;
     delete (v1.player as Record<string, unknown>).summonCounts;
     delete (v1.player as Record<string, unknown>).claimedChests;
+    delete (v1.player as Record<string, unknown>).claimedAchievements;
+    delete (v1.player as Record<string, unknown>).stats;
+    delete (v1.player as Record<string, unknown>).tutorialStep;
     delete (v1.run as Record<string, unknown>).branches;
     delete (v1.run as Record<string, unknown>).pendingBoon;
     await storage.write(SAVE_KEY, JSON.stringify(v1));
@@ -377,5 +431,134 @@ describe('phase 2 progression survives a save round-trip', () => {
       { name: 'Too big', heroUid: null, unitUids: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] },
     ];
     expect(saveDoc.safeParse(doc).success).toBe(false);
+  });
+});
+
+describe('a device that will not accept a write', () => {
+  /** Storage that refuses everything, as private browsing and a full disk both do. */
+  function refusingStorage(): StorageService {
+    return {
+      read: async () => null,
+      write: async () => {
+        throw new StorageWriteError('save', new Error('QuotaExceededError'));
+      },
+      remove: async () => {},
+      keys: async () => [],
+    };
+  }
+
+  it('reports the failure instead of swallowing it', async () => {
+    const errors: unknown[] = [];
+    const service = new SaveService({
+      storage: refusingStorage(),
+      clock: { now: () => 0 },
+      energyCap: ENERGY_CAP,
+      onWriteError: (error) => errors.push(error),
+    });
+
+    await service.save(createNewSave(0, 1, ENERGY_CAP));
+
+    expect(errors.length).toBe(1);
+    expect(service.writesFailing).toBe(true);
+  });
+
+  it('keeps the document pending so a later attempt can still land', async () => {
+    let allow = false;
+    const written: string[] = [];
+    const storage: StorageService = {
+      read: async () => null,
+      write: async (_key, value) => {
+        if (!allow) throw new StorageWriteError('save', new Error('nope'));
+        written.push(value);
+      },
+      remove: async () => {},
+      keys: async () => [],
+    };
+    let recovered = 0;
+    const service = new SaveService({
+      storage,
+      clock: { now: () => 0 },
+      energyCap: ENERGY_CAP,
+      onWriteRecovered: () => recovered++,
+    });
+
+    await service.save(createNewSave(0, 1, ENERGY_CAP));
+    expect(written.length).toBe(0);
+
+    // The device comes back — private browsing ended, space was freed.
+    allow = true;
+    await service.flush();
+
+    expect(written.length).toBe(1);
+    expect(service.writesFailing).toBe(false);
+    expect(recovered).toBe(1);
+  });
+});
+
+describe('manual backup (Q27)', () => {
+  it('round-trips a save through export and import', () => {
+    const { service } = makeService();
+    const original = createNewSave(0, 4242, ENERGY_CAP);
+    original.player.currencies.gold = 5150;
+    original.player.stageRecords = { '7': { bestStars: 3, clears: 2 } };
+
+    const restored = service.import(service.export(original));
+
+    expect(restored).toEqual(original);
+  });
+
+  it('exports something a person can actually read', () => {
+    const { service } = makeService();
+    const text = service.export(createNewSave(0, 1, ENERGY_CAP));
+    expect(text).toContain('\n');
+    expect(text).toContain('"saveVersion"');
+  });
+
+  it('brings an older backup forward rather than refusing it', () => {
+    const { service } = makeService();
+    const old = { ...createNewSave(0, 9, ENERGY_CAP), saveVersion: 1 } as Record<string, unknown>;
+    const player = old.player as Record<string, unknown>;
+    player.currencies = { ...(player.currencies as object), gold: 999 };
+    for (const key of [
+      'shop',
+      'summonCounts',
+      'claimedChests',
+      'claimedAchievements',
+      'stats',
+      'tutorialStep',
+    ]) {
+      delete player[key];
+    }
+
+    const restored = service.import(JSON.stringify(old));
+
+    expect(restored.saveVersion).toBe(CURRENT_SAVE_VERSION);
+    expect(restored.player.currencies.gold).toBe(999);
+  });
+
+  it('refuses what is not a backup, and says why', () => {
+    const { service } = makeService();
+    expect(() => service.import('not json at all')).toThrow(SaveImportError);
+    expect(() => service.import('"a string"')).toThrow(/wrong shape/i);
+    expect(() => service.import('{"hello":"world"}')).toThrow(/save version/i);
+    expect(() => service.import(JSON.stringify({ saveVersion: 5 }))).toThrow(/missing or damaged/i);
+  });
+
+  it('refuses a backup from a newer build rather than dropping what it cannot read', () => {
+    const { service } = makeService();
+    const future = { ...createNewSave(0, 1, ENERGY_CAP), saveVersion: CURRENT_SAVE_VERSION + 7 };
+    expect(() => service.import(JSON.stringify(future))).toThrow(/newer version/i);
+  });
+
+  it('writes an imported document straight through, bypassing the debounce', async () => {
+    const storage = createMemoryStorageService();
+    const { service } = makeService(storage);
+    const doc = createNewSave(0, 77, ENERGY_CAP);
+    doc.player.currencies.gems = 321;
+
+    await service.replace(doc);
+
+    const raw = await storage.read(SAVE_KEY);
+    expect(JSON.parse(raw!).player.currencies.gems).toBe(321);
   });
 });

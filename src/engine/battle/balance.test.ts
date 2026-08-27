@@ -95,6 +95,57 @@ describe('no fight can hang', () => {
   });
 });
 
+describe('every card in the roster can actually fight', () => {
+  /** One card, at six stars so all five of its skills are unlocked, against a real formation. */
+  function soloRun(defId: string, seed: number): Result {
+    const generated = generateStage(CONTENT, SEED, 4);
+    const setup = battleSetupFor(CONTENT, generated, {
+      player: [
+        { defId, level: 60, stars: 6, slot: 0 },
+        { defId, level: 60, stars: 6, slot: 3 },
+      ],
+      seed,
+      attempt: 1,
+    });
+    if (!setup) throw new Error('no fight to simulate');
+
+    let state = beginBattle(createBattle(CONTENT, setup).state, CONTENT).state;
+    const rng = createRng(seed);
+    for (let i = 0; i < 1500 && state.outcome === 'ongoing'; i++) {
+      const intent = chooseIntent(state, CONTENT, rng);
+      if (!intent) return 'stalled';
+      state = step(state, CONTENT, intent).state;
+    }
+    return state.outcome === 'ongoing' ? 'stalled' : state.outcome;
+  }
+
+  it('resolves a fight for every collectible card, with all five skills live', () => {
+    // Thirty-six cards times five skills is a lot of authored effect data; this is
+    // the sweep that catches one of them targeting something that is never there.
+    for (const card of CONTENT.cards.values()) {
+      if (card.enemyOnly) continue;
+      expect(soloRun(card.id, 11), `${card.id} hangs`).not.toBe('stalled');
+    }
+  });
+
+  it('hits the first-release roster targets (Q29)', () => {
+    const collectible = [...CONTENT.cards.values()].filter((c) => !c.enemyOnly);
+    expect(collectible.filter((c) => c.cardClass === 'unit').length).toBeGreaterThanOrEqual(30);
+    expect(collectible.filter((c) => c.cardClass === 'hero').length).toBeGreaterThanOrEqual(6);
+    expect(CONTENT.gear.size).toBeGreaterThanOrEqual(40);
+    expect(CONTENT.regions.size).toBe(3);
+    for (const region of CONTENT.regions.values()) {
+      expect(region.bossPool.length, region.id).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('gives every rarity something to pull at every tier', () => {
+    for (const pool of CONTENT.summonPools.values()) {
+      expect(pool.entries.length, `${pool.id} is thin`).toBeGreaterThanOrEqual(4);
+    }
+  });
+});
+
 describe('the first region is a fair on-ramp', () => {
   it('lets a brand-new player win stage 1 with the deck they are given', () => {
     expect(winRate(1, 1)).toBe(1);

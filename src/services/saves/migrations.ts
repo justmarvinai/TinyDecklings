@@ -11,6 +11,15 @@
 
 export type UnknownSave = Record<string, unknown>;
 
+/**
+ * A tutorial step past every beat.
+ *
+ * Kept here rather than imported from the UI: a migration must keep meaning the
+ * same thing forever, so it cannot depend on a number that later phases might
+ * grow (adding a beat must not un-finish an old save).
+ */
+const TUTORIAL_FINISHED = 999;
+
 /** Keyed by the version being migrated FROM. */
 export const MIGRATIONS: Readonly<Record<number, (doc: UnknownSave) => UnknownSave>> = {
   /**
@@ -46,6 +55,53 @@ export const MIGRATIONS: Readonly<Record<number, (doc: UnknownSave) => UnknownSa
       saveVersion: 3,
       player: { ...player, claimedChests: [] },
       run: { ...run, branches: {}, pendingBoon: null },
+    };
+  },
+
+  /**
+   * v3 → v4: the profile arrived (Phase 5). Almost everything it shows is derived
+   * from what the save already held, so this adds only what cannot be: the
+   * achievements whose reward has been taken, and the battles lost.
+   *
+   * It also *drops* `profile.level` and `profile.xp`. Nothing is lost: the
+   * commander level is now derived from stars earned, which the save has kept all
+   * along, and those two fields never advanced.
+   *
+   * An older save has claimed nothing. Its losses are genuinely unknown, so they
+   * start at zero rather than being invented.
+   */
+  3: (doc) => {
+    const player = (doc.player ?? {}) as Record<string, unknown>;
+    const profile = (player.profile ?? {}) as Record<string, unknown>;
+    return {
+      ...doc,
+      saveVersion: 4,
+      player: {
+        ...player,
+        profile: { name: profile.name, avatarKey: profile.avatarKey },
+        claimedAchievements: [],
+        stats: { battlesLost: 0 },
+      },
+    };
+  },
+
+  /**
+   * v4 → v5: the polish pass arrived (Phase 6). Audio gained a mix rather than
+   * only an on/off, and the guided opening (Q25) needs to know how far the player
+   * got.
+   *
+   * A save from before the tutorial existed belongs to someone who has already
+   * played, so they are marked as having finished it rather than being walked
+   * through the first two stages again.
+   */
+  4: (doc) => {
+    const player = (doc.player ?? {}) as Record<string, unknown>;
+    const settings = (doc.settings ?? {}) as Record<string, unknown>;
+    return {
+      ...doc,
+      saveVersion: 5,
+      player: { ...player, tutorialStep: TUTORIAL_FINISHED },
+      settings: { ...settings, sfxVolume: 0.8, musicVolume: 0.45 },
     };
   },
 };
