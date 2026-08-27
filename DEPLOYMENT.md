@@ -1,7 +1,17 @@
 # Deploying TinyDecklings
 
 The game is a **static, fully offline single-player web app** — no backend, no API routes, no database.
-Deployment is therefore just "serve `dist/`", which is why Vercel needs almost no configuration.
+
+It is also offline in the sense that matters on a phone: `dist/sw.js` is generated at build time from the
+real bundle (`scripts/sw-plugin.mjs`) and precaches the shell, so the home-screen icon opens with no network.
+Two things follow for deploys:
+
+- **Every build gets a new cache name**, derived from the shell it precaches, and the old cache is deleted on
+  activate. There is no manual cache-busting step.
+- **A new build does not take over a live session.** The worker installs and waits; the running app shows an
+  "Update ready" notice and the new version takes over the next time the app is opened fresh. That is
+  deliberate — swapping code out mid-battle is worse than one more session on yesterday's build.
+  Deployment is therefore just "serve `dist/`", which is why Vercel needs almost no configuration.
 
 ## One-time setup
 

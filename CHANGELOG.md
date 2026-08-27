@@ -8,6 +8,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **The installed app opens without a network.** TinyDecklings is
+  single-player, offline and local-save, and installs to a home screen — but until
+  now that icon needed a network to open, because "the save is local" and "the app
+  is delivered" are different problems and only the first was solved. `dist/sw.js`
+  is generated at build time from the real bundle (`scripts/sw-plugin.mjs`) and
+  precaches the shell; fonts, art and lazy screens fill in as they are first
+  fetched. The build **fails** if an entry chunk is missing from the precache list,
+  because a stale hand-written list breaks only for the player on a train. No
+  `skipWaiting`: a new build waits rather than swapping code out mid-battle, and
+  the app raises an "Update ready" notice instead.
+- 2026-08-27 — **The stage sheet says whether you can win, before the energy is
+  spent.** It named the enemies and counted them and stopped there, so the only way
+  to learn a fight was out of reach was to pay for it and lose — the worst thing a
+  map can do with a pacing currency. `stageReading()` scores the enemy side the way
+  the collection scores yours and returns a band; the sheet writes it as
+  **Comfortable / A fair fight / A stretch / Outmatched** with both numbers beside
+  it, so a player who disagrees with the word can read the evidence. Non-combat
+  stages say nothing — a difficulty line on a campfire teaches people to stop
+  reading the one place it matters. The band edges are pinned by tests against the
+  authored road, not chosen by feel.
+
+### Changed
+
+- 2026-08-27 — Dropped the Saira 400 weight: nothing in the game is set in it, and
+  an unused weight is thirty font files nobody downloads and everybody deploys.
+
 - 2026-08-27 — **The numbers that decide a fight are now on screen, and holding
   anything explains it.**
   - **Damage on every card.** Strength was on the face; attack was not, so the one

@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import styles from './HoldTip.module.css';
+import { TipBubble, type TipAnchor } from './TipBubble';
 
 /** How long a press has to last before it counts as "tell me about this". */
 const HOLD_MS = 320;
 /** Past this much movement the press was a scroll, not a hold. */
 const SLOP_PX = 12;
-
-interface Anchor {
-  top: number;
-  bottom: number;
-  centerX: number;
-}
 
 export interface HoldTipBind {
   onPointerDown: (e: PointerEvent<HTMLElement>) => void;
@@ -44,7 +38,7 @@ export interface HoldTipBind {
  * measures itself from the event, so no ref plumbing is needed at the call site.
  */
 export function useHoldTip(content: ReactNode | null): { bind: HoldTipBind; tip: ReactNode } {
-  const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [anchor, setAnchor] = useState<TipAnchor | null>(null);
   const timer = useRef<number | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   // Set the moment the bubble opens, cleared by the click it has to eat.
@@ -118,44 +112,4 @@ export function useHoldTip(content: ReactNode | null): { bind: HoldTipBind; tip:
       : null;
 
   return { bind, tip };
-}
-
-/**
- * The bubble itself, placed on whichever side of the trigger has room.
- *
- * Same rule as the onboarding coach: never cover the thing you are describing. It
- * measures itself once mounted rather than guessing a height, because these carry
- * anything from two stats to a full skill list.
- */
-function TipBubble({ anchor, children }: { anchor: Anchor; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [placed, setPlaced] = useState<{ top: number; left: number } | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const { width, height } = el.getBoundingClientRect();
-    const gap = 10;
-    const margin = 8;
-    const above = anchor.top - gap - height;
-    const below = anchor.bottom + gap;
-    const top = above >= margin ? above : Math.min(below, window.innerHeight - height - margin);
-    const left = Math.max(
-      margin,
-      Math.min(anchor.centerX - width / 2, window.innerWidth - width - margin),
-    );
-    setPlaced({ top: Math.max(margin, top), left });
-  }, [anchor]);
-
-  return (
-    <div
-      ref={ref}
-      className={styles.bubble}
-      role="tooltip"
-      // Hidden until measured, so it never flashes in the wrong place.
-      style={placed ? { top: placed.top, left: placed.left } : { opacity: 0, top: 0, left: 0 }}
-    >
-      {children}
-    </div>
-  );
 }

@@ -1,5 +1,6 @@
 /* Global base styles. Tokens come from tokens.css — never hardcode values here. */
-@import '@fontsource/saira/400.css';
+/* 500/600/700/900 only — nothing in the game is set in 400, and an unused weight
+   is 30 font files nobody downloads and everybody deploys. */
 @import '@fontsource/saira/500.css';
 @import '@fontsource/saira/600.css';
 @import '@fontsource/saira/700.css';
