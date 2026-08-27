@@ -8,6 +8,7 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'burn',
     name: 'Burn',
+    description: 'Burning away at the end of every round, and it stacks.',
     iconKey: 'status.burn',
     stacking: 'stack',
     maxStacks: 3,
@@ -20,6 +21,7 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'poison',
     name: 'Poison',
+    description: 'Losing health every round, and it stacks deeper than burn.',
     iconKey: 'status.poison',
     stacking: 'stack',
     maxStacks: 5,
@@ -29,15 +31,31 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'freeze',
     name: 'Freeze',
+    description: 'Frozen solid — cannot act until it thaws.',
     iconKey: 'status.freeze',
     stacking: 'refresh',
     blocksAction: true,
   },
-  { id: 'stun', name: 'Stun', iconKey: 'status.stun', stacking: 'refresh', blocksAction: true },
-  { id: 'taunt', name: 'Taunt', iconKey: 'status.taunt', stacking: 'refresh', blocksAction: false },
+  {
+    id: 'stun',
+    name: 'Stun',
+    description: 'Stunned — loses its turn entirely.',
+    iconKey: 'status.stun',
+    stacking: 'refresh',
+    blocksAction: true,
+  },
+  {
+    id: 'taunt',
+    name: 'Taunt',
+    description: 'Drawing every attack it can: enemies go for this one first.',
+    iconKey: 'status.taunt',
+    stacking: 'refresh',
+    blocksAction: false,
+  },
   {
     id: 'weaken',
     name: 'Weaken',
+    description: 'Hitting softer than it should.',
     iconKey: 'status.weaken',
     stacking: 'refresh',
     blocksAction: false,
@@ -45,6 +63,7 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'strengthen',
     name: 'Strengthen',
+    description: 'Hitting harder than it should.',
     iconKey: 'status.strengthen',
     stacking: 'refresh',
     blocksAction: false,
@@ -52,6 +71,7 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'regen',
     name: 'Regen',
+    description: 'Healing a little at the start of every round.',
     iconKey: 'status.regen',
     stacking: 'refresh',
     tick: {
@@ -63,6 +83,7 @@ export const STATUS_DEFS: readonly StatusDef[] = [
   {
     id: 'shield',
     name: 'Shield',
+    description: 'Soaking damage until the shield is spent.',
     iconKey: 'status.shield',
     stacking: 'refresh',
     blocksAction: false,

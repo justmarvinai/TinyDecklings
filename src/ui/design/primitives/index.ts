@@ -1,5 +1,6 @@
 export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { IconChip, type IconChipProps } from './IconChip';
+export { useHoldTip, type HoldTipBind } from './HoldTip';
 export { Modal, type ModalProps } from './Modal';
 export { NotificationDot } from './NotificationDot';
 export { Panel, type PanelProps } from './Panel';

@@ -6,8 +6,16 @@
  * conventions). The engine never builds prose — it hands back structured facts and
  * this module turns them into words.
  */
-import type { CardRarity, CurrencyId, ElementId, GearRarity, StageKind } from '@/content/schemas';
+import type {
+  AttackType,
+  CardRarity,
+  CurrencyId,
+  ElementId,
+  GearRarity,
+  StageKind,
+} from '@/content/schemas';
 import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
+import type { DifficultyBand } from '@/engine/map/difficulty';
 
 export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
   gold: 'Gold',
@@ -24,6 +32,47 @@ export const CURRENCY_LABELS: Readonly<Record<CurrencyId, string>> = {
 export function currencyLabel(currency: CurrencyId | string): string {
   return CURRENCY_LABELS[currency as CurrencyId] ?? String(currency).replace(/_/g, ' ');
 }
+
+/**
+ * How a card fights, said in words rather than in an icon.
+ *
+ * "Melee" and "ranged" are jargon for where a unit stands; the reference calls them
+ * what they are, and so does the collection tile the player reads at a glance.
+ */
+export const ATTACK_TYPE_LABELS: Readonly<Record<AttackType, string>> = {
+  melee: 'Front row',
+  ranged: 'Ranged',
+};
+
+export function attackTypeLabel(type: AttackType): string {
+  return ATTACK_TYPE_LABELS[type];
+}
+
+/**
+ * How a fight is going to go, in words.
+ *
+ * The engine hands back a band; these are the sentence. Deliberately about the
+ * fight rather than about the player — "outmatched" describes the odds, where
+ * "you are too weak" describes them.
+ */
+export const DIFFICULTY_LABELS: Readonly<Record<DifficultyBand, string>> = {
+  comfortable: 'Comfortable',
+  fair: 'A fair fight',
+  stretch: 'A stretch',
+  outmatched: 'Outmatched',
+};
+
+export function difficultyLabel(band: DifficultyBand): string {
+  return DIFFICULTY_LABELS[band];
+}
+
+/** The tone each band is drawn in — green through red, as everywhere else. */
+export const DIFFICULTY_TONES: Readonly<Record<DifficultyBand, string>> = {
+  comfortable: 'var(--accent-positive-bright)',
+  fair: 'var(--accent-info-bright)',
+  stretch: 'var(--accent-warning)',
+  outmatched: 'var(--accent-danger-bright)',
+};
 
 export const ELEMENT_LABELS: Readonly<Record<ElementId, string>> = {
   nature: 'Nature',

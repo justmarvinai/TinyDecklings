@@ -84,4 +84,21 @@ describe('the starter collection is coherent', () => {
     expect(types.has('melee')).toBe(true);
     expect(types.has('ranged')).toBe(true);
   });
+
+  /**
+   * A status has to say what it does.
+   *
+   * The battle card shows a 14px icon and nothing else, so the card's tooltip is
+   * the only place a player learns that freeze means "cannot act". The schema makes
+   * the field required; this catches the other half — the same sentence pasted
+   * across two statuses, which reads as an explanation and explains nothing.
+   */
+  it('gives every status its own description', () => {
+    const statuses = [...CONTENT.statuses.values()];
+    expect(statuses.length).toBeGreaterThan(0);
+    for (const status of statuses) {
+      expect(status.description.trim().length, status.id).toBeGreaterThan(10);
+    }
+    expect(new Set(statuses.map((s) => s.description)).size).toBe(statuses.length);
+  });
 });

@@ -8,6 +8,86 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **Gear and status tooltips, and a retry on defeat.**
+  - **Gear says what it gives.** A gear tile is one of nine identical slot icons
+    told apart by a rarity colour; the numbers that decide whether to equip it were
+    two taps away on a sheet the player has to leave the card to reach. Holding one
+    — in the equipment grid or in the picker — gives the main stat at its current
+    enhancement, every substat, and who is already wearing it.
+  - **Statuses say what they are doing.** `statusDef` gained an authored
+    `description`, so a status is self-describing data like a skill or a modifier
+    rather than something the UI infers from `tick` and `blocksAction`. A card's tip
+    now names each status with rounds left, stacks, and what it does. Deliberately
+    _not_ behind the 14px status icons: three of them are well under the touch floor
+    (rule 1), and the press was caught by the card underneath anyway.
+  - **Try again, from the defeat sheet.** Losing sent the player back to the map to
+    scroll for the stage they were just on and open it again — three taps to do what
+    they had already decided. It charges energy exactly as entering from the map
+    does, and greys out when that cannot be paid, because a retry is a convenience
+    and not a discount: a free rematch would quietly undo the pacing the energy
+    system exists to set (Q14b).
+
+### Fixed
+
+- 2026-08-27 — A card's tooltip could run off the bottom of the screen when it
+  carried statuses and a full skill ladder. The bubble has a height ceiling now, and
+  a battle card's tip lists skills as ready/cooldown chips — their descriptions are
+  already one hold away on the skill buttons themselves.
+
+- 2026-08-27 — **The installed app opens without a network.** TinyDecklings is
+  single-player, offline and local-save, and installs to a home screen — but until
+  now that icon needed a network to open, because "the save is local" and "the app
+  is delivered" are different problems and only the first was solved. `dist/sw.js`
+  is generated at build time from the real bundle (`scripts/sw-plugin.mjs`) and
+  precaches the shell; fonts, art and lazy screens fill in as they are first
+  fetched. The build **fails** if an entry chunk is missing from the precache list,
+  because a stale hand-written list breaks only for the player on a train. No
+  `skipWaiting`: a new build waits rather than swapping code out mid-battle, and
+  the app raises an "Update ready" notice instead.
+- 2026-08-27 — **The stage sheet says whether you can win, before the energy is
+  spent.** It named the enemies and counted them and stopped there, so the only way
+  to learn a fight was out of reach was to pay for it and lose — the worst thing a
+  map can do with a pacing currency. `stageReading()` scores the enemy side the way
+  the collection scores yours and returns a band; the sheet writes it as
+  **Comfortable / A fair fight / A stretch / Outmatched** with both numbers beside
+  it, so a player who disagrees with the word can read the evidence. Non-combat
+  stages say nothing — a difficulty line on a campfire teaches people to stop
+  reading the one place it matters. The band edges are pinned by tests against the
+  authored road, not chosen by feel.
+
+### Changed
+
+- 2026-08-27 — Dropped the Saira 400 weight: nothing in the game is set in it, and
+  an unused weight is thirty font files nobody downloads and everybody deploys.
+
+- 2026-08-27 — **The numbers that decide a fight are now on screen, and holding
+  anything explains it.**
+  - **Damage on every card.** Strength was on the face; attack was not, so the one
+    number that decides whether a swing kills was only reachable by leaving the
+    battle. Every card — battlefield and collection — now carries strength
+    bottom-left and an attack pill bottom-right: the attack-type icon saying where
+    the card stands, the damage saying how hard it hits. On the battlefield it is
+    the _effective_ attack, buffs and debuffs included, not the printed one.
+  - **Press and hold to be told more** (`useHoldTip`). A styled bubble after ~320ms:
+    a card gives full stats and its skill list, a skill button gives what the spell
+    actually does, and stage modifiers and element affinities give the sentence that
+    was already authored for them and until now sat in a `title` attribute no phone
+    can open. A hold never also fires the tap underneath — inspecting an enemy must
+    not swing at it — and releasing closes it, so reading costs exactly as long as
+    you hold and nothing has to be dismissed.
+  - **The collection tile says what a card is.** Strength, damage and front-row /
+    ranged, without opening the sheet; holding a tile adds its skills.
+  - New `attackTypeLabel()`: "Front row" and "Ranged" rather than the engine's
+    melee/ranged, named in `ui/text/labels.ts` with the rest of the vocabulary.
+
+### Fixed
+
+- 2026-08-27 — **Holding anything on a phone started selecting text.** The game is
+  played with long presses, and the platform answered them with the magnifier and a
+  Copy callout over the board. Selection is off (`user-select`, `-webkit-touch-callout`)
+  everywhere except inputs and `.u-selectable`, which keeps the save code copyable —
+  the one flow that has no other route.
+
 - 2026-08-27 — **A wallpaper for the map screen.** Drop an image into
   `src/ui/art/map/` and it becomes the map's backdrop — no import, no map entry, no
   code, the same rule as card portraits and icons. One file named `default` covers

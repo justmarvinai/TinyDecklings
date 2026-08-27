@@ -146,6 +146,13 @@ Why: deterministic tests ("given seed + intents, expect events"), replayability,
 - `src/ui/icons/svg/` holds the vendored placeholders under their upstream names; `npm run vendor:icons` never overwrites a file there without `--force`. It is the fallback set, not the drop-in surface.
 - Vendored Open Game Icons keep per-artist attribution in `CREDITS.md` (CC-BY of the upstream game-icons collection).
 
+## 6b. Offline delivery
+
+- `scripts/sw-plugin.mjs` emits `dist/sw.js` at build time with the **precache list generated from the actual bundle** — a hand-written list goes stale silently, and the app keeps working online while breaking for the player on a train. The build **fails** if an entry chunk is missing from that list.
+- Policy: precache the shell (JS/CSS/HTML/manifest/icon); serve navigations from the cached document; cache-first-then-fill for everything else same-origin, so fonts, art and lazy screen chunks land in the cache the first time they are fetched; never touch cross-origin.
+- **No `skipWaiting`.** A new build waits rather than swapping code out mid-battle; `services/offline.ts` raises an "Update ready" notice and the new worker takes over on the next cold start.
+- Registered in production only — a cache in front of the dev module graph turns "why is my edit not showing" into an afternoon.
+
 ## 7. Persistence
 
 - One **versioned save document** (`saveVersion`, `playerState`, `runState`, `settings`, timestamps) — schema in `CONTENT_SCHEMA.md` §Save.

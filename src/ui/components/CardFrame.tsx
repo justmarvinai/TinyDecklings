@@ -1,10 +1,11 @@
 import type { CSSProperties } from 'react';
 import { CONTENT } from '@/content';
 import type { CardRarity, StatusId } from '@/content/schemas';
-import type { BattleCard } from '@/engine/battle';
+import { effectiveAttack, type BattleCard } from '@/engine/battle';
 import { resolveCardArt } from '@/ui/art/artManifest';
 import { cardRarityColor } from '@/ui/design/rarity';
-import { IconChip } from '@/ui/design/primitives';
+import { IconChip, type HoldTipBind } from '@/ui/design/primitives';
+import { attackTypeLabel } from '@/ui/text/labels';
 import { Icon } from '@/ui/icons/Icon';
 import styles from './CardFrame.module.css';
 
@@ -14,6 +15,14 @@ export interface CardFrameProps {
   /** Current HP — omit outside battle. */
   hp?: number;
   maxHp?: number;
+  /**
+   * Damage this card deals, shown on the face.
+   *
+   * The number a player needs mid-fight and could previously only get by leaving
+   * the battle; it rides on the attack-type badge, which was already saying *how*
+   * this card attacks and had room to say how hard.
+   */
+  attack?: number;
   cooldown?: number;
   skillReady?: boolean;
   statuses?: readonly StatusId[];
@@ -28,6 +37,15 @@ export interface CardFrameProps {
   fill?: boolean;
   onClick?: () => void;
   ariaLabel?: string;
+  /**
+   * Press-and-hold handlers from `useHoldTip`, when this card can be inspected.
+   *
+   * One target, the whole card. The status icons were briefly a second target of
+   * their own; three 14px icons are well under the touch floor (rule 1), the press
+   * was caught by the card underneath anyway, and the card's tip already names every
+   * status with what it does and how long it lasts.
+   */
+  bind?: HoldTipBind;
 }
 
 /**
@@ -42,6 +60,7 @@ export function CardFrame({
   rarity,
   hp,
   maxHp,
+  attack,
   cooldown,
   skillReady,
   statuses,
@@ -55,6 +74,7 @@ export function CardFrame({
   fill,
   onClick,
   ariaLabel,
+  bind,
 }: CardFrameProps) {
   const def = CONTENT.cards.get(defId);
   const ratio = hp !== undefined && maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 1;
@@ -69,6 +89,7 @@ export function CardFrame({
     acting ? styles.acting : '',
     targetable ? styles.targetable : '',
     dead ? styles.dead : '',
+    showName && hp !== undefined ? styles.named : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -82,6 +103,7 @@ export function CardFrame({
       onClick={onClick}
       aria-label={ariaLabel ?? def?.name}
       {...(onClick ? { type: 'button' as const } : {})}
+      {...bind}
     >
       <img className={styles.art} src={resolveCardArt(def?.artKey ?? defId)} alt="" />
 
@@ -110,6 +132,8 @@ export function CardFrame({
         </span>
       ) : null}
 
+      {showName && def ? <span className={styles.name}>{def.name}</span> : null}
+
       {hp !== undefined ? (
         <>
           <span
@@ -127,15 +151,21 @@ export function CardFrame({
       ) : null}
 
       {def ? (
-        <IconChip
-          name={def.attackType === 'melee' ? 'attackType.melee' : 'attackType.ranged'}
-          size={size === 'small' ? 20 : 26}
-          className={styles.type}
-          title={def.attackType}
-        />
+        <span
+          className={[styles.type, attack !== undefined ? styles.typeWithAttack : '']
+            .filter(Boolean)
+            .join(' ')}
+        >
+          <IconChip
+            name={def.attackType === 'melee' ? 'attackType.melee' : 'attackType.ranged'}
+            size={size === 'small' ? 18 : 24}
+            title={attackTypeLabel(def.attackType)}
+          />
+          {attack !== undefined ? (
+            <span className={`${styles.attackValue} u-number`}>{attack}</span>
+          ) : null}
+        </span>
       ) : null}
-
-      {showName && def ? <span className={styles.name}>{def.name}</span> : null}
     </Tag>
   );
 }
@@ -146,15 +176,21 @@ export function BattleCardFrame({
   acting,
   targetable,
   onClick,
+  bind,
 }: {
   card: BattleCard;
   acting?: boolean;
   targetable?: boolean;
   onClick?: () => void;
+  /** Hold-to-inspect handlers, spread on the frame itself so the whole card is the target. */
+  bind?: HoldTipBind;
 }) {
   // Battlefield cards always fill their slot's height.
   const def = CONTENT.cards.get(card.defId);
   const skill = card.skills[0];
+  // What it hits for right now, buffs and debuffs included — the number that
+  // decides the turn, not the one printed on the card in the collection.
+  const attack = effectiveAttack(card);
   return (
     <CardFrame
       fill
@@ -162,6 +198,7 @@ export function BattleCardFrame({
       rarity={def?.rarity ?? 'common'}
       hp={card.hp}
       maxHp={card.maxHp}
+      attack={attack}
       cooldown={skill ? skill.cooldownRemaining : undefined}
       skillReady={skill ? skill.cooldownRemaining === 0 : false}
       statuses={card.statuses.map((s) => s.id)}
@@ -171,7 +208,8 @@ export function BattleCardFrame({
       targetable={targetable}
       dead={!card.alive}
       onClick={onClick}
-      ariaLabel={`${card.name}, ${card.hp} of ${card.maxHp} strength`}
+      bind={bind}
+      ariaLabel={`${card.name}, ${card.hp} of ${card.maxHp} strength, ${attack} attack`}
     />
   );
 }

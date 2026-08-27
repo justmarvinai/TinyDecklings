@@ -1,20 +1,22 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { CONTENT } from '@/content';
-import type { GearSlot } from '@/content/schemas';
+import type { GearSlot, GearSlotDef } from '@/content/schemas';
 import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 import { describeSubstat, enhanceCap, gearMainStat } from '@/engine/gear';
 import { MAX_STARS, ascendRequirement, skillUpgradeCost } from '@/engine/progression';
 import { ascensionFodderFor, computeCardStats, usePlayerStore } from '@/state/playerStore';
-import type { OwnedCard } from '@/services/saves';
+import type { OwnedCard, OwnedGear } from '@/services/saves';
 import { gearRarityColor } from '@/ui/design/rarity';
-import { Button, IconChip, Modal, Panel, StarRow, Tabs } from '@/ui/design/primitives';
+import { Button, IconChip, Modal, Panel, StarRow, Tabs, useHoldTip } from '@/ui/design/primitives';
 import { TitleBanner } from '@/ui/design/primitives';
 import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
+import { CardTip, GearTip } from '@/ui/components/Tips';
 import { DeckScreen } from './DeckScreen';
 import { LockedFeatureSheet } from '@/ui/components/LockedFeatureSheet';
 import { useSfx } from '@/ui/audio/audioContext';
 import { deferredLabel, type DeferredFeatureId } from '@/ui/text/deferred';
+import { attackTypeLabel } from '@/ui/text/labels';
 import styles from './CardsScreen.module.css';
 
 type CollectionTab = 'units' | 'heroes' | 'deck';
@@ -225,50 +227,19 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
         <div>
           <span className={styles.sectionTitle}>Gear</span>
           <div className={styles.gearGrid}>
-            {slots.map((slot) => {
-              const equippedUid = card.equippedGear[slot.id];
-              const owned = equippedUid ? ownedGear.find((g) => g.uid === equippedUid) : undefined;
-              const gearDef = owned ? CONTENT.gear.get(owned.defId) : undefined;
-              const locked = card.stars < slot.unlockStars;
-
-              return (
-                <div key={slot.id}>
-                  <button
-                    type="button"
-                    className={[
-                      styles.gearSlot,
-                      gearDef ? '' : styles.gearEmpty,
-                      locked ? styles.gearLocked : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={
-                      gearDef
-                        ? ({ '--tile': gearRarityColor(gearDef.rarity) } as CSSProperties)
-                        : undefined
-                    }
-                    disabled={locked}
-                    onClick={() => setPickingSlot(slot.id)}
-                    aria-label={
-                      locked
-                        ? `${slot.name} slot, unlocks at ${slot.unlockStars} stars`
-                        : gearDef
-                          ? `${gearDef.name}, tap to change`
-                          : `Empty ${slot.name} slot`
-                    }
-                  >
-                    {locked ? (
-                      <Icon name="ui.lock" size={22} />
-                    ) : (
-                      <GearSlotIcon slot={slot.id} size={30} />
-                    )}
-                  </button>
-                  <span className={styles.gearSlotLabel}>
-                    {locked ? `${slot.unlockStars}★` : slot.name}
-                  </span>
-                </div>
-              );
-            })}
+            {slots.map((slot) => (
+              <EquipSlot
+                key={slot.id}
+                slot={slot}
+                owned={
+                  card.equippedGear[slot.id]
+                    ? ownedGear.find((g) => g.uid === card.equippedGear[slot.id])
+                    : undefined
+                }
+                locked={card.stars < slot.unlockStars}
+                onPick={() => setPickingSlot(slot.id)}
+              />
+            ))}
           </div>
         </div>
 
@@ -505,6 +476,97 @@ function EvolveSheet({ uid, onClose }: { uid: string; onClose: () => void }) {
 }
 
 /** Inventory filtered to one slot — every entry shows that slot's fixed icon. */
+/** A row in the gear picker: the same hold, so the two lists behave alike. */
+function InventoryTile({
+  owned,
+  holderName,
+  onInspect,
+}: {
+  owned: OwnedGear;
+  holderName?: string;
+  onInspect: () => void;
+}) {
+  const def = CONTENT.gear.get(owned.defId);
+  const { bind, tip } = useHoldTip(
+    def ? (
+      <GearTip
+        defId={owned.defId}
+        enhanceLevel={owned.enhanceLevel}
+        substats={owned.substats}
+        equippedBy={holderName}
+      />
+    ) : null,
+  );
+  if (!def) return null;
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.gearSlot}
+        style={{ '--tile': gearRarityColor(def.rarity), width: 44, height: 44 } as CSSProperties}
+        onClick={onInspect}
+        {...bind}
+        aria-label={`Inspect ${def.name}`}
+      >
+        <GearSlotIcon slot={def.slot} size={24} />
+      </button>
+      {tip}
+    </>
+  );
+}
+
+/**
+ * One equipment slot, holdable.
+ *
+ * Nine slots wearing nine identical icons, told apart by a rarity colour: what a
+ * piece actually gives was two taps away, on a sheet the player has to leave the
+ * card to reach. Its own component because each slot needs its own hold state.
+ */
+function EquipSlot({
+  slot,
+  owned,
+  locked,
+  onPick,
+}: {
+  slot: GearSlotDef;
+  owned: OwnedGear | undefined;
+  locked: boolean;
+  onPick: () => void;
+}) {
+  const def = owned ? CONTENT.gear.get(owned.defId) : undefined;
+  const { bind, tip } = useHoldTip(
+    owned && def ? (
+      <GearTip defId={owned.defId} enhanceLevel={owned.enhanceLevel} substats={owned.substats} />
+    ) : null,
+  );
+
+  return (
+    <div>
+      <button
+        type="button"
+        className={[styles.gearSlot, def ? '' : styles.gearEmpty, locked ? styles.gearLocked : '']
+          .filter(Boolean)
+          .join(' ')}
+        style={def ? ({ '--tile': gearRarityColor(def.rarity) } as CSSProperties) : undefined}
+        disabled={locked}
+        onClick={onPick}
+        {...bind}
+        aria-label={
+          locked
+            ? `${slot.name} slot, unlocks at ${slot.unlockStars} stars`
+            : def
+              ? `${def.name}, tap to change`
+              : `Empty ${slot.name} slot`
+        }
+      >
+        {locked ? <Icon name="ui.lock" size={22} /> : <GearSlotIcon slot={slot.id} size={30} />}
+      </button>
+      <span className={styles.gearSlotLabel}>{locked ? `${slot.unlockStars}★` : slot.name}</span>
+      {tip}
+    </div>
+  );
+}
+
 function GearPicker({
   cardUid,
   slot,
@@ -537,21 +599,15 @@ function GearPicker({
             const holder = holderOf(owned.uid);
             return (
               <div key={owned.uid} className={styles.inventoryRow}>
-                <button
-                  type="button"
-                  className={styles.gearSlot}
-                  style={
-                    {
-                      '--tile': gearRarityColor(def.rarity),
-                      width: 44,
-                      height: 44,
-                    } as CSSProperties
+                <InventoryTile
+                  owned={owned}
+                  holderName={
+                    holder && holder.uid !== cardUid
+                      ? (CONTENT.cards.get(holder.defId)?.name ?? undefined)
+                      : undefined
                   }
-                  onClick={() => setInspecting(owned.uid)}
-                  aria-label={`Inspect ${def.name}`}
-                >
-                  <GearSlotIcon slot={def.slot} size={24} />
-                </button>
+                  onInspect={() => setInspecting(owned.uid)}
+                />
                 <span className={styles.skillBody}>
                   <span className={styles.inventoryName}>
                     {def.name}
@@ -670,30 +726,69 @@ function CollectionGrid({
 }) {
   return (
     <div className={[styles.grid, scroll ? 'u-scroll-y' : ''].filter(Boolean).join(' ')}>
-      {cards.map((card) => {
-        const def = CONTENT.cards.get(card.defId);
-        if (!def) return null;
-        return (
-          <div key={card.uid} className={`${styles.tile} ${styles.gridItem}`}>
-            <span className={styles.tileWrap}>
-              <CardFrame
-                defId={card.defId}
-                rarity={def.rarity}
-                size="small"
-                showName
-                onClick={() => onOpen(card.uid)}
-              />
-              {card.favorite ? (
-                <Icon name="ui.star" size={14} className={styles.favouriteMark} />
-              ) : null}
-            </span>
-            <span className={styles.tileMeta}>
-              <StarRow value={card.stars} max={6} size={11} />
-              <span className={styles.level}>Lvl {card.level}</span>
-            </span>
-          </div>
-        );
-      })}
+      {cards.map((card) => (
+        <CollectionTile key={card.uid} card={card} onOpen={() => onOpen(card.uid)} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * One card in the collection, with the numbers on its face.
+ *
+ * The grid used to show art, name, stars and level — everything except what the
+ * card actually does. Strength and attack now ride on the card the same way they do
+ * on the battlefield, so a tile reads identically in both places, and holding it
+ * gives the skills without the trip into the sheet.
+ */
+function CollectionTile({ card, onOpen }: { card: OwnedCard; onOpen: () => void }) {
+  const save = usePlayerStore((s) => s.save);
+  const def = CONTENT.cards.get(card.defId);
+  const stats = useMemo(() => (save ? computeCardStats(save, card.uid) : null), [save, card.uid]);
+  const { bind, tip } = useHoldTip(
+    def && stats ? (
+      <CardTip
+        name={def.name}
+        rarity={def.rarity}
+        attackType={def.attackType}
+        attack={stats.attack}
+        hp={stats.strength}
+        maxHp={stats.strength}
+        speed={stats.speed}
+        level={card.level}
+        // Only the rungs this card has actually unlocked — the ladder is gated on
+        // stars, and promising a skill it cannot use would be a lie.
+        skills={def.skills
+          .filter((entry) => entry.unlockStars <= card.stars)
+          .map((entry) => ({ skillId: entry.skillId }))}
+        note={def.leaderSkill?.description}
+      />
+    ) : null,
+  );
+  if (!def) return null;
+
+  return (
+    <div className={`${styles.tile} ${styles.gridItem}`}>
+      <span className={styles.tileWrap}>
+        <CardFrame
+          defId={card.defId}
+          rarity={def.rarity}
+          size="small"
+          showName
+          hp={stats?.strength}
+          maxHp={stats?.strength}
+          attack={stats?.attack}
+          onClick={onOpen}
+          bind={bind}
+          ariaLabel={`${def.name}, level ${card.level}, ${stats?.strength ?? 0} strength, ${stats?.attack ?? 0} attack, ${attackTypeLabel(def.attackType)}`}
+        />
+        {card.favorite ? <Icon name="ui.star" size={14} className={styles.favouriteMark} /> : null}
+      </span>
+      <span className={styles.tileMeta}>
+        <StarRow value={card.stars} max={6} size={11} />
+        <span className={styles.level}>Lvl {card.level}</span>
+      </span>
+      {tip}
     </div>
   );
 }

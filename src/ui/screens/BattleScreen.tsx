@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CONTENT } from '@/content';
-import { elementIconKey } from '@/content/schemas';
+import { ELEMENT_AFFINITY_PERCENT, elementIconKey, type ElementId } from '@/content/schemas';
 import { elementLabel } from '@/ui/text/labels';
-import { BOARD_SLOTS, type BattleCard, type BattleEvent, type Intent } from '@/engine/battle';
+import {
+  BOARD_SLOTS,
+  effectiveAttack,
+  type BattleCard,
+  type BattleEvent,
+  type Intent,
+} from '@/engine/battle';
 import type { RewardBundle } from '@/engine/economy/rewards';
 import { useBattleStore } from '@/state/battleStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
+import { useEconomyStore } from '@/state/economyStore';
+import { ENERGY_CONFIG } from '@/content';
 import { useScreenStore } from '@/state/screenStore';
 import { useSettingsStore } from '@/state/settingsStore';
-import { Button, IconChip, Modal, StarRow } from '@/ui/design/primitives';
+import { Button, IconChip, Modal, StarRow, useHoldTip } from '@/ui/design/primitives';
 import { BattleCardFrame, EmptySlot } from '@/ui/components/CardFrame';
+import { CardTip, InfoTip, SkillTip } from '@/ui/components/Tips';
 import { RewardList } from '@/ui/components/RewardList';
 import { BattleFx, type BattleFxHandle } from '@/ui/fx/BattleFx';
 import { useScreenShake } from '@/ui/fx/useScreenShake';
@@ -63,6 +72,35 @@ export function BattleScreen({ stage }: { stage: number }) {
     return () => battle.clear();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
+
+  /**
+   * Fight it again without walking back to the map.
+   *
+   * Losing sent the player to the map to scroll for the stage they were just on
+   * and open it again — three taps to do the thing they had already decided to do.
+   *
+   * It charges energy exactly as entering from the map does, because that is what
+   * it replaces: a retry is a convenience, not a discount, and a free rematch would
+   * quietly undo the pacing the energy system exists to set (Q14b).
+   */
+  const kind = useRunStore((s) => s.window).find((w) => w.number === stage)?.kind ?? 'battle';
+  const energyCost = ENERGY_CONFIG.costs[kind] ?? 0;
+  // Subscribed to the save, not to `canEnterStage` — the energy the store reports is
+  // derived from it, and a selector that recomputes would re-render forever
+  // (CLAUDE.md). This un-greys the button as energy regenerates under the sheet.
+  const playerSave = usePlayerStore((s) => s.save);
+  const canRetry = useMemo(() => {
+    void playerSave;
+    return useEconomyStore.getState().canEnterStage(kind);
+  }, [playerSave, kind]);
+  const retry = useCallback(() => {
+    if (!useEconomyStore.getState().spendForStage(kind)) return;
+    const setup = buildSetup(stage);
+    if (!setup) return;
+    battle.start(setup);
+    setSelectedSkill(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, stage]);
 
   const centerOf = useCallback((uid: string) => {
     const el = slotRefs.current[uid];
@@ -258,7 +296,7 @@ export function BattleScreen({ stage }: { stage: number }) {
               .join(' ')}
           >
             {card ? (
-              <BattleCardFrame
+              <InspectableCard
                 card={card}
                 acting={card.uid === activeCard?.uid}
                 targetable={legalTargets.includes(card.uid)}
@@ -341,25 +379,16 @@ export function BattleScreen({ stage }: { stage: number }) {
           <span className={styles.counter}>{state.queue.player.length}</span>
         </div>
         <div className={styles.skillRow}>
-          {(activeCard?.skills ?? []).map((skill, index) => {
-            const skillDef = CONTENT.skills.get(skill.skillId);
-            if (!skillDef) return null;
-            const ready = skill.cooldownRemaining === 0 && !animating && !auto;
-            const armed = selectedSkill === index;
-            return (
-              <Button
-                key={skill.skillId + index}
-                variant={armed ? 'warning' : 'info'}
-                className={styles.skillButton}
-                disabled={!ready}
-                locked={!ready && skill.cooldownRemaining > 0}
-                lockHint={skill.cooldownRemaining > 0 ? `${skill.cooldownRemaining}` : undefined}
-                icon={skillDef.iconKey}
-                onClick={() => setSelectedSkill((current) => (current === index ? null : index))}
-                aria-label={`${skillDef.name}${skill.cooldownRemaining > 0 ? `, ready in ${skill.cooldownRemaining} rounds` : ', ready'}`}
-              />
-            );
-          })}
+          {(activeCard?.skills ?? []).map((skill, index) => (
+            <SkillButton
+              key={skill.skillId + index}
+              skillId={skill.skillId}
+              cooldownRemaining={skill.cooldownRemaining}
+              usable={skill.cooldownRemaining === 0 && !animating && !auto}
+              armed={selectedSkill === index}
+              onPick={() => setSelectedSkill((current) => (current === index ? null : index))}
+            />
+          ))}
         </div>
       </div>
 
@@ -369,9 +398,168 @@ export function BattleScreen({ stage }: { stage: number }) {
           stars={result.stars}
           rewards={result.rewards}
           onClose={pop}
+          retry={retry}
+          energyCost={energyCost}
+          canRetry={canRetry}
         />
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The ground the fight is on, with what that means a press away.
+ *
+ * Same sentence the stage sheet used before the player spent the energy; the point
+ * of repeating it here is that mid-fight is when it starts mattering.
+ */
+function ElementTag({ element }: { element: ElementId }) {
+  const { bind, tip } = useHoldTip(
+    <InfoTip
+      icon={elementIconKey(element)}
+      title={`${elementLabel(element)} ground`}
+      body={`Cards that counter ${elementLabel(element)} attack ${ELEMENT_AFFINITY_PERCENT}% harder here. It applies to both sides.`}
+    />,
+  );
+  return (
+    <>
+      <span className={styles.stageTag} role="note" {...bind}>
+        <IconChip name={elementIconKey(element)} size={18} />
+        {elementLabel(element)}
+      </span>
+      {tip}
+    </>
+  );
+}
+
+/**
+ * A stage modifier, with what it does a press away.
+ *
+ * These change how the fight works and used to carry a `title` attribute, which on
+ * a phone is a tooltip nobody can ever open. Holding the chip reads it.
+ */
+function ModifierTag({ modifierId }: { modifierId: string }) {
+  const def = CONTENT.stageModifiers.get(modifierId);
+  const { bind, tip } = useHoldTip(
+    def ? <InfoTip icon={def.iconKey} title={def.name} body={def.description} /> : null,
+  );
+  if (!def) return null;
+  return (
+    <>
+      <span
+        className={styles.stageTag}
+        role="note"
+        aria-label={`${def.name}. ${def.description}`}
+        {...bind}
+      >
+        <IconChip name={def.iconKey} size={18} background="var(--accent-danger)" />
+        {def.name}
+      </span>
+      {tip}
+    </>
+  );
+}
+
+/**
+ * One spell, with what it does a press away.
+ *
+ * A skill button is an icon and a cooldown number; nothing on screen said what it
+ * would actually do, and finding out cost a trip out of the fight. Holding it reads
+ * the authored description.
+ */
+function SkillButton({
+  skillId,
+  cooldownRemaining,
+  usable,
+  armed,
+  onPick,
+}: {
+  skillId: string;
+  cooldownRemaining: number;
+  usable: boolean;
+  armed: boolean;
+  onPick: () => void;
+}) {
+  const def = CONTENT.skills.get(skillId);
+  const { bind, tip } = useHoldTip(
+    def ? <SkillTip skillId={skillId} cooldownRemaining={cooldownRemaining} /> : null,
+  );
+  if (!def) return null;
+  return (
+    <>
+      <Button
+        variant={armed ? 'warning' : 'info'}
+        className={styles.skillButton}
+        disabled={!usable}
+        locked={!usable && cooldownRemaining > 0}
+        lockHint={cooldownRemaining > 0 ? `${cooldownRemaining}` : undefined}
+        icon={def.iconKey}
+        onClick={onPick}
+        // Spread rather than passed as a prop: these are ordinary DOM handlers and
+        // Button forwards anything it does not consume.
+        {...bind}
+        aria-label={`${def.name}. ${def.description}${cooldownRemaining > 0 ? ` Ready in ${cooldownRemaining} rounds.` : ' Ready.'}`}
+      />
+      {tip}
+    </>
+  );
+}
+
+/**
+ * A card on the board that answers questions about itself.
+ *
+ * Its own component because each card needs its own hold state, and a hook cannot
+ * live inside the slot loop. The handlers go on the frame rather than the cell so
+ * the whole card is the target, and `useHoldTip` swallows the click that follows a
+ * hold — inspecting an enemy must never also swing at it.
+ */
+function InspectableCard({
+  card,
+  acting,
+  targetable,
+  onClick,
+}: {
+  card: BattleCard;
+  acting: boolean;
+  targetable: boolean;
+  onClick?: () => void;
+}) {
+  const def = CONTENT.cards.get(card.defId);
+  const active = card.statuses.map((s) => ({
+    id: s.id,
+    remaining: s.remaining,
+    stacks: s.stacks,
+  }));
+  const { bind, tip } = useHoldTip(
+    <CardTip
+      name={card.name}
+      rarity={def?.rarity ?? 'common'}
+      attackType={card.attackType}
+      attack={effectiveAttack(card)}
+      hp={card.hp}
+      maxHp={card.maxHp}
+      speed={card.speed}
+      level={card.level}
+      statuses={active}
+      compactSkills
+      skills={card.skills.map((s) => ({
+        skillId: s.skillId,
+        cooldownRemaining: s.cooldownRemaining,
+      }))}
+    />,
+  );
+
+  return (
+    <>
+      <BattleCardFrame
+        card={card}
+        acting={acting}
+        targetable={targetable}
+        onClick={onClick}
+        bind={bind}
+      />
+      {tip}
+    </>
   );
 }
 
@@ -401,17 +589,9 @@ function StageBanner({ stage }: { stage: number }) {
 
   return (
     <div className={styles.stageBanner}>
-      {generated.elementBias ? (
-        <span className={styles.stageTag}>
-          <IconChip name={elementIconKey(generated.elementBias)} size={18} />
-          {elementLabel(generated.elementBias)}
-        </span>
-      ) : null}
+      {generated.elementBias ? <ElementTag element={generated.elementBias} /> : null}
       {modifiers.map((def) => (
-        <span key={def.id} className={styles.stageTag} title={def.description}>
-          <IconChip name={def.iconKey} size={18} background="var(--accent-danger)" />
-          {def.name}
-        </span>
+        <ModifierTag key={def.id} modifierId={def.id} />
       ))}
     </div>
   );
@@ -422,11 +602,19 @@ function ResultSheet({
   stars,
   rewards,
   onClose,
+  retry,
+  energyCost,
+  canRetry,
 }: {
   victory: boolean;
   stars: 0 | 1 | 2 | 3;
   rewards: RewardBundle;
   onClose: () => void;
+  /** Restarts the same fight in place. */
+  retry: () => void;
+  /** What another attempt costs, and whether it can be paid for right now. */
+  energyCost: number;
+  canRetry: boolean;
 }) {
   return (
     <Modal title={victory ? 'Victory' : 'Defeat'} onClose={onClose}>
@@ -441,12 +629,34 @@ function ResultSheet({
           <RewardList rewards={rewards} />
         ) : (
           <p className="u-prose">
-            Your cards were beaten back. Nothing was lost — level up, equip what you have found, and
-            try again.
+            Your cards were beaten back. Nothing was lost — level up, equip what you have found, or
+            go straight back in.
           </p>
         )}
 
-        <Button variant="positive" block onClick={onClose}>
+        {victory ? null : (
+          <Button
+            variant="warning"
+            block
+            disabled={!canRetry}
+            onClick={retry}
+            aria-label={
+              canRetry
+                ? `Try again for ${energyCost} energy`
+                : `Not enough energy to try again — it costs ${energyCost}`
+            }
+          >
+            <span className={styles.retryLabel}>
+              Try again
+              <span className={styles.retryCost}>
+                <IconChip name="currency.energy" size={18} />
+                {energyCost}
+              </span>
+            </span>
+          </Button>
+        )}
+
+        <Button variant={victory ? 'positive' : 'neutral'} block onClick={onClose}>
           {victory ? 'Continue' : 'Back to map'}
         </Button>
       </div>

@@ -103,6 +103,19 @@ export default tseslint.config(
   {
     files: ['scripts/**/*.mjs', 'vite.config.ts'],
     languageOptions: { globals: { ...globals.node } },
+  },
+  {
+    // The service worker template runs in a worker, not a page: `self`, `caches`
+    // and `clients` are its globals, and there is no DOM in sight.
+    files: ['scripts/sw-template.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        // Substituted with the real bundle by scripts/sw-plugin.mjs at build time.
+        __PRECACHE__: 'readonly',
+        __VERSION__: 'readonly',
+      },
+    },
     rules: { 'no-console': 'off' },
   },
 

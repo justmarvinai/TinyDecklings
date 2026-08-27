@@ -120,6 +120,14 @@ export type EffectDef = z.infer<typeof effectDef>;
 export const statusDef = z.strictObject({
   id: statusId,
   name: z.string().min(1),
+  /**
+   * What it does to whoever is carrying it, in one sentence.
+   *
+   * Authored rather than derived: the UI could assemble something from `tick` and
+   * `blocksAction`, but "deals 4% of their strength at the end of every round" is a
+   * rules dump, and the engine is not allowed to write prose anyway.
+   */
+  description: z.string().min(1),
   iconKey: z.enum(ICON_KEYS),
   stacking: z.enum(['refresh', 'stack', 'ignore']),
   maxStacks: z.number().int().positive().optional(),

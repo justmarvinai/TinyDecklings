@@ -569,3 +569,49 @@
 .compactNode .plateRow {
   justify-content: center;
 }
+
+/**
+ * The difficulty reading on the stage sheet.
+ *
+ * Energy is spent on entry, so the sheet has to say what it is buying. The band
+ * carries the colour and the numbers carry the evidence — a player who disagrees
+ * with the word can read the two figures and decide for themselves.
+ */
+.readingRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.readingBand {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  text-shadow: var(--text-shadow-hard);
+}
+
+.readingNumbers {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.readingMine {
+  color: var(--accent-positive-bright);
+}
+
+.readingTheirs {
+  color: var(--number-damage);
+}
+
+.readingHint {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-micro);
+  line-height: 1.35;
+  text-transform: none;
+  color: var(--text-muted);
+}

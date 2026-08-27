@@ -9,6 +9,7 @@ import {
   statusIconKey,
 } from '@/content/schemas';
 import { regionForStage } from '@/engine/map/generate';
+import { stageReading } from '@/engine/map/difficulty';
 import { chestKey, claimableChests, regionProgressForStage } from '@/engine/map/chests';
 import { rollLoot, type RewardBundle } from '@/engine/economy/rewards';
 import { createRng, deriveSeed } from '@/engine/rng';
@@ -22,7 +23,7 @@ import { PLACEHOLDER_AVATAR, mapWallpaper } from '@/ui/art/artManifest';
 import { Button, IconChip, Modal, Panel, StarRow } from '@/ui/design/primitives';
 import { RewardList } from '@/ui/components/RewardList';
 import { useSfx } from '@/ui/audio/audioContext';
-import { elementLabel, stageKindLabel } from '@/ui/text/labels';
+import { DIFFICULTY_TONES, difficultyLabel, elementLabel, stageKindLabel } from '@/ui/text/labels';
 import { EncounterSheet } from './EncounterSheet';
 import styles from './MapScreen.module.css';
 
@@ -408,6 +409,10 @@ function StageSheet({
   const boon = useRunStore((s) => s.pendingBoon);
   const counters = useCounterCount(stage.elementBias);
   const economy = useEconomyStore.getState();
+  const deckPower = useDeckStore((d) => d.summary(d.activeIndex).power);
+  // Not a fight → no reading; a difficulty line on a campfire teaches the player to
+  // stop reading the one place it matters.
+  const reading = useMemo(() => stageReading(CONTENT, stage, deckPower), [stage, deckPower]);
   void save; // re-read energy whenever the save changes
 
   const cost = ENERGY_CONFIG.costs[stage.kind] ?? 0;
@@ -429,6 +434,27 @@ function StageSheet({
           <span className={styles.muted}>{group?.name ?? 'Unknown foes'}</span>
           <span className={styles.muted}>{group ? `${group.members.length} enemies` : ''}</span>
         </div>
+
+        {reading ? (
+          <Panel tone="slot">
+            <div className={styles.readingRow}>
+              <span
+                className={styles.readingBand}
+                style={{ color: DIFFICULTY_TONES[reading.band] }}
+              >
+                {difficultyLabel(reading.band)}
+              </span>
+              <span className={styles.readingNumbers}>
+                <span className={styles.readingMine}>{reading.deckPower}</span>
+                {' vs '}
+                <span className={styles.readingTheirs}>{reading.stagePower}</span>
+              </span>
+            </div>
+            <span className={styles.readingHint}>
+              Your deck against theirs. Targeting well wins fights the numbers say you should lose.
+            </span>
+          </Panel>
+        ) : null}
 
         {stage.elementBias ? (
           <Panel tone="slot">
