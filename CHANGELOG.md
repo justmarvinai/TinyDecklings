@@ -8,6 +8,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **Art drop-in: per-card portraits and per-slot icons are now file drops.**
+  Replacing placeholder art no longer means editing code. Two folders are discovered by
+  file name at build time:
+  - `src/ui/art/cards/<artKey>.png` (also `.jpg` / `.webp` / `.avif` / `.svg`) becomes
+    that card's portrait — `card.ember_drake.png` is Ember Drake. Previously `CARD_ART`
+    was a hand-written map, so every portrait needed an import and an entry; it is now an
+    `import.meta.glob` over the folder.
+  - `src/ui/icons/custom/<icon-key>.svg` replaces that meaning everywhere it is drawn —
+    `gear.weapon.svg` is every Weapon in inventory, on equipment grids and in drops. Run
+    `npm run vendor:icons` to inline it; `iconPath()` prefers it over the placeholder.
+    Nine files replace all gear art, one per slot (CLAUDE.md rule 5).
+
+  Anything with no file still falls back to the placeholder, so a half-finished art pass
+  runs. A file named after nothing — a portrait matching no card, an icon key that does not
+  exist — is silently inert, so `artManifest.test.ts` and `iconManifest.test.ts` now fail on
+  it by name. The dev panel gained an **Art coverage** button listing what is still
+  placeholder. `src/ui/art/cards/README.md` and `src/ui/icons/custom/README.md` document the
+  conventions; `ARCHITECTURE.md` §6 and CLAUDE.md rule 6 updated to match.
+
 - 2026-08-26 — **Phase 7: release readiness** (`IMPLEMENTATION_PLAN.md` 7.1–7.6).
   - **The first-release roster (Q29)** — grown from 14 collectible cards to **36: 30 units and 6 heroes**
     across both rarity ladders, plus ten new skills so a thirty-card roster is not five skills wearing thirty

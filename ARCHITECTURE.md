@@ -68,7 +68,11 @@ src/
     components/       # CardFrame, GearTile, NodeMedallion, TopHud, TabBar…
     screens/          # MapScreen, BattleScreen, CardsScreen, CardDetail…
     fx/               # canvas overlay, particle presets, floating numbers
-    icons/            # vendored SVGs + iconManifest.ts (semantic key → asset)
+    icons/            # iconManifest.ts (semantic key → asset)
+      svg/            # vendored placeholders, named after their source art
+      custom/         # OWNER DROP-IN: <icon-key>.svg wins over the placeholder
+    art/              # artManifest.ts + the shared placeholder avatar
+      cards/          # OWNER DROP-IN: <artKey>.png is that card's portrait
   services/
     storage.ts        # StorageService interface + localStorage/memory impls
     clock.ts          # Clock seam — injected time (energy regen, save stamps)
@@ -125,7 +129,18 @@ Why: deterministic tests ("given seed + intents, expect events"), replayability,
 
 - `iconManifest.ts` maps **semantic keys** → asset modules: `icon('gear.boots')`, `icon('currency.gold')`, `icon('stat.strength')`. UI code never imports an icon file directly.
 - **Gear icons resolve from the slot type** (`gearSlotIcon(slot)`) — per owner directive, all items of a slot share the slot's icon; gear data has **no icon field** (see `CONTENT_SCHEMA.md`).
-- Card art resolves via `artKey` with a **single shared placeholder avatar** as fallback. Final art later = drop file + manifest entry; zero data/code changes.
+- Card art resolves via `artKey` with a **single shared placeholder avatar** as fallback.
+- **Both swaps are a file drop, not an edit.** Two folders are discovered by name at build time, so replacing art never touches a manifest, a component, content data or the schema:
+
+  | Folder                 | File name is…                                | Applies to                        | After dropping in       |
+  | ---------------------- | -------------------------------------------- | --------------------------------- | ----------------------- |
+  | `src/ui/art/cards/`    | the card's `artKey` (`card.ember_drake.png`) | that one card                     | nothing — Vite globs it |
+  | `src/ui/icons/custom/` | the semantic icon key (`gear.weapon.svg`)    | every place that meaning is drawn | `npm run vendor:icons`  |
+
+  Card art is found by `import.meta.glob`; icons are inlined into `generated/iconPaths.ts` as `ICON_OVERRIDES`, which `iconPath()` prefers over the placeholder. Anything with no file falls back, so a half-finished art pass still runs.
+
+- **A misnamed file fails the build.** A portrait matching no card, or an icon named something that is not an icon key, is silently inert — so `artManifest.test.ts` and `iconManifest.test.ts` reject both by name. The dev panel's **Art coverage** button lists what is still placeholder.
+- `src/ui/icons/svg/` holds the vendored placeholders under their upstream names; `npm run vendor:icons` never overwrites a file there without `--force`. It is the fallback set, not the drop-in surface.
 - Vendored Open Game Icons keep per-artist attribution in `CREDITS.md` (CC-BY of the upstream game-icons collection).
 
 ## 7. Persistence

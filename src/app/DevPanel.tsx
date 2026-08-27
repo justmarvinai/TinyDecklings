@@ -6,6 +6,9 @@ import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
 import { useScreenStore, type TabId } from '@/state/screenStore';
 import { useSettingsStore } from '@/state/settingsStore';
+import { ICON_KEYS } from '@/content/schemas/iconKeys';
+import { hasFinalArt } from '@/ui/art/artManifest';
+import { hasFinalIcon } from '@/ui/icons/iconManifest';
 import { Button } from '@/ui/design/primitives';
 import styles from './DevPanel.module.css';
 
@@ -68,6 +71,33 @@ export function DevPanel() {
         null,
         2,
       ),
+    });
+  };
+
+  /**
+   * How far the owner's art pass has got.
+   *
+   * Both sets resolve by file name at build time (art/cards/<artKey>, icons/custom/
+   * <icon-key>), so nothing lists what is still placeholder — this counts it, and
+   * names what is left, which is the whole reason to look.
+   */
+  const describeArt = () => {
+    const cards = [...CONTENT.cards.values()];
+    const missingArt = cards.filter((c) => !hasFinalArt(c.artKey)).map((c) => c.artKey);
+    const missingIcons = ICON_KEYS.filter((k) => !hasFinalIcon(k));
+    const list = (items: readonly string[]) =>
+      items.length ? items.join('\n  ') : '(none — all supplied)';
+    setOutput({
+      ok: true,
+      text: [
+        `Card art    ${cards.length - missingArt.length}/${cards.length}`,
+        `  drop files into src/ui/art/cards/ named <artKey>.png`,
+        `  still placeholder:\n  ${list(missingArt)}`,
+        '',
+        `Icons       ${ICON_KEYS.length - missingIcons.length}/${ICON_KEYS.length}`,
+        `  drop files into src/ui/icons/custom/ named <icon-key>.svg, then npm run vendor:icons`,
+        `  still placeholder:\n  ${list(missingIcons)}`,
+      ].join('\n'),
     });
   };
 
@@ -227,6 +257,9 @@ export function DevPanel() {
           </Button>
           <Button variant="info" onClick={describeState}>
             Dump state
+          </Button>
+          <Button variant="neutral" onClick={describeArt}>
+            Art coverage
           </Button>
         </div>
         {output ? (

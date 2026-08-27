@@ -5,13 +5,20 @@
  * adding a semantic key without art is a compile error, and every value must be a
  * file that actually exists in `src/ui/icons/svg/`.
  *
- * All art here is placeholder art (Game Icons, CC BY 3.0 — see CREDITS.md). The
- * owner replaces it later by dropping .svg files in and re-running
- * `npm run vendor:icons`; no code or content changes (CLAUDE.md rule 6).
+ * All art here is placeholder art (Game Icons, CC BY 3.0 — see CREDITS.md). To
+ * replace a piece of it, drop `<icon-key>.svg` into `src/ui/icons/custom/` — named
+ * after the meaning, e.g. `gear.weapon.svg` — and re-run `npm run vendor:icons`.
+ * That file wins over the placeholder below, so the map here never needs editing
+ * and no content or engine code changes (CLAUDE.md rule 6).
  */
 import type { GearSlot, IconKey } from '@/content/schemas/iconKeys';
 import { gearSlotIconKey } from '@/content/schemas/iconKeys';
-import { ICON_PATHS, type IconSourceName, type IconPath } from './generated/iconPaths';
+import {
+  ICON_OVERRIDES,
+  ICON_PATHS,
+  type IconSourceName,
+  type IconPath,
+} from './generated/iconPaths';
 
 const MANIFEST = {
   // --- gear: exactly one icon per slot type (owner directive) -----------------
@@ -100,8 +107,14 @@ const MANIFEST = {
   'ui.check': 'check-mark',
 } as const satisfies Record<IconKey, IconSourceName>;
 
+/** Owner art if it exists for this meaning, otherwise the placeholder. */
 export function iconPath(key: IconKey): IconPath {
-  return ICON_PATHS[MANIFEST[key]];
+  return ICON_OVERRIDES[key] ?? ICON_PATHS[MANIFEST[key]];
+}
+
+/** True once `src/ui/icons/custom/<key>.svg` exists — surfaced in the dev panel. */
+export function hasFinalIcon(key: IconKey): boolean {
+  return key in ICON_OVERRIDES;
 }
 
 /**
@@ -114,4 +127,4 @@ export function gearSlotIcon(slot: GearSlot): IconPath {
   return iconPath(gearSlotIconKey(slot));
 }
 
-export { MANIFEST as ICON_MANIFEST };
+export { MANIFEST as ICON_MANIFEST, ICON_OVERRIDES };
