@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { TitleBanner } from './TitleBanner';
 import { pushModal } from './modalState';
@@ -13,17 +13,27 @@ export interface ModalProps {
 }
 
 export function Modal({ title, onClose, children, placement = 'sheet' }: ModalProps) {
+  // Held in a ref so the registration below can run once. Re-running it on a new
+  // `onClose` identity would pop this modal off the stack and push it back on,
+  // which would reorder a stack whose whole job is to remember the order.
+  const closeRef = useRef(onClose);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    closeRef.current = onClose;
   }, [onClose]);
 
-  // A modal owns the screen while it is up; anything floating over the app steps
-  // aside (see `modalState.ts`).
-  useEffect(() => pushModal(), []);
+  // A modal owns the screen while it is up: anything floating over the app steps
+  // aside, and Escape reaches the frontmost sheet only (see `modalState.ts`).
+  useEffect(() => {
+    const handle = pushModal();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && handle.isTop()) closeRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      handle.release();
+    };
+  }, []);
 
   /*
    * Portalled to the body rather than rendered where it was opened.

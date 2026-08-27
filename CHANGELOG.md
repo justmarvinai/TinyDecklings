@@ -8,6 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **The summon screen says what is in the pool.** Its centre was an
+  empty field with one sentence in it, on the one screen where the player is
+  deciding whether to spend. It now shows each rarity's share with a bar, the
+  percentage, and how many different cards carry it. `poolOdds` derives this from
+  the weights the pool is authored with rather than from a second published table,
+  so a stated chance cannot drift from the one the game rolls — the same honesty the
+  pity meters above it already promise, for the other half of the question.
+
 - 2026-08-27 — **The battle animates like a fight now.**
   - **Strikes travel.** An attacker used to nudge in place; it now crosses the real
     distance to its target — the strike animation is handed `--dx`/`--dy` measured
@@ -47,6 +55,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
     system exists to set (Q14b).
 
 ### Fixed
+
+- 2026-08-27 — **Escape closed every open sheet at once.** Each modal listened for
+  it on the window, so backing out of the gear picker took the card sheet under it
+  too. The modal stack tracks identity rather than a bare depth count, and only the
+  frontmost sheet answers a dismiss.
 
 - 2026-08-27 — **Every modal was laid out inside the screen that opened it.** The
   screen-transition keyframes ended on `transform: translate3d(0, 0, 0)` and filled

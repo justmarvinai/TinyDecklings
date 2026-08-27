@@ -1,29 +1,44 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * How many modals are open.
+ * The stack of open modals.
  *
- * A modal owns the screen while it is up, so anything that floats over the app —
- * the onboarding coach, most obviously — needs to know to get out of the way. A
- * tiny counter with subscribers rather than a DOM flag or a context, because
- * `Modal` is a single primitive and this is the one fact anyone needs from it.
+ * Two things need to know about it. Anything that floats over the app — the
+ * onboarding coach, most obviously — needs to know a modal owns the screen and get
+ * out of the way; and Escape needs to close *one* sheet rather than all of them. A
+ * bare counter answered the first question and got the second wrong: every modal
+ * listened for Escape on the window, so one press collapsed the whole stack and a
+ * player backing out of the gear picker lost the card sheet underneath it too.
+ *
+ * Ids rather than a count, so each modal can ask whether it is the frontmost one.
  */
-let openCount = 0;
+let nextId = 1;
+let stack: readonly number[] = [];
 const listeners = new Set<() => void>();
 
 function emit(): void {
   for (const listener of listeners) listener();
 }
 
-export function pushModal(): () => void {
-  openCount += 1;
+export interface ModalHandle {
+  /** True while this modal is frontmost — the only one a dismiss should reach. */
+  isTop: () => boolean;
+  release: () => void;
+}
+
+export function pushModal(): ModalHandle {
+  const id = nextId++;
+  stack = [...stack, id];
   emit();
   let released = false;
-  return () => {
-    if (released) return;
-    released = true;
-    openCount = Math.max(0, openCount - 1);
-    emit();
+  return {
+    isTop: () => stack[stack.length - 1] === id,
+    release: () => {
+      if (released) return;
+      released = true;
+      stack = stack.filter((open) => open !== id);
+      emit();
+    },
   };
 }
 
@@ -32,7 +47,7 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-const isOpen = () => openCount > 0;
+const isOpen = () => stack.length > 0;
 const serverIsOpen = () => false;
 
 export function useModalOpen(): boolean {
