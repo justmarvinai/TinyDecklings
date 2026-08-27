@@ -1,17 +1,17 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { CONTENT } from '@/content';
-import type { GearSlot } from '@/content/schemas';
+import type { GearSlot, GearSlotDef } from '@/content/schemas';
 import { CARD_RARITY_LABEL, GEAR_RARITY_LABEL } from '@/content/schemas';
 import { describeSubstat, enhanceCap, gearMainStat } from '@/engine/gear';
 import { MAX_STARS, ascendRequirement, skillUpgradeCost } from '@/engine/progression';
 import { ascensionFodderFor, computeCardStats, usePlayerStore } from '@/state/playerStore';
-import type { OwnedCard } from '@/services/saves';
+import type { OwnedCard, OwnedGear } from '@/services/saves';
 import { gearRarityColor } from '@/ui/design/rarity';
 import { Button, IconChip, Modal, Panel, StarRow, Tabs, useHoldTip } from '@/ui/design/primitives';
 import { TitleBanner } from '@/ui/design/primitives';
 import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
-import { CardTip } from '@/ui/components/Tips';
+import { CardTip, GearTip } from '@/ui/components/Tips';
 import { DeckScreen } from './DeckScreen';
 import { LockedFeatureSheet } from '@/ui/components/LockedFeatureSheet';
 import { useSfx } from '@/ui/audio/audioContext';
@@ -227,50 +227,19 @@ function CardDetail({ uid, onClose }: { uid: string; onClose: () => void }) {
         <div>
           <span className={styles.sectionTitle}>Gear</span>
           <div className={styles.gearGrid}>
-            {slots.map((slot) => {
-              const equippedUid = card.equippedGear[slot.id];
-              const owned = equippedUid ? ownedGear.find((g) => g.uid === equippedUid) : undefined;
-              const gearDef = owned ? CONTENT.gear.get(owned.defId) : undefined;
-              const locked = card.stars < slot.unlockStars;
-
-              return (
-                <div key={slot.id}>
-                  <button
-                    type="button"
-                    className={[
-                      styles.gearSlot,
-                      gearDef ? '' : styles.gearEmpty,
-                      locked ? styles.gearLocked : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={
-                      gearDef
-                        ? ({ '--tile': gearRarityColor(gearDef.rarity) } as CSSProperties)
-                        : undefined
-                    }
-                    disabled={locked}
-                    onClick={() => setPickingSlot(slot.id)}
-                    aria-label={
-                      locked
-                        ? `${slot.name} slot, unlocks at ${slot.unlockStars} stars`
-                        : gearDef
-                          ? `${gearDef.name}, tap to change`
-                          : `Empty ${slot.name} slot`
-                    }
-                  >
-                    {locked ? (
-                      <Icon name="ui.lock" size={22} />
-                    ) : (
-                      <GearSlotIcon slot={slot.id} size={30} />
-                    )}
-                  </button>
-                  <span className={styles.gearSlotLabel}>
-                    {locked ? `${slot.unlockStars}★` : slot.name}
-                  </span>
-                </div>
-              );
-            })}
+            {slots.map((slot) => (
+              <EquipSlot
+                key={slot.id}
+                slot={slot}
+                owned={
+                  card.equippedGear[slot.id]
+                    ? ownedGear.find((g) => g.uid === card.equippedGear[slot.id])
+                    : undefined
+                }
+                locked={card.stars < slot.unlockStars}
+                onPick={() => setPickingSlot(slot.id)}
+              />
+            ))}
           </div>
         </div>
 
@@ -507,6 +476,97 @@ function EvolveSheet({ uid, onClose }: { uid: string; onClose: () => void }) {
 }
 
 /** Inventory filtered to one slot — every entry shows that slot's fixed icon. */
+/** A row in the gear picker: the same hold, so the two lists behave alike. */
+function InventoryTile({
+  owned,
+  holderName,
+  onInspect,
+}: {
+  owned: OwnedGear;
+  holderName?: string;
+  onInspect: () => void;
+}) {
+  const def = CONTENT.gear.get(owned.defId);
+  const { bind, tip } = useHoldTip(
+    def ? (
+      <GearTip
+        defId={owned.defId}
+        enhanceLevel={owned.enhanceLevel}
+        substats={owned.substats}
+        equippedBy={holderName}
+      />
+    ) : null,
+  );
+  if (!def) return null;
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.gearSlot}
+        style={{ '--tile': gearRarityColor(def.rarity), width: 44, height: 44 } as CSSProperties}
+        onClick={onInspect}
+        {...bind}
+        aria-label={`Inspect ${def.name}`}
+      >
+        <GearSlotIcon slot={def.slot} size={24} />
+      </button>
+      {tip}
+    </>
+  );
+}
+
+/**
+ * One equipment slot, holdable.
+ *
+ * Nine slots wearing nine identical icons, told apart by a rarity colour: what a
+ * piece actually gives was two taps away, on a sheet the player has to leave the
+ * card to reach. Its own component because each slot needs its own hold state.
+ */
+function EquipSlot({
+  slot,
+  owned,
+  locked,
+  onPick,
+}: {
+  slot: GearSlotDef;
+  owned: OwnedGear | undefined;
+  locked: boolean;
+  onPick: () => void;
+}) {
+  const def = owned ? CONTENT.gear.get(owned.defId) : undefined;
+  const { bind, tip } = useHoldTip(
+    owned && def ? (
+      <GearTip defId={owned.defId} enhanceLevel={owned.enhanceLevel} substats={owned.substats} />
+    ) : null,
+  );
+
+  return (
+    <div>
+      <button
+        type="button"
+        className={[styles.gearSlot, def ? '' : styles.gearEmpty, locked ? styles.gearLocked : '']
+          .filter(Boolean)
+          .join(' ')}
+        style={def ? ({ '--tile': gearRarityColor(def.rarity) } as CSSProperties) : undefined}
+        disabled={locked}
+        onClick={onPick}
+        {...bind}
+        aria-label={
+          locked
+            ? `${slot.name} slot, unlocks at ${slot.unlockStars} stars`
+            : def
+              ? `${def.name}, tap to change`
+              : `Empty ${slot.name} slot`
+        }
+      >
+        {locked ? <Icon name="ui.lock" size={22} /> : <GearSlotIcon slot={slot.id} size={30} />}
+      </button>
+      <span className={styles.gearSlotLabel}>{locked ? `${slot.unlockStars}★` : slot.name}</span>
+      {tip}
+    </div>
+  );
+}
+
 function GearPicker({
   cardUid,
   slot,
@@ -539,21 +599,15 @@ function GearPicker({
             const holder = holderOf(owned.uid);
             return (
               <div key={owned.uid} className={styles.inventoryRow}>
-                <button
-                  type="button"
-                  className={styles.gearSlot}
-                  style={
-                    {
-                      '--tile': gearRarityColor(def.rarity),
-                      width: 44,
-                      height: 44,
-                    } as CSSProperties
+                <InventoryTile
+                  owned={owned}
+                  holderName={
+                    holder && holder.uid !== cardUid
+                      ? (CONTENT.cards.get(holder.defId)?.name ?? undefined)
+                      : undefined
                   }
-                  onClick={() => setInspecting(owned.uid)}
-                  aria-label={`Inspect ${def.name}`}
-                >
-                  <GearSlotIcon slot={def.slot} size={24} />
-                </button>
+                  onInspect={() => setInspecting(owned.uid)}
+                />
                 <span className={styles.skillBody}>
                   <span className={styles.inventoryName}>
                     {def.name}

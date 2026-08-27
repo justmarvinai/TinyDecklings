@@ -37,7 +37,14 @@ export interface CardFrameProps {
   fill?: boolean;
   onClick?: () => void;
   ariaLabel?: string;
-  /** Press-and-hold handlers from `useHoldTip`, when this card can be inspected. */
+  /**
+   * Press-and-hold handlers from `useHoldTip`, when this card can be inspected.
+   *
+   * One target, the whole card. The status icons were briefly a second target of
+   * their own; three 14px icons are well under the touch floor (rule 1), the press
+   * was caught by the card underneath anyway, and the card's tip already names every
+   * status with what it does and how long it lasts.
+   */
   bind?: HoldTipBind;
 }
 

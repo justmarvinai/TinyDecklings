@@ -8,6 +8,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **Gear and status tooltips, and a retry on defeat.**
+  - **Gear says what it gives.** A gear tile is one of nine identical slot icons
+    told apart by a rarity colour; the numbers that decide whether to equip it were
+    two taps away on a sheet the player has to leave the card to reach. Holding one
+    — in the equipment grid or in the picker — gives the main stat at its current
+    enhancement, every substat, and who is already wearing it.
+  - **Statuses say what they are doing.** `statusDef` gained an authored
+    `description`, so a status is self-describing data like a skill or a modifier
+    rather than something the UI infers from `tick` and `blocksAction`. A card's tip
+    now names each status with rounds left, stacks, and what it does. Deliberately
+    _not_ behind the 14px status icons: three of them are well under the touch floor
+    (rule 1), and the press was caught by the card underneath anyway.
+  - **Try again, from the defeat sheet.** Losing sent the player back to the map to
+    scroll for the stage they were just on and open it again — three taps to do what
+    they had already decided. It charges energy exactly as entering from the map
+    does, and greys out when that cannot be paid, because a retry is a convenience
+    and not a discount: a free rematch would quietly undo the pacing the energy
+    system exists to set (Q14b).
+
+### Fixed
+
+- 2026-08-27 — A card's tooltip could run off the bottom of the screen when it
+  carried statuses and a full skill ladder. The bubble has a height ceiling now, and
+  a battle card's tip lists skills as ready/cooldown chips — their descriptions are
+  already one hold away on the skill buttons themselves.
+
 - 2026-08-27 — **The installed app opens without a network.** TinyDecklings is
   single-player, offline and local-save, and installs to a home screen — but until
   now that icon needed a network to open, because "the save is local" and "the app

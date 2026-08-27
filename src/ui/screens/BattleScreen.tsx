@@ -13,6 +13,8 @@ import type { RewardBundle } from '@/engine/economy/rewards';
 import { useBattleStore } from '@/state/battleStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { useRunStore } from '@/state/runStore';
+import { useEconomyStore } from '@/state/economyStore';
+import { ENERGY_CONFIG } from '@/content';
 import { useScreenStore } from '@/state/screenStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { Button, IconChip, Modal, StarRow, useHoldTip } from '@/ui/design/primitives';
@@ -70,6 +72,35 @@ export function BattleScreen({ stage }: { stage: number }) {
     return () => battle.clear();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
+
+  /**
+   * Fight it again without walking back to the map.
+   *
+   * Losing sent the player to the map to scroll for the stage they were just on
+   * and open it again — three taps to do the thing they had already decided to do.
+   *
+   * It charges energy exactly as entering from the map does, because that is what
+   * it replaces: a retry is a convenience, not a discount, and a free rematch would
+   * quietly undo the pacing the energy system exists to set (Q14b).
+   */
+  const kind = useRunStore((s) => s.window).find((w) => w.number === stage)?.kind ?? 'battle';
+  const energyCost = ENERGY_CONFIG.costs[kind] ?? 0;
+  // Subscribed to the save, not to `canEnterStage` — the energy the store reports is
+  // derived from it, and a selector that recomputes would re-render forever
+  // (CLAUDE.md). This un-greys the button as energy regenerates under the sheet.
+  const playerSave = usePlayerStore((s) => s.save);
+  const canRetry = useMemo(() => {
+    void playerSave;
+    return useEconomyStore.getState().canEnterStage(kind);
+  }, [playerSave, kind]);
+  const retry = useCallback(() => {
+    if (!useEconomyStore.getState().spendForStage(kind)) return;
+    const setup = buildSetup(stage);
+    if (!setup) return;
+    battle.start(setup);
+    setSelectedSkill(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, stage]);
 
   const centerOf = useCallback((uid: string) => {
     const el = slotRefs.current[uid];
@@ -367,6 +398,9 @@ export function BattleScreen({ stage }: { stage: number }) {
           stars={result.stars}
           rewards={result.rewards}
           onClose={pop}
+          retry={retry}
+          energyCost={energyCost}
+          canRetry={canRetry}
         />
       ) : null}
     </div>
@@ -491,6 +525,11 @@ function InspectableCard({
   onClick?: () => void;
 }) {
   const def = CONTENT.cards.get(card.defId);
+  const active = card.statuses.map((s) => ({
+    id: s.id,
+    remaining: s.remaining,
+    stacks: s.stacks,
+  }));
   const { bind, tip } = useHoldTip(
     <CardTip
       name={card.name}
@@ -501,7 +540,8 @@ function InspectableCard({
       maxHp={card.maxHp}
       speed={card.speed}
       level={card.level}
-      statuses={card.statuses.map((s) => s.id)}
+      statuses={active}
+      compactSkills
       skills={card.skills.map((s) => ({
         skillId: s.skillId,
         cooldownRemaining: s.cooldownRemaining,
@@ -562,11 +602,19 @@ function ResultSheet({
   stars,
   rewards,
   onClose,
+  retry,
+  energyCost,
+  canRetry,
 }: {
   victory: boolean;
   stars: 0 | 1 | 2 | 3;
   rewards: RewardBundle;
   onClose: () => void;
+  /** Restarts the same fight in place. */
+  retry: () => void;
+  /** What another attempt costs, and whether it can be paid for right now. */
+  energyCost: number;
+  canRetry: boolean;
 }) {
   return (
     <Modal title={victory ? 'Victory' : 'Defeat'} onClose={onClose}>
@@ -581,12 +629,34 @@ function ResultSheet({
           <RewardList rewards={rewards} />
         ) : (
           <p className="u-prose">
-            Your cards were beaten back. Nothing was lost — level up, equip what you have found, and
-            try again.
+            Your cards were beaten back. Nothing was lost — level up, equip what you have found, or
+            go straight back in.
           </p>
         )}
 
-        <Button variant="positive" block onClick={onClose}>
+        {victory ? null : (
+          <Button
+            variant="warning"
+            block
+            disabled={!canRetry}
+            onClick={retry}
+            aria-label={
+              canRetry
+                ? `Try again for ${energyCost} energy`
+                : `Not enough energy to try again — it costs ${energyCost}`
+            }
+          >
+            <span className={styles.retryLabel}>
+              Try again
+              <span className={styles.retryCost}>
+                <IconChip name="currency.energy" size={18} />
+                {energyCost}
+              </span>
+            </span>
+          </Button>
+        )}
+
+        <Button variant={victory ? 'positive' : 'neutral'} block onClick={onClose}>
           {victory ? 'Continue' : 'Back to map'}
         </Button>
       </div>

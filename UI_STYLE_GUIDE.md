@@ -121,6 +121,10 @@ Touch has no hover, so information that a desktop game puts in a tooltip has now
 - **The numbers that decide a decision are on the face.** Every card — battlefield and collection alike — carries strength bottom-left and an attack pill bottom-right: the attack-type icon saying where it stands, and the damage in `--number-damage` saying how hard it hits. Same two facts, same two places, both screens.
 - **Everything else is a press away.** `useHoldTip` shows a styled bubble after a ~320ms press: cards give full stats and their skill list, skill buttons give what the spell does, stage modifiers and element affinities give the sentence that was already authored for them. A hold never also fires the tap underneath, and releasing closes it, so it costs nothing and can never be mistaken for an action.
 
+A hold covers cards (stats, statuses and skills), skill buttons, stage modifiers, element affinity, and gear — a gear tile is one of nine identical slot icons, so what the piece gives was two taps away on a sheet the player has to leave the card to reach. Statuses are named and explained inside the card's own tip rather than behind their 14px icons, which are well under the touch floor.
+
+The bubble has a hard height ceiling and never scrolls: it closes when the finger lifts, so anything past the fold is simply unreadable. What goes in one has to fit in one — which is why a battle card's tip lists skills as ready/cooldown chips and leaves the descriptions to each skill's own button.
+
 Text selection is off everywhere (`user-select: none`) except inputs and `.u-selectable` — a long press is a game gesture, and the platform's copy callout over the board is not.
 
 ## 4. Typography

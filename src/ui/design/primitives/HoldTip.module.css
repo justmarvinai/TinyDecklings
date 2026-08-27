@@ -9,6 +9,13 @@
   position: fixed;
   z-index: var(--z-modal);
   max-width: min(300px, calc(100vw - 16px));
+  /*
+   * A ceiling, not a scroller: the bubble closes when the finger lifts, so it can
+   * never be scrolled and anything past the fold would simply be unreadable. What
+   * goes in one has to fit in one.
+   */
+  max-height: calc(100dvh - 16px);
+  overflow: hidden;
   padding: var(--space-2) var(--space-3);
   border: var(--outline-width) solid var(--outline-dark);
   border-radius: var(--radius-panel);
