@@ -6,7 +6,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ## [Unreleased]
 
+### Changed
+
+- 2026-08-27 — **The palette, rebuilt from the reference screenshots.** The game was a
+  dark maroon app wearing the reference's shapes; the reference is not a dark game.
+  Colours are now *sampled* out of `assets/examples/` rather than approximated:
+  - **Every screen stands on its own bright, saturated ground** — cyan ocean for the
+    map (`Map.png`), rust for the collection (`Decks.png`), magenta for summoning
+    (`Card_Summon.png`), blue for the shop, profile, more and settings (`Shop.png`,
+    `Player_Profile_Page.png`). The battle arena is the single deliberate exception: a
+    lava-lit crimson, because the cards must be the brightest thing in it. A screen
+    picks a **ground triple** and composes `.u-ground`.
+  - **The purple title band is on every screen now** (`#8A2DEE`), edge to edge, as in
+    every reference shot. The map spends it on the region name rather than the word
+    "MAP" — it has somewhere to be. Shop, settings, profile and more were restructured
+    so the band stays put while the content scrolls under it.
+  - **Accents are sampled off the reference's own buttons** and are much louder: green
+    `#00DB00`, blue `#0083FF`, yellow `#FFC700`, magenta `#F215EA`, red `#F5231A`.
+    Stars are the reference's lemon `#F5EC00`, with unearned ones outlined so they read
+    on any ground. Stage medallions wear the reference's periwinkle ring `#DCD8FF`, and
+    a locked stage now dims only its portrait — dimming whole medallions had put a grey
+    wash over most of the road.
+  - **Panels are neutral grey** (`#303030`), untinted: on a coloured ground a tinted
+    panel reads as a smudge. New `--surface-inset` for tiles pressed *into* the ground,
+    which comes out navy on blue and deep rust on the collection.
+
+  `UI_STYLE_GUIDE.md` §2–3 rewritten with the sampled values and where each came from.
+
 ### Fixed
+
+- 2026-08-27 — **A ground defined as a token silently ignored every screen that set
+  one.** `--ground-wash` held the gradient formula on `:root`, and a custom property
+  containing `var()` has those references resolved *where it is declared* — so every
+  screen inherited the already-substituted default and came out rust no matter which
+  triple it chose. The formula is a class (`.u-ground`) now, which resolves on the
+  element that uses it. Screen glow overlays also moved behind the content
+  (`z-index: -1`); as absolutely-positioned pseudo-elements they had been painting
+  over every in-flow child and tinting whole screens.
 
 - 2026-08-27 — **A bare strip below the tab bar on an installed home-screen app.**
   The shell was sized with `height: 100%`, which resolves against the layout viewport
@@ -19,7 +55,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   Beat 2 rings stage 1 and says "tap stage 1", but stage 1 is the last node on the
   road: the map runs out of scroll with it still low on the screen, under a card
   anchored to the bottom. The card now takes whichever half of the screen its target
-  is *not* in — decided once per beat from the measured anchor, so it cannot flip
+  is _not_ in — decided once per beat from the measured anchor, so it cannot flip
   sides mid-sentence — and `coachPlacement()` in `beats.ts` carries the rule with
   tests. Also: only the card's buttons take taps now (the header row spanned the full
   width and was live), and the card's clearance is derived from the tab-bar and

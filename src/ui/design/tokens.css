@@ -5,61 +5,140 @@
  */
 
 :root {
-  /* ---------------------------------------------------------------- chrome */
-  --bg-app: #3b0f12;
-  --bg-app-deep: #24090c;
-  --bg-app-warm: #571d18;
-  --bg-hud: #141417;
-  --surface-panel: #221f26;
-  --surface-panel-raised: #2c2833;
-  --surface-pill: #0f0f12;
-  --surface-slot: #3a3740;
-  --surface-slot-deep: #2a2831;
+  /* ---------------------------------------------------------------- chrome
+   * Every colour below is sampled from assets/examples/ (UI_STYLE_GUIDE.md).
+   *
+   * The reference is not a dark game. Each screen stands on its own bright,
+   * saturated ground — rust for the collection, cyan ocean for the map, magenta
+   * for summoning, blue for the shop — and the only dark surfaces are the small
+   * inset pills and tiles that sit ON that ground for contrast. Build a screen by
+   * choosing a ground triple, never by tinting everything one shade of dark.
+   */
+
+  /* The HUD strip and tab bar are near-black in every reference shot. */
+  --bg-hud: #101014;
+
+  /* --------------------------------------------------------------- grounds --
+   * lit  = top of the gradient, deep = bottom. A screen sets --ground-lit /
+   * --ground / --ground-deep once and the shared formula does the rest.
+   */
+
+  /* Ember — the collection and the screens that hang off it (Decks.png). */
+  --ground-ember-lit: #d4552c;
+  --ground-ember: #b8402c;
+  --ground-ember-deep: #892d26;
+
+  /* Arcane — summoning (Card_Summon.png). */
+  --ground-arcane-lit: #a4147a;
+  --ground-arcane: #6f0a58;
+  --ground-arcane-deep: #3d0338;
+
+  /* Azure — shop, profile, settings (Shop.png, Player_Profile_Page.png). */
+  --ground-azure-lit: #2b8bff;
+  --ground-azure: #0b63dd;
+  --ground-azure-deep: #0345ad;
+
+  /* Crimson — the battle arena, the one place the reference does go dark. */
+  --ground-crimson-lit: #a3040f;
+  --ground-crimson: #6b0210;
+  --ground-crimson-deep: #35000b;
+
+  /* Biomes, for the map (Map.png ocean, and its volcanic and jungle cousins). */
+  --ground-isles-lit: #4dfbff;
+  --ground-isles: #00c2ee;
+  --ground-isles-deep: #0079c6;
+  --ground-ashfall-lit: #ff8a24;
+  --ground-ashfall: #d43f10;
+  --ground-ashfall-deep: #7a1a0b;
+  --ground-verdant-lit: #6ee13f;
+  --ground-verdant: #14a04a;
+  --ground-verdant-deep: #086134;
+
+  /* Default ground, until a screen picks one. */
+  --ground-lit: var(--ground-ember-lit);
+  --ground: var(--ground-ember);
+  --ground-deep: var(--ground-ember-deep);
+
+  /*
+   * How a ground is *painted* is `.u-ground` in global.css, deliberately a class
+   * and not a token: a custom property containing var() resolves those references
+   * where it is declared, so a wash defined here would bake in this default and
+   * every screen would come out ember no matter which triple it set.
+   */
+
+  /* -------------------------------------------------------------- surfaces --
+   * Neutral grey, deliberately untinted: on a coloured ground a tinted panel
+   * reads as a smudge, where the reference's flat grey reads as a card laid on
+   * top of it.
+   */
+  --surface-panel: #303030;
+  --surface-panel-raised: #3d3d3d;
+  --surface-pill: #0d0d10;
+  --surface-slot: #5d5d5d;
+  --surface-slot-deep: #414141;
+  /*
+   * A tile pressed into the ground rather than laid on it: translucent black, so
+   * it comes out navy on the blue screens and deep rust on the collection, the way
+   * the reference's stat tiles are always a darker shade of their own screen.
+   */
+  --surface-inset: rgb(0 0 0 / 0.3);
   --outline-dark: #0a0a0c;
 
   --text-primary: #ffffff;
-  --text-secondary: #b9b4c2;
-  --text-muted: #7d7789;
-  --text-on-light: #1a1520;
+  /* Prose sits straight on a bright ground on several screens, so "secondary"
+     has to stay legible there rather than only inside a dark panel. */
+  --text-secondary: #e8e8ea;
+  --text-muted: #a0a0a0;
+  --text-on-light: #16121c;
 
-  /* ------------------------------------------------------- brand & feedback */
-  --accent-header: #8a2bd9;
-  --accent-header-bright: #a93bff;
-  --accent-positive: #3dc81e;
-  --accent-positive-bright: #57e838;
-  --accent-info: #2e9bf0;
-  --accent-info-bright: #4fb4ff;
-  --accent-warning: #ffc21c;
-  --accent-warning-bright: #ffd75c;
-  --accent-danger: #e8281e;
-  --accent-danger-bright: #ff4a3d;
-  --accent-xp: #5fe01d;
-  --badge-notify: #ff2d1f;
+  /* ------------------------------------------------------- brand & feedback
+   * Sampled straight off the reference buttons. These are meant to be loud:
+   * a muted green here is the difference between the reference and a generic
+   * dark mobile app.
+   */
+  --accent-header: #8a2dee;
+  --accent-header-bright: #a72cff;
+  --accent-positive: #00db00;
+  --accent-positive-bright: #4bff2e;
+  --accent-info: #0083ff;
+  --accent-info-bright: #45b0ff;
+  --accent-warning: #ffc700;
+  --accent-warning-bright: #ffe04d;
+  --accent-danger: #f5231a;
+  --accent-danger-bright: #ff5a4d;
+  --accent-xp: #6bff1f;
+  --badge-notify: #ff2216;
+
+  /* The light periwinkle ring around every stage medallion (Map.png). */
+  --medallion-ring: #dcd8ff;
+  /* Earned stars are a lemon yellow, brighter than the gold used for currency. */
+  --star-gold: #f5ec00;
+  --star-blank: #3f3f4a;
 
   --number-damage: #ff5347;
-  --number-heal: #5fe01d;
-  --number-gold: #ffc21c;
+  --number-heal: #6bff1f;
+  --number-gold: #ffc700;
 
   /* -------------------------------------------- CARD rarity (frames) --------
    * Cards and Gear have deliberately separate rarity systems (owner directive).
    * These tokens are for card frames ONLY — never reuse them for gear.
    */
-  --rarity-card-common: #9aa0a8;
-  --rarity-card-uncommon: #4fbf3a;
-  --rarity-card-rare: #3d9bea;
-  --rarity-card-epic: #e93cac;
-  --rarity-card-legendary: #ffb300;
-  --rarity-card-legendary-glow: #ffd970;
+  --rarity-card-common: #b3bcc6;
+  --rarity-card-uncommon: #3fd21f;
+  --rarity-card-rare: #21a7ff;
+  --rarity-card-epic: #f215ea;
+  --rarity-card-legendary: #ffab00;
+  --rarity-card-legendary-glow: #ffe27a;
 
   /* ------------------------------------- GEAR rarity (tile backgrounds) -----
    * Gear ONLY. Six tiers vs the cards' five keeps the two systems unmistakable.
    */
-  --rarity-gear-worn: #8e8e96;
-  --rarity-gear-sturdy: #59b84c;
-  --rarity-gear-refined: #3e8fe0;
-  --rarity-gear-ornate: #d84bc0;
-  --rarity-gear-exalted: #f08a1d;
-  --rarity-gear-mythic: #e23327;
+  --rarity-gear-worn: #9d9da6;
+  --rarity-gear-sturdy: #37c23f;
+  --rarity-gear-refined: #2b8bf5;
+  --rarity-gear-ornate: #e043d0;
+  --rarity-gear-exalted: #ff9412;
+  --rarity-gear-mythic: #f5231a;
 
   /* ------------------------------------------------------------ typography */
   --font-display: 'Saira', 'Saira Fallback', system-ui, sans-serif;

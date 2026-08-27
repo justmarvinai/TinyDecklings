@@ -5,13 +5,17 @@
   line-height: 0;
 }
 
+/*
+ * Stars sit straight on the ground — cyan ocean, rust, blue — so an unearned one
+ * needs its own dark outline rather than relying on contrast with what is behind.
+ */
 .star {
-  color: var(--star-empty, var(--surface-slot));
-  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.6));
+  color: var(--star-empty, var(--star-blank));
+  filter: drop-shadow(0 0 1px var(--outline-dark)) drop-shadow(0 2px 0 rgb(0 0 0 / 0.6));
 }
 
 .filled {
-  color: var(--star-filled, var(--accent-warning));
+  color: var(--star-filled, var(--star-gold));
 }
 
 /* Ascension stars on the card sheet are magenta, not the gold used elsewhere. */

@@ -1,4 +1,20 @@
 .screen {
+  composes: u-ground from global;
+
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  /* Everything about the player, on the blue of Player_Profile_Page.png. */
+  --ground-lit: var(--ground-azure-lit);
+  --ground: var(--ground-azure);
+  --ground-deep: var(--ground-azure-deep);
+}
+
+/* The band runs edge to edge, as it does in every reference screen; only the
+   contents below it are inset. */
+.body {
   flex: 1;
   min-height: 0;
   display: flex;

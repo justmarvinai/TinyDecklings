@@ -33,55 +33,82 @@ Two groups, one language:
 
 ## 2. Mood
 
-Saturated, chunky, toy-like, confident. Everything looks **pressable**: thick outlines, bevel highlights, hard drop shadows, springy motion. Dark warm backdrops make rarity colors and numbers glow. Density is high but organized by strong grouping and heavy type.
+Saturated, chunky, toy-like, confident. Everything looks **pressable**: thick outlines, bevel highlights, hard drop shadows, springy motion. Density is high but organized by strong grouping and heavy type.
+
+**The reference is not a dark game, and neither is this one.** Every screen stands on its own bright, saturated ground — cyan ocean for the map, rust for the collection, magenta for summoning, blue for the shop and the profile. The only dark surfaces are the HUD strip, the tab bar, and the small inset pills and tiles that sit ON that ground for contrast. The battle arena is the single deliberate exception: a deep crimson, lit from the floor, because the cards have to be the brightest thing in it.
+
+Build a screen by choosing a **ground triple** and composing `.u-ground`; never by tinting everything one shade of dark. Where a tile needs to sit _into_ the ground rather than on it, use `--surface-inset` (translucent black), which comes out navy on blue and deep rust on the collection — the way the reference's stat tiles are always a darker shade of their own screen.
 
 ## 3. Color tokens
 
-### 3.1 Chrome & surfaces
+### 3.1 Grounds — one per screen
 
-| Token              | Approx                        | Use                                                 |
-| ------------------ | ----------------------------- | --------------------------------------------------- |
-| `--bg-app`         | `#3B0F12` → `#571D18` texture | Warm dark maroon app backdrop (portrait refs)       |
-| `--bg-hud`         | `#141417` (≈95% opaque)       | Top HUD bar, battle counters                        |
-| `--surface-panel`  | `#221F26`                     | Panels, sheets                                      |
-| `--surface-pill`   | `#0F0F12`                     | Stat/name pills, counters                           |
-| `--surface-slot`   | `#3A3740`                     | Empty slots, disabled tiles                         |
-| `--outline-dark`   | `#0A0A0C`                     | Universal 2–3px component outline                   |
-| `--text-primary`   | `#FFFFFF`                     | Primary text (always outlined/shadowed on busy art) |
-| `--text-secondary` | `#B9B4C2`                     | Secondary/labels                                    |
+Sampled from the reference screenshots. A screen sets the three and composes `.u-ground` (a class, not a token: a custom property containing `var()` resolves those where it is _declared_, so a wash token would freeze in the default).
+
+| Ground  | lit / mid / deep              | Screens                         | Sampled from             |
+| ------- | ----------------------------- | ------------------------------- | ------------------------ |
+| Ember   | `#D4552C` `#B8402C` `#892D26` | Collection, decks, kitchen sink | `Decks.png`              |
+| Isles   | `#4DFBFF` `#00C2EE` `#0079C6` | Map — Sunken Isles              | `Map.png` ocean          |
+| Ashfall | `#FF8A24` `#D43F10` `#7A1A0B` | Map — Ashfall                   | `Map.png` volcanoes      |
+| Verdant | `#6EE13F` `#14A04A` `#086134` | Map — Verdant                   | `Map.png` islands        |
+| Arcane  | `#A4147A` `#6F0A58` `#3D0338` | Summon                          | `Card_Summon.png`        |
+| Azure   | `#2B8BFF` `#0B63DD` `#0345AD` | Shop, profile, more, settings   | `Shop.png`, profile page |
+| Crimson | `#A3040F` `#6B0210` `#35000B` | Battle arena                    | `Battle.png`             |
+
+### 3.1b Chrome & surfaces
+
+| Token              | Approx             | Use                                                  |
+| ------------------ | ------------------ | ---------------------------------------------------- |
+| `--bg-hud`         | `#101014`          | Top HUD bar, tab bar, battle counters                |
+| `--surface-panel`  | `#303030`          | Panels, sheets — neutral grey, deliberately untinted |
+| `--surface-pill`   | `#0D0D10`          | Stat/name pills, counters, map labels                |
+| `--surface-slot`   | `#5D5D5D`          | Empty slots, disabled tiles                          |
+| `--surface-inset`  | `rgb(0 0 0 / 0.3)` | A tile pressed _into_ the ground (stat grids)        |
+| `--outline-dark`   | `#0A0A0C`          | Universal 2–3px component outline                    |
+| `--medallion-ring` | `#DCD8FF`          | The periwinkle ring on every stage medallion         |
+| `--text-primary`   | `#FFFFFF`          | Primary text (always outlined/shadowed on busy art)  |
+| `--text-secondary` | `#D8D8D8`          | Secondary/labels                                     |
+
+A tinted panel reads as a smudge on a coloured ground; the reference's flat grey reads as a card laid on top of it. Keep panels neutral.
 
 ### 3.2 Brand & feedback
 
-| Token               | Approx                            | Use                                                       |
-| ------------------- | --------------------------------- | --------------------------------------------------------- |
-| `--accent-header`   | `#8A2BD9` / gradient to `#A93BFF` | Title banners, back button, modal headers                 |
-| `--accent-positive` | `#3DC81E`                         | Primary CTAs (LEVEL UP, SUMMON), ON state, healed numbers |
-| `--accent-info`     | `#2E9BF0`                         | Secondary CTAs (AUTO EQUIP), links                        |
-| `--accent-warning`  | `#FFC21C`                         | EQUIP, highlights, active tab, star gold                  |
-| `--accent-danger`   | `#E8281E`                         | Close X, OFF state, damage numbers, alerts                |
-| `--accent-xp`       | `#5FE01D`                         | XP/progress fills                                         |
-| `--badge-notify`    | `#FF2D1F`                         | Notification dots (with white count)                      |
+Sampled off the reference's own buttons. These are meant to be loud — a muted green here is the difference between the reference and a generic dark mobile app.
+
+| Token               | Approx                            | Use                                                        |
+| ------------------- | --------------------------------- | ---------------------------------------------------------- |
+| `--accent-header`   | `#8A2DEE` / gradient to `#A72CFF` | The purple title band, back button, modal headers          |
+| `--accent-positive` | `#00DB00`                         | Primary CTAs (LEVEL UP, SUMMON), ON state, healed numbers  |
+| `--accent-info`     | `#0083FF`                         | Secondary CTAs (AUTO EQUIP), skills, links                 |
+| `--accent-warning`  | `#FFC700`                         | EQUIP, highlights, active tab                              |
+| `--accent-danger`   | `#F5231A`                         | Close X, OFF state, damage numbers, alerts                 |
+| `--accent-xp`       | `#6BFF1F`                         | XP/progress fills                                          |
+| `--star-gold`       | `#F5EC00`                         | Earned stars — a lemon yellow, brighter than currency gold |
+| `--star-blank`      | `#3F3F4A`                         | Unearned stars, with their own dark outline                |
+| `--badge-notify`    | `#FF2216`                         | Notification dots (with white count)                       |
+
+**Every screen wears the purple band** under the HUD carrying an outlined all-caps title (`TitleBanner`), edge to edge. The map spends it on the region name instead of the word "MAP" — it has somewhere to be.
 
 ### 3.3 Card rarity (frames) — **cards only**
 
 | Rarity    | Token                     | Approx                                           |
 | --------- | ------------------------- | ------------------------------------------------ |
-| Common    | `--rarity-card-common`    | `#9AA0A8` gray                                   |
-| Uncommon  | `--rarity-card-uncommon`  | `#4FBF3A` green                                  |
-| Rare      | `--rarity-card-rare`      | `#3D9BEA` blue                                   |
-| Epic      | `--rarity-card-epic`      | `#E93CAC` magenta                                |
-| Legendary | `--rarity-card-legendary` | `#FFB300` gold + glow, orange "LEGENDARY" banner |
+| Common    | `--rarity-card-common`    | `#B3BCC6` gray                                   |
+| Uncommon  | `--rarity-card-uncommon`  | `#3FD21F` green                                  |
+| Rare      | `--rarity-card-rare`      | `#21A7FF` blue                                   |
+| Epic      | `--rarity-card-epic`      | `#F215EA` magenta                                |
+| Legendary | `--rarity-card-legendary` | `#FFAB00` gold + glow, orange "LEGENDARY" banner |
 
 ### 3.4 Gear rarity (tile backgrounds) — **gear only, never reuse card tokens**
 
 | Gear rarity | Token                   | Approx    |
 | ----------- | ----------------------- | --------- |
-| Worn        | `--rarity-gear-worn`    | `#8E8E96` |
-| Sturdy      | `--rarity-gear-sturdy`  | `#59B84C` |
-| Refined     | `--rarity-gear-refined` | `#3E8FE0` |
-| Ornate      | `--rarity-gear-ornate`  | `#D84BC0` |
-| Exalted     | `--rarity-gear-exalted` | `#F08A1D` |
-| Mythic      | `--rarity-gear-mythic`  | `#E23327` |
+| Worn        | `--rarity-gear-worn`    | `#9D9DA6` |
+| Sturdy      | `--rarity-gear-sturdy`  | `#37C23F` |
+| Refined     | `--rarity-gear-refined` | `#2B8BF5` |
+| Ornate      | `--rarity-gear-ornate`  | `#E043D0` |
+| Exalted     | `--rarity-gear-exalted` | `#FF9412` |
+| Mythic      | `--rarity-gear-mythic`  | `#F5231A` |
 
 Two systems must be tellable apart at a glance: **cards carry rarity on the frame**, **gear carries rarity as tile background** behind the fixed slot icon.
 

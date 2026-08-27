@@ -5,6 +5,22 @@
  * heavier card treatments used where the player acts.
  */
 .screen {
+  composes: u-ground from global;
+
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  /* The record, on the blue of Player_Profile_Page.png. */
+  --ground-lit: var(--ground-azure-lit);
+  --ground: var(--ground-azure);
+  --ground-deep: var(--ground-azure-deep);
+}
+
+/* The band runs edge to edge, as it does in every reference screen; only the
+   contents below it are inset. */
+.body {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -141,7 +157,7 @@
   padding: var(--space-2) var(--space-1);
   border: var(--outline-width-thin) solid var(--outline-dark);
   border-radius: var(--radius-tile);
-  background: var(--surface-slot);
+  background: var(--surface-inset);
   text-align: center;
 }
 

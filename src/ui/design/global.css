@@ -131,3 +131,21 @@ p {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
 }
+
+/**
+ * The screen ground.
+ *
+ * A screen sets --ground-lit / --ground / --ground-deep and composes this; the
+ * light from the top-left is then the same on every surface, which is what makes
+ * five different hues read as one game.
+ *
+ * It is a class rather than a `--ground-wash` token on purpose. A custom property
+ * whose value contains var() has those references resolved *where it is declared*,
+ * so a token version would freeze in :root's default and silently ignore whatever
+ * triple the screen set. A class resolves them on the element that uses it.
+ */
+.u-ground {
+  background:
+    radial-gradient(circle at 22% 4%, rgb(255 255 255 / 0.16), transparent 58%),
+    linear-gradient(180deg, var(--ground-lit), var(--ground) 45%, var(--ground-deep));
+}

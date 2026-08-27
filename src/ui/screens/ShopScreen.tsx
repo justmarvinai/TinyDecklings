@@ -4,6 +4,7 @@ import type { CurrencyId, RewardDef, ShopOfferDef } from '@/content/schemas';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { Button, IconChip } from '@/ui/design/primitives';
+import { TitleBanner } from '@/ui/design/primitives';
 import { useSfx } from '@/ui/audio/audioContext';
 import { currencyLabel } from '@/ui/text/labels';
 import styles from './ShopScreen.module.css';
@@ -59,35 +60,38 @@ export function ShopScreen() {
   };
 
   return (
-    <div className={`${styles.screen} u-scroll-y`}>
-      <h2 className={styles.sectionTitle}>Always stocked</h2>
-      <div className={styles.grid}>
-        {permanent.map((offer) => (
-          <OfferCard
-            key={offer.id}
-            offer={offer}
-            bought={flash === offer.id}
-            onBuy={() => buy(offer)}
-          />
-        ))}
-      </div>
+    <div className={styles.screen}>
+      <TitleBanner title="Shop" />
+      <div className={`${styles.scroll} u-scroll-y`}>
+        <h2 className={styles.sectionTitle}>Always stocked</h2>
+        <div className={styles.grid}>
+          {permanent.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              bought={flash === offer.id}
+              onBuy={() => buy(offer)}
+            />
+          ))}
+        </div>
 
-      <h2 className={styles.sectionTitle}>Today&rsquo;s deals</h2>
-      <div className={styles.grid}>
-        {daily.map((offer) => (
-          <OfferCard
-            key={offer.id}
-            offer={offer}
-            bought={flash === offer.id}
-            onBuy={() => buy(offer)}
-          />
-        ))}
-      </div>
+        <h2 className={styles.sectionTitle}>Today&rsquo;s deals</h2>
+        <div className={styles.grid}>
+          {daily.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              bought={flash === offer.id}
+              onBuy={() => buy(offer)}
+            />
+          ))}
+        </div>
 
-      <p className={styles.note}>
-        Everything here is bought with gold and gems you earn by playing. TinyDecklings has no
-        real-money purchases.
-      </p>
+        <p className={styles.note}>
+          Everything here is bought with gold and gems you earn by playing. TinyDecklings has no
+          real-money purchases.
+        </p>
+      </div>
     </div>
   );
 }
