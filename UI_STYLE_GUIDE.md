@@ -118,7 +118,8 @@ Two systems must be tellable apart at a glance: **cards carry rarity on the fram
 
 Touch has no hover, so information that a desktop game puts in a tooltip has nowhere to live. Two rules keep it reachable:
 
-- **The numbers that decide a decision are on the face.** Every card — battlefield and collection alike — carries strength bottom-left and an attack pill bottom-right: the attack-type icon saying where it stands, and the damage in `--number-damage` saying how hard it hits. Same two facts, same two places, both screens.
+- **The numbers that decide a decision are on the face.** Every card — battlefield and collection alike — carries strength bottom-left and an attack pill bottom-right: the attack-type icon saying where it stands, and the damage in `--number-damage` saying how hard it hits. Same two facts, same two places, both screens. They share one flex row rather than being pinned to opposite corners, because absolutely positioned they eventually collide; and both run through `compactNumber`, because the road never ends and no fixed layout survives an unbounded digit count.
+- **Strength never gives way.** When the row does run out of room the attack pill yields, in this order: the slot icon goes first (once the two numbers together pass ~6 characters, or the card is under 95px — a board card is 108px on a tall phone and 71px on a short one), and only past that does the pill clip. The icon is the one of the three that is said elsewhere — by the row the card stands in, and by the hold-tip in words.
 - **Everything else is a press away.** `useHoldTip` shows a styled bubble after a ~320ms press: cards give full stats and their skill list, skill buttons give what the spell does, stage modifiers and element affinities give the sentence that was already authored for them. A hold never also fires the tap underneath, and releasing closes it, so it costs nothing and can never be mistaken for an action.
 
 A hold covers cards (stats, statuses and skills), skill buttons, stage modifiers, element affinity, and gear — a gear tile is one of nine identical slot icons, so what the piece gives was two taps away on a sheet the player has to leave the card to reach. Statuses are named and explained inside the card's own tip rather than behind their 14px icons, which are well under the touch floor.
@@ -178,7 +179,7 @@ Text selection is off everywhere (`user-select: none`) except inputs and `.u-sel
 
 - Source (placeholder phase): **Open Game Icons** (game-icons.net fork); vendored SVGs, recolorable (white glyph + colored chip bg), semantic manifest keys only (`icon('currency.gold')`).
 - **Gear slot icons are canonical and constant** (owner directive): one icon per slot type used everywhere (inventory, equipment grid, drops, tooltips). Items differ by name/rarity-color/stars only. The manifest exposes `gearSlotIcon(slot)` — there is no per-item icon path.
-- All icons sit in **chips** (rounded square or circle with outline + bevel) rather than floating bare.
+- All icons sit in **chips** (rounded square or circle with outline + bevel) rather than floating bare. Where a chip grows to hold a number beside the icon — the card's attack pill — that pill _is_ the chip: a second bordered plate inside it is a plate within a plate, and its border and padding are width the numbers need.
 - Attribution: keep per-artist CC-BY credits in `CREDITS.md` when vendoring.
 - Owner will later replace icons and per-card art; manifest keys stay stable (see `ARCHITECTURE.md` §6).
 
@@ -186,11 +187,12 @@ Text selection is off everywhere (`user-select: none`) except inputs and `.u-sel
 
 - **Timings:** micro (press, dot) 100–130ms; standard (reveal, tab) 180–250ms; screen transitions 280–350ms; reward ceremonies 600–900ms.
 - **Springs with overshoot** for anything that "arrives" (cards, modals, stars); scale-pop 0.9→1.05→1 on spawn/claim.
-- **Battle reads:** attacker lunges toward target (translate + squash), impact flash + particle burst (canvas layer), floating damage number arcs up and fades, death = desaturate + shatter/fall, deploy = drop-in with dust.
+- **A battle beat is a sequence, not a frame.** The attacker travels the real distance to its target (the strike animation is handed `--dx`/`--dy` measured between the two cards, so it crosses the board rather than nudging in place); a ranged attacker instead fires a trailed projectile along that line. Contact is a hit-stop — the white impact flash holds for ~90ms with everything else paused, which is what makes a hit land — then a shockwave ring, a directional spray of sparks along the blow, knockback and spin on the struck card, screen shake scaled to the damage, and the number arcing up. Death is a spin-fall; deploy is a drop-in.
+- **Beats (`BEAT` in `BattleScreen.tsx`):** strike 520ms, shot 260ms, impact 90ms, damage 240ms, death 520ms, cast 600ms, deploy 380ms, turn 320ms. ×1 is the honest pace of that sequence, not a rushed one; ×2 is 1.7× rather than a literal double, because past that the animation stops being watchable and the toggle becomes a skip button.
 - **Ambient life:** active-turn glow pulse, ready-skill shimmer, legendary frame slow sheen, map current-node bob.
 - **Numbers count up** (gold totals, power) — never snap.
 - Speed toggle (X1/X2) scales battle sequencer timings only, not menu motion.
-- Respect `prefers-reduced-motion`: swap springs/particles for fades (accessibility floor decided — Q28).
+- Respect reduced motion, from either source (Q28): the OS `prefers-reduced-motion` **and** the in-game switch, which stamps `data-motion="reduced"` on the document root so CSS can honour a setting a media query cannot see. Every animation and transition collapses to an instant, the canvas stops throwing particles, rings and projectiles, and the screen never shakes. What survives is the information: the damage number still rises, a struck card still flashes, and a ranged attack still waits out its flight time so the round keeps its shape.
 
 ## 10. Do / Don't
 

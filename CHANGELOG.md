@@ -8,6 +8,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **The battle animates like a fight now.**
+  - **Strikes travel.** An attacker used to nudge in place; it now crosses the real
+    distance to its target — the strike animation is handed `--dx`/`--dy` measured
+    between the two cards — and a ranged attacker fires a trailed projectile along
+    that same line instead. Contact is a hit-stop: the white impact flash holds for
+    ~90ms with everything else frozen, which is the thing that makes a hit feel like
+    it landed rather than like it was drawn.
+  - **Impacts have weight.** A shockwave ring, a directional spray of sparks thrown
+    along the blow, knockback and spin on the struck card, screen shake scaled to
+    the damage (six keyframes with rotation, not three), and a damage number that
+    overshoots and settles. Deaths spin and fall; deployments drop in.
+  - **×1 is a pace, not a rush, and ×2 is 1.7× rather than double.** Beats roughly
+    half again as long as before (strike 520ms, cast 600ms, death 520ms). Past 1.7×
+    the animation stops being watchable and the toggle quietly becomes a skip
+    button, which is not what it is for.
+  - **`compactNumber`** in `ui/text/labels.ts`: strength and attack capped at five
+    characters (`9999`, `12.3K`, `1.4M`). The road never ends, so no fixed layout
+    survives an unbounded digit count.
+
 - 2026-08-27 — **Gear and status tooltips, and a retry on defeat.**
   - **Gear says what it gives.** A gear tile is one of nine identical slot icons
     told apart by a rarity colour; the numbers that decide whether to equip it were
@@ -28,6 +47,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
     system exists to set (Q14b).
 
 ### Fixed
+
+- 2026-08-27 — **The enemy's front row was drawn behind its back row.** Slots 0–2 are
+  the melee rank on both sides, and both boards were laid out top-left to
+  bottom-right — which put the player's front line nearest the divider and the
+  enemy's furthest from it, so the two melee ranks were not facing each other. The
+  enemy's rows render in reverse order now; the fight reads the way it resolves.
+
+- 2026-08-27 — **The damage number sat on top of the strength.** They were pinned to
+  opposite bottom corners, which collides as soon as either number grows. They share
+  a flex row now, so they cannot overlap at any value, and when the row genuinely
+  runs out of room it is the attack pill that yields — first its slot icon (which the
+  card's row on the board and its hold-tip both already say), then, far past any
+  reachable number, the pill itself. Strength never shrinks. Measured across both
+  cards' widths: 108px on a 390×844 phone and 71px on a 360×640 one, where the icon
+  drops out on its own.
+
+- 2026-08-27 — **The in-game reduced-motion switch only calmed the screen shake.**
+  It is a setting, so no media query could see it, and every CSS keyframe and the
+  whole canvas FX layer were listening for `prefers-reduced-motion` alone — which
+  mattered much more once the battle animation got this much louder. The merged
+  preference is stamped on the document root as `data-motion`, so one selector
+  covers the app, and the canvas stops throwing particles, rings and projectiles.
+  The damage number still rises and a ranged attack still waits out its flight, so
+  the round keeps its shape and its information (Q28).
 
 - 2026-08-27 — A card's tooltip could run off the bottom of the screen when it
   carried statuses and a full skill ladder. The bubble has a height ceiling now, and

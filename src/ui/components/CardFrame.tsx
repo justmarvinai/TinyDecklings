@@ -5,7 +5,7 @@ import { effectiveAttack, type BattleCard } from '@/engine/battle';
 import { resolveCardArt } from '@/ui/art/artManifest';
 import { cardRarityColor } from '@/ui/design/rarity';
 import { IconChip, type HoldTipBind } from '@/ui/design/primitives';
-import { attackTypeLabel } from '@/ui/text/labels';
+import { attackTypeLabel, compactNumber } from '@/ui/text/labels';
 import { Icon } from '@/ui/icons/Icon';
 import styles from './CardFrame.module.css';
 
@@ -32,6 +32,14 @@ export interface CardFrameProps {
   acting?: boolean;
   targetable?: boolean;
   dead?: boolean;
+  /**
+   * The white frame of an impact.
+   *
+   * An overlay rather than a CSS filter on the card: a filter would blow out the
+   * rarity outline and the numbers along with the art, and the one thing that has
+   * to stay readable while you are being hit is how much health is left.
+   */
+  flash?: boolean;
   size?: 'small' | 'medium';
   /** Size to the container's height — used on the battlefield. */
   fill?: boolean;
@@ -72,6 +80,7 @@ export function CardFrame({
   dead,
   size = 'medium',
   fill,
+  flash,
   onClick,
   ariaLabel,
   bind,
@@ -79,6 +88,15 @@ export function CardFrame({
   const def = CONTENT.cards.get(defId);
   const ratio = hp !== undefined && maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 1;
   const low = ratio <= 0.3;
+  const attackText = attack !== undefined ? compactNumber(attack) : '';
+  /*
+   * The footer fits about six digits across a board card. Under that the pill keeps
+   * its slot icon; over it the icon is what goes, because the row the card stands in
+   * already says melee or ranged and the hold-tip says it in words — where the two
+   * numbers do not repeat anywhere the player can see mid-swing.
+   */
+  const roomForSlotIcon =
+    attackText.length + (hp !== undefined ? compactNumber(hp).length : 0) <= 6;
 
   const classes = [
     styles.card,
@@ -107,6 +125,8 @@ export function CardFrame({
     >
       <img className={styles.art} src={resolveCardArt(def?.artKey ?? defId)} alt="" />
 
+      {flash ? <span className={styles.flash} aria-hidden="true" /> : null}
+
       {isBoss ? <span className={styles.bossTag}>Boss</span> : null}
 
       {cooldown !== undefined ? (
@@ -134,36 +154,65 @@ export function CardFrame({
 
       {showName && def ? <span className={styles.name}>{def.name}</span> : null}
 
-      {hp !== undefined ? (
-        <>
-          <span
-            className={[styles.hp, 'u-number', low ? styles.hpLow : ''].filter(Boolean).join(' ')}
-          >
-            {hp}
-          </span>
-          <span className={styles.hpBar}>
+      {/*
+        Strength and attack share one row rather than being pinned to opposite
+        corners. Absolutely positioned they collided on a narrow card — a four-digit
+        strength ran straight under the attack pill — and no amount of nudging fixes
+        that for every number the game can produce. A flex row cannot overlap, and
+        `compactNumber` keeps both ends of it inside five characters however far
+        down the endless road the numbers have climbed.
+      */}
+      {hp !== undefined || (def && attack !== undefined) ? (
+        <span className={styles.footer}>
+          {hp !== undefined ? (
             <span
-              className={[styles.hpBarFill, low ? styles.hpBarLow : ''].filter(Boolean).join(' ')}
-              style={{ width: `${ratio * 100}%` }}
-            />
-          </span>
-        </>
+              className={[styles.hp, 'u-number', low ? styles.hpLow : ''].filter(Boolean).join(' ')}
+            >
+              {compactNumber(hp)}
+            </span>
+          ) : (
+            <span />
+          )}
+
+          {def ? (
+            <span
+              className={[styles.type, attack !== undefined ? styles.typeWithAttack : '']
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {/*
+                With a number beside it the pill *is* the chip (UI_STYLE_GUIDE.md
+                §8) — a second bordered plate inside it was a plate within a plate,
+                and its border and padding were the width the strength beside it
+                needed.
+              */}
+              {attack !== undefined && roomForSlotIcon ? (
+                <Icon
+                  name={def.attackType === 'melee' ? 'attackType.melee' : 'attackType.ranged'}
+                  size={size === 'small' ? 14 : 18}
+                  title={attackTypeLabel(def.attackType)}
+                />
+              ) : attack === undefined ? (
+                <IconChip
+                  name={def.attackType === 'melee' ? 'attackType.melee' : 'attackType.ranged'}
+                  size={size === 'small' ? 18 : 24}
+                  title={attackTypeLabel(def.attackType)}
+                />
+              ) : null}
+              {attack !== undefined ? (
+                <span className={`${styles.attackValue} u-number`}>{attackText}</span>
+              ) : null}
+            </span>
+          ) : null}
+        </span>
       ) : null}
 
-      {def ? (
-        <span
-          className={[styles.type, attack !== undefined ? styles.typeWithAttack : '']
-            .filter(Boolean)
-            .join(' ')}
-        >
-          <IconChip
-            name={def.attackType === 'melee' ? 'attackType.melee' : 'attackType.ranged'}
-            size={size === 'small' ? 18 : 24}
-            title={attackTypeLabel(def.attackType)}
+      {hp !== undefined ? (
+        <span className={styles.hpBar}>
+          <span
+            className={[styles.hpBarFill, low ? styles.hpBarLow : ''].filter(Boolean).join(' ')}
+            style={{ width: `${ratio * 100}%` }}
           />
-          {attack !== undefined ? (
-            <span className={`${styles.attackValue} u-number`}>{attack}</span>
-          ) : null}
         </span>
       ) : null}
     </Tag>
@@ -175,12 +224,14 @@ export function BattleCardFrame({
   card,
   acting,
   targetable,
+  flash,
   onClick,
   bind,
 }: {
   card: BattleCard;
   acting?: boolean;
   targetable?: boolean;
+  flash?: boolean;
   onClick?: () => void;
   /** Hold-to-inspect handlers, spread on the frame itself so the whole card is the target. */
   bind?: HoldTipBind;
@@ -206,6 +257,7 @@ export function BattleCardFrame({
       isBoss={card.isBoss}
       acting={acting}
       targetable={targetable}
+      flash={flash}
       dead={!card.alive}
       onClick={onClick}
       bind={bind}

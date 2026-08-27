@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { CONTENT } from '@/content';
 import { ELEMENT_AFFINITY_PERCENT, elementIconKey, type ElementId } from '@/content/schemas';
 import { elementLabel } from '@/ui/text/labels';
 import {
+  BOARD_COLS,
   BOARD_SLOTS,
   effectiveAttack,
   type BattleCard,
@@ -28,7 +29,37 @@ import { useBattleSetupFactory } from './useBattleSetup';
 import styles from './BattleScreen.module.css';
 
 /** How long the UI lingers per event class, before the speed multiplier. */
-const BEAT = { attack: 340, damage: 120, death: 300, skill: 420, turn: 260 } as const;
+/**
+ * How long each beat of the fight is held, at ×1.
+ *
+ * Roughly half again as long as it used to be. A fight that resolves faster than it
+ * can be read is not a fight you are watching, it is a log scrolling past — and the
+ * animation is the game here, not the delay before the next number. Speed is a
+ * setting for people who have seen it; the default should be worth seeing.
+ */
+const BEAT = {
+  /** Wind-up, travel and recovery of a strike. */
+  strike: 520,
+  /** Time a shot spends crossing the board before it lands. */
+  shot: 260,
+  /** The hold at the moment of contact — hit-stop, the thing that gives weight. */
+  impact: 90,
+  /** After the flash: recoil, numbers, sparks. */
+  damage: 240,
+  death: 520,
+  cast: 600,
+  deploy: 380,
+  turn: 320,
+} as const;
+
+/**
+ * What "×2" actually means.
+ *
+ * Not a literal double: at 2.0 the new beats land back where the old ones were and
+ * the work below is wasted. This is a brisker pace for a player who has seen the
+ * animation, not a way to skip it — AUTO is for skipping.
+ */
+const SPEED_FACTOR: Readonly<Record<number, number>> = { 1: 1, 2: 1.7 };
 
 export function BattleScreen({ stage }: { stage: number }) {
   const battle = useBattleStore();
@@ -40,7 +71,23 @@ export function BattleScreen({ stage }: { stage: number }) {
   const fxRef = useRef<BattleFxHandle>(null);
   const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [animating, setAnimating] = useState(false);
-  const [effectOn, setEffectOn] = useState<{ uid: string; kind: 'lunge' | 'hit' } | null>(null);
+  /**
+   * Who is doing what, this instant.
+   *
+   * Four separate pieces of state rather than one, because they genuinely overlap:
+   * a card can be recoiling from one blow while the next attacker is already
+   * winding up, and a death plays over both.
+   */
+  const [strike, setStrike] = useState<{ uid: string; dx: number; dy: number } | null>(null);
+  const [knock, setKnock] = useState<{
+    uid: string;
+    kx: number;
+    ky: number;
+    spin: number;
+  } | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+  const [dying, setDying] = useState<string | null>(null);
+  const [effect, setEffect] = useState<{ uid: string; kind: 'cast' | 'deploy' } | null>(null);
   /** Index of the armed skill, or null when a tap means a basic attack. */
   const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
   const result = useBattleStore((s) => s.result);
@@ -112,76 +159,166 @@ export function BattleScreen({ stage }: { stage: number }) {
   /** Plays the engine's event log as animation, one beat at a time. */
   const playEvents = useCallback(
     async (events: BattleEvent[]) => {
-      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms / speed));
+      const factor = SPEED_FACTOR[speed] ?? 1;
+      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms / factor));
+
+      /** Where a card is on screen, so a strike can aim at the one it is hitting. */
+      const vectorBetween = (fromUid: string, toUid: string) => {
+        const from = centerOf(fromUid);
+        const to = centerOf(toUid);
+        if (!from || !to) return null;
+        return { dx: to.x - from.x, dy: to.y - from.y, from, to };
+      };
 
       for (const event of events) {
         switch (event.kind) {
           case 'attackDeclared': {
-            setEffectOn({ uid: event.actorUid, kind: 'lunge' });
-            await wait(BEAT.attack);
-            setEffectOn(null);
+            const vector = vectorBetween(event.actorUid, event.targetUid);
+            const def = CONTENT.cards.get(state?.cards[event.actorUid]?.defId ?? '');
+            const ranged = def?.attackType === 'ranged';
+
+            if (ranged && vector) {
+              // A shot is fired from a card that stays put: the tell is the
+              // projectile, not the shooter.
+              setEffect({ uid: event.actorUid, kind: 'cast' });
+              sfx('battle.hit');
+              await Promise.all([
+                fxRef.current?.shoot(vector.from, vector.to, '#ffd45e', BEAT.shot / factor) ??
+                  Promise.resolve(),
+                wait(BEAT.shot),
+              ]);
+              setEffect(null);
+              break;
+            }
+
+            // Melee: cross the board and hit it. The distance is measured, so the
+            // card lands on the one it is actually attacking.
+            setStrike(
+              vector
+                ? { uid: event.actorUid, dx: vector.dx * 0.7, dy: vector.dy * 0.7 }
+                : { uid: event.actorUid, dx: 0, dy: 0 },
+            );
+            await wait(BEAT.strike);
+            setStrike(null);
             break;
           }
           case 'skillCast': {
             sfx('battle.skill');
-            setEffectOn({ uid: event.actorUid, kind: 'lunge' });
-            await wait(BEAT.skill);
-            setEffectOn(null);
+            const at = centerOf(event.actorUid);
+            setEffect({ uid: event.actorUid, kind: 'cast' });
+            if (at) {
+              fxRef.current?.shockwave(at.x, at.y, '#a72cff', 1.1);
+              fxRef.current?.burst(at.x, at.y, '#c77dff', 14, 0.9);
+            }
+            await wait(BEAT.cast);
+            setEffect(null);
             break;
           }
           case 'damageDealt': {
             const at = centerOf(event.targetUid);
+            const vector = vectorBetween(event.sourceUid, event.targetUid);
             // "Heavy" is relative to the target: a hit that takes a quarter of what
             // it has left lands differently from a scratch, and should sound and
             // shake like it.
             const target = state?.cards[event.targetUid];
             const heavy = target ? event.amount >= target.maxHp * 0.22 : false;
             sfx(event.amount > 0 ? (heavy ? 'battle.heavyHit' : 'battle.hit') : 'ui.error');
-            if (heavy && event.amount > 0) shake(0.6);
+
+            if (event.amount > 0) {
+              // Hit-stop: everything holds for a beat at contact. It is the single
+              // cheapest thing that makes a blow feel like it connected.
+              setFlash(event.targetUid);
+              if (at) {
+                fxRef.current?.shockwave(
+                  at.x,
+                  at.y,
+                  heavy ? '#ff7a3d' : '#ffb36a',
+                  heavy ? 1.4 : 1,
+                );
+                if (vector) {
+                  fxRef.current?.spray(
+                    at.x,
+                    at.y,
+                    Math.atan2(vector.dy, vector.dx),
+                    '#ff6a4a',
+                    heavy ? 16 : 9,
+                  );
+                }
+                fxRef.current?.burst(at.x, at.y, '#ff6a4a', heavy ? 20 : 11, heavy ? 1.4 : 1);
+              }
+              shake(heavy ? 1 : 0.45);
+              await wait(BEAT.impact);
+              setFlash(null);
+            }
 
             if (at) {
-              fxRef.current?.burst(at.x, at.y, '#ff6a4a', heavy ? 18 : 10);
               if (event.amount > 0) {
                 fxRef.current?.float(at.x, at.y, `-${event.amount}`, '#ff5347', heavy);
               } else if (event.absorbed > 0) {
                 fxRef.current?.float(at.x, at.y, 'BLOCK', '#4fb4ff');
               }
             }
-            setEffectOn({ uid: event.targetUid, kind: 'hit' });
+
+            // Knocked along the blow, so you can see where it came from.
+            const push = heavy ? 16 : 9;
+            const length = vector ? Math.hypot(vector.dx, vector.dy) || 1 : 1;
+            setKnock({
+              uid: event.targetUid,
+              kx: vector ? (vector.dx / length) * push : 0,
+              ky: vector ? (vector.dy / length) * push : push,
+              spin: heavy ? 5 : 2,
+            });
             await wait(BEAT.damage);
-            setEffectOn(null);
+            setKnock(null);
             break;
           }
           case 'healed': {
             const at = centerOf(event.targetUid);
-            if (at && event.amount > 0)
-              fxRef.current?.float(at.x, at.y, `+${event.amount}`, '#5fe01d');
+            if (at && event.amount > 0) {
+              fxRef.current?.float(at.x, at.y, `+${event.amount}`, '#6bff1f');
+              fxRef.current?.shockwave(at.x, at.y, '#6bff1f', 0.8);
+              fxRef.current?.burst(at.x, at.y, '#6bff1f', 10, 0.7);
+            }
             await wait(BEAT.damage);
             break;
           }
           case 'shieldGained': {
             const at = centerOf(event.targetUid);
-            if (at) fxRef.current?.burst(at.x, at.y, '#4fb4ff', 8);
+            if (at) {
+              fxRef.current?.shockwave(at.x, at.y, '#45b0ff', 1);
+              fxRef.current?.burst(at.x, at.y, '#45b0ff', 10, 0.8);
+            }
             break;
           }
           case 'cardDied': {
             const at = centerOf(event.uid);
             sfx('battle.death');
-            shake(0.5);
-            if (at) fxRef.current?.burst(at.x, at.y, '#b9b4c2', 22);
+            shake(0.8);
+            setDying(event.uid);
+            if (at) {
+              fxRef.current?.shockwave(at.x, at.y, '#ffffff', 1.5);
+              fxRef.current?.burst(at.x, at.y, '#d8d8d8', 26, 1.3);
+            }
             await wait(BEAT.death);
+            setDying(null);
             break;
           }
           case 'cardDeployed': {
             const at = centerOf(event.uid);
             sfx('battle.deploy');
-            if (at) fxRef.current?.burst(at.x, at.y, '#ffc21c', 10);
-            await wait(BEAT.turn);
+            setEffect({ uid: event.uid, kind: 'deploy' });
+            if (at) {
+              fxRef.current?.shockwave(at.x, at.y, '#ffc700', 1.1);
+              fxRef.current?.burst(at.x, at.y, '#ffc700', 12, 0.9);
+            }
+            shake(0.3);
+            await wait(BEAT.deploy);
+            setEffect(null);
             break;
           }
           case 'battleEnded': {
             sfx(event.outcome === 'victory' ? 'battle.victory' : 'battle.defeat');
-            if (event.outcome === 'victory') shake(0.35);
+            shake(event.outcome === 'victory' ? 0.6 : 0.9);
             break;
           }
           case 'turnStarted':
@@ -252,12 +389,27 @@ export function BattleScreen({ stage }: { stage: number }) {
     return <div className={styles.screen} />;
   }
 
+  /**
+   * The board in the order it should be drawn.
+   *
+   * Slots 0-2 are the front row for both sides (`FRONT_ROW` in the engine), and the
+   * front row is the one facing the enemy. For the player that is the row nearest
+   * the divider, which is the top of their half — but the enemy's half is mirrored,
+   * so drawing its slots in the same order put its melee line at the *back*, behind
+   * its archers, contradicting the targeting rule the whole fight runs on.
+   *
+   * Only the drawing order flips; a slot still means what it means everywhere else.
+   */
   const bySlot = (side: 'player' | 'enemy') => {
     const slots: (BattleCard | null)[] = Array.from({ length: BOARD_SLOTS }, () => null);
     for (const card of Object.values(state.cards)) {
       if (card.side === side && card.alive && card.slot !== null) slots[card.slot] = card;
     }
-    return slots;
+    const rows: { slot: number; card: BattleCard | null }[][] = [];
+    for (let i = 0; i < BOARD_SLOTS; i += BOARD_COLS) {
+      rows.push(slots.slice(i, i + BOARD_COLS).map((card, n) => ({ slot: i + n, card })));
+    }
+    return (side === 'enemy' ? rows.reverse() : rows).flat();
   };
 
   const armedSkill = selectedSkill !== null ? activeCard?.skills[selectedSkill] : undefined;
@@ -273,31 +425,68 @@ export function BattleScreen({ stage }: { stage: number }) {
     setSelectedSkill(null);
   };
 
+  /** Which of the overlapping animations this card is currently playing. */
+  const cellAnimation = (uid: string): string => {
+    if (dying === uid) return styles.dying;
+    if (strike?.uid === uid) return styles.strike;
+    if (knock?.uid === uid) return styles.recoil;
+    if (effect?.uid === uid) return effect.kind === 'cast' ? styles.cast : styles.deploying;
+    return '';
+  };
+
+  /**
+   * The measured vector the animation moves along, and how long it has.
+   *
+   * Handed to CSS as custom properties so the keyframes stay in the stylesheet and
+   * only the numbers — which depend on where the two cards actually are, and on the
+   * battle speed — come from here.
+   */
+  const cellVector = (uid: string): Record<string, string> | undefined => {
+    const factor = SPEED_FACTOR[speed] ?? 1;
+    if (dying === uid) {
+      return {
+        '--kx': `${knock?.kx ?? 0}px`,
+        '--ky': `${knock?.ky ?? 0}px`,
+        '--death-ms': `${BEAT.death / factor}ms`,
+      };
+    }
+    if (strike?.uid === uid) {
+      return {
+        '--dx': `${strike.dx}px`,
+        '--dy': `${strike.dy}px`,
+        '--strike-ms': `${BEAT.strike / factor}ms`,
+      };
+    }
+    if (knock?.uid === uid) {
+      return {
+        '--kx': `${knock.kx}px`,
+        '--ky': `${knock.ky}px`,
+        '--kr': `${knock.spin}deg`,
+        '--recoil-ms': `${(BEAT.damage + BEAT.impact) / factor}ms`,
+      };
+    }
+    if (effect?.uid === uid && effect.kind === 'cast') {
+      return { '--cast-ms': `${BEAT.cast / factor}ms` };
+    }
+    return undefined;
+  };
+
   const renderSide = (side: 'player' | 'enemy') => (
     <div className={styles.side}>
       <div className={`${styles.grid} ${side === 'player' ? styles.playerGrid : ''}`}>
-        {bySlot(side).map((card, slot) => (
+        {bySlot(side).map(({ card, slot }) => (
           <div
             key={`${side}-${slot}`}
             ref={(el) => {
               if (card) slotRefs.current[card.uid] = el;
             }}
-            className={[
-              styles.cell,
-              card && effectOn?.uid === card.uid
-                ? effectOn.kind === 'hit'
-                  ? styles.hitShake
-                  : side === 'player'
-                    ? styles.lungeUp
-                    : styles.lungeDown
-                : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            className={[styles.cell, card ? cellAnimation(card.uid) : ''].filter(Boolean).join(' ')}
+            style={card ? (cellVector(card.uid) as CSSProperties) : undefined}
           >
             {card ? (
               <InspectableCard
                 card={card}
+                flash={flash === card.uid}
                 acting={card.uid === activeCard?.uid}
                 targetable={legalTargets.includes(card.uid)}
                 onClick={legalTargets.includes(card.uid) ? () => onTarget(card.uid) : undefined}
@@ -517,11 +706,13 @@ function InspectableCard({
   card,
   acting,
   targetable,
+  flash,
   onClick,
 }: {
   card: BattleCard;
   acting: boolean;
   targetable: boolean;
+  flash: boolean;
   onClick?: () => void;
 }) {
   const def = CONTENT.cards.get(card.defId);
@@ -555,6 +746,7 @@ function InspectableCard({
         card={card}
         acting={acting}
         targetable={targetable}
+        flash={flash}
         onClick={onClick}
         bind={bind}
       />

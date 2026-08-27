@@ -4,7 +4,13 @@
  * Rarity lives on the FRAME for cards — gear expresses rarity as a tile background
  * instead, so the two systems never look alike (CLAUDE.md rule 4).
  */
+/*
+ * A container, so the footer can answer "is there room for the slot icon?" from the
+ * card's own width. Board cards are 108px on a tall phone and 71px on a short one —
+ * a rule written for one is wrong on the other.
+ */
 .card {
+  container: card / inline-size;
   position: relative;
   aspect-ratio: 3 / 4;
   width: 100%;
@@ -68,10 +74,24 @@
   pointer-events: none;
 }
 
-.hp {
+/* Strength on the left, attack on the right, in a row that cannot overlap. */
+.footer {
   position: absolute;
-  left: 5px;
-  bottom: 3px;
+  inset: auto 3px 5px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  pointer-events: none;
+}
+
+.hp {
+  /*
+   * Never shrinks. It is the number the whole fight is about, so when the row runs
+   * out of room the attack pill gives way — `compactNumber` has already capped both
+   * at five characters, so it almost never has to.
+   */
+  flex: none;
   font-size: var(--fs-section);
   color: var(--text-primary);
 }
@@ -98,11 +118,16 @@
 }
 
 .type {
-  position: absolute;
-  right: 4px;
-  bottom: 6px;
+  /*
+   * Gives way before the strength does, and clips rather than pushing itself off
+   * the card — the last line of defence behind the two rules that drop the slot
+   * icon first, and one that should almost never be reached.
+   */
+  flex: 0 1 auto;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
+  overflow: hidden;
 }
 
 /*
@@ -111,8 +136,8 @@
  * one element — and the dark plate keeps it legible over any art.
  */
 .typeWithAttack {
-  gap: 3px;
-  padding: 1px 6px 1px 1px;
+  gap: 2px;
+  padding: 1px 4px;
   border: var(--outline-width-thin) solid var(--outline-dark);
   border-radius: var(--radius-pill);
   background: var(--surface-pill);
@@ -120,8 +145,16 @@
 }
 
 .attackValue {
+  flex: none;
   font-size: var(--fs-label);
   color: var(--number-damage);
+}
+
+/* On a short phone the board card is barely 70px wide; the number wins. */
+@container card (max-width: 95px) {
+  .typeWithAttack > svg {
+    display: none;
+  }
 }
 
 /* The rounds-until-skill-ready badge (Q4). */
@@ -274,5 +307,37 @@
   .acting,
   .ready {
     animation: none;
+  }
+}
+
+/**
+ * The impact frame.
+ *
+ * One frame of white over the art at the moment of contact — the oldest trick in
+ * fighting games and still the one that makes a hit read as a hit. It sits under
+ * the numbers and inside the outline, so nothing important is lost while it fires.
+ */
+.flash {
+  position: absolute;
+  inset: 0;
+  background: var(--impact-flash);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: card-flash 180ms var(--ease-out) both;
+}
+
+@keyframes card-flash {
+  0% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+    opacity: 0;
   }
 }

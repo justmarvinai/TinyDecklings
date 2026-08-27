@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { useSettingsStore } from '@/state/settingsStore';
 
 const QUERY = '(prefers-reduced-motion: reduce)';
@@ -31,4 +31,21 @@ export function useReducedMotion(): boolean {
     useCallback(() => false, []),
   );
   return setting || system;
+}
+
+/**
+ * Publishes the reduced-motion preference to CSS.
+ *
+ * `prefers-reduced-motion` covers the player who set it on their phone; the
+ * in-game switch (Q28) had no way to reach a stylesheet, so flipping it calmed the
+ * screen shake and nothing else — every keyframe in the app kept running. Stamping
+ * the merged answer on the document root gives CSS one selector to honour, and
+ * `:root[data-motion='reduced']` sits next to each `@media` block that already
+ * asks the same question.
+ */
+export function useMotionPreference(): void {
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    document.documentElement.dataset.motion = reduced ? 'reduced' : 'full';
+  }, [reduced]);
 }

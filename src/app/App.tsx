@@ -11,6 +11,7 @@ import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { commanderLevel, totalStarsOf } from '@/engine/records/profile';
 import { AudioProvider } from '@/ui/audio/AudioProvider';
+import { useMotionPreference } from '@/ui/fx/useReducedMotion';
 import { OnboardingCoach } from '@/ui/onboarding/OnboardingCoach';
 import { SystemNotices } from '@/ui/components/SystemNotices';
 import { TabBar, type TabBarItem } from '@/ui/components/TabBar';
@@ -98,6 +99,7 @@ export function App() {
   const energy = useEnergyTick();
 
   useBackButton();
+  useMotionPreference();
   useAudioDirector(services.audio);
   useAutosaveLifecycle(services.saves);
   useGameBootstrap(services);

@@ -114,3 +114,38 @@ export function cardRarityLabel(rarity: CardRarity): string {
 export function gearRarityLabel(rarity: GearRarity): string {
   return GEAR_RARITY_LABEL[rarity];
 }
+
+/**
+ * A number sized to fit in a card corner.
+ *
+ * The road never ends (Q11), so strength and attack keep climbing and no fixed
+ * layout survives being handed an unbounded digit count — a five-figure strength
+ * either pushes the attack pill off the card or gets clipped to `7…`, and the
+ * number the whole fight is about is the last one that should go. Capping the
+ * width at five characters keeps both readable forever: exact where exactness is
+ * legible, rounded once it stops being.
+ */
+export function compactNumber(value: number): string {
+  const n = Math.round(value);
+  const sign = n < 0 ? '-' : '';
+  let abs = Math.abs(n);
+  if (abs < 10_000) return `${sign}${abs}`;
+  let tier = 0;
+  // 999.5 rather than 1000, so a number that rounds to four digits climbs a tier
+  // instead of printing "1000K".
+  while (abs >= 999.5 && tier < SUFFIXES.length - 1) {
+    abs /= 1000;
+    tier++;
+  }
+  // Past the last suffix there is nothing left to say but "more than this".
+  if (abs >= 999.5) return `${sign}999${SUFFIXES[tier]}+`;
+  return `${sign}${scaled(abs)}${SUFFIXES[tier]}`;
+}
+
+/** Thousands, millions, billions, trillions — and then the game has other problems. */
+const SUFFIXES = ['', 'K', 'M', 'B', 'T'] as const;
+
+/** One decimal while it still says something, none once it does not. */
+function scaled(value: number): string {
+  return value < 100 ? value.toFixed(1).replace(/\.0$/, '') : String(Math.round(value));
+}

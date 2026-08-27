@@ -174,3 +174,25 @@ p {
     radial-gradient(circle at 22% 4%, rgb(255 255 255 / 0.16), transparent 58%),
     linear-gradient(180deg, var(--ground-lit), var(--ground) 45%, var(--ground-deep));
 }
+
+/*
+ * One switch that actually stops everything.
+ *
+ * Per-component `@media (prefers-reduced-motion: reduce)` blocks name the handful
+ * of animations each file knows about, which is fine until a new keyframe is added
+ * and quietly misses the list. The in-game switch (Q28) gets the blunt version
+ * instead: `App` stamps `data-motion` on the root, and every animation and
+ * transition in the app collapses to an instant. Nothing is hidden — a card still
+ * flashes when struck and a number still rises — it simply arrives rather than
+ * travels.
+ */
+:root[data-motion='reduced'] *,
+:root[data-motion='reduced'] *::before,
+:root[data-motion='reduced'] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
