@@ -18,9 +18,91 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>TinyDecklings</title>
+    <!--
+      The first paint, before any JavaScript arrives.
+
+      Everything on screen is drawn by React, so until the bundle had downloaded and
+      parsed there was nothing to paint at all — measured at ~5.6s of blank screen on
+      slow 3G with a throttled CPU, which reads as a broken app rather than a loading
+      one. This is inline, and inside `#root`, so it costs no request, needs no
+      stylesheet, and is replaced the moment React mounts.
+    -->
+    <style>
+      /*
+       * Hard-coded colours, deliberately: this paints before `tokens.css` exists, so
+       * it cannot use a token. They are the ember ground and the outline the rest of
+       * the app is built from, kept in step by hand — a boot screen in a different
+       * palette to the game is worse than one duplicated value.
+       */
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        background:
+          radial-gradient(circle at 22% 4%, rgb(255 255 255 / 0.16), transparent 58%),
+          linear-gradient(180deg, #d4552c, #b8402c 45%, #892d26);
+        color: #ffffff;
+        font-family:
+          Saira,
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .boot-mark {
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        paint-order: stroke fill;
+        -webkit-text-stroke: 5px #0a0a0c;
+        text-shadow: 0 3px 0 rgb(0 0 0 / 0.55);
+      }
+      .boot-bar {
+        width: 168px;
+        height: 18px;
+        padding: 3px;
+        border: 3px solid #0a0a0c;
+        border-radius: 999px;
+        background: #26262c;
+        box-shadow: 0 3px 0 rgb(0 0 0 / 0.55);
+        overflow: hidden;
+      }
+      .boot-bar span {
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #4bff2e, #00db00);
+        animation: boot-slide 1.25s ease-in-out infinite alternate;
+      }
+      /* Ends flush with each side rather than sliding out, so the bar is never empty. */
+      @keyframes boot-slide {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(150%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-bar span {
+          animation: none;
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot">
+        <div class="boot-mark">TinyDecklings</div>
+        <div class="boot-bar"><span></span></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

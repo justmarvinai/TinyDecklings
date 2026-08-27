@@ -8,6 +8,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **Something on screen while the game loads.** Every pixel here is
+  drawn by React, so `#root` was empty until the bundle had downloaded and parsed —
+  measured at ~5.6s of blank screen on slow 3G with a throttled CPU, which reads as
+  a broken app rather than a loading one. `index.html` now carries a small boot
+  screen inline: the wordmark and a loading bar on the ember ground, in the game's
+  own outline-and-bevel language rather than a browser spinner. It costs no request,
+  waits on no stylesheet, and React replaces it on mount. First paint on slow 3G
+  drops from 5.6s to 2.3s, and on fast 4G from 2.0s to 1.5s. A test guards it,
+  because the app would keep working if it were deleted — it would just look broken
+  for the first few seconds of someone's first visit.
+
 - 2026-08-27 — **The summon screen says what is in the pool.** Its centre was an
   empty field with one sentence in it, on the one screen where the player is
   deciding whether to spend. It now shows each rarity's share with a bar, the
