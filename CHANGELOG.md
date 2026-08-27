@@ -54,6 +54,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
     and not a discount: a free rematch would quietly undo the pacing the energy
     system exists to set (Q14b).
 
+### Changed
+
+- 2026-08-27 — **The battle effects layer costs about half what it did.** A CPU
+  profile of a real fight on the production build (4–6× throttle, roughly a
+  mid-range phone) put the canvas loop at the top of everything the app itself ran:
+  it asked for the drawing context on every frame and read the canvas's position
+  from the DOM on every emit — four times a beat, each one forcing a synchronous
+  layout of a screen that is mid-animation. Both answers only change when the canvas
+  resizes or the page scrolls, so they are computed then instead. Measured across
+  three runs: 627ms → ~350ms of CPU over six seconds of fighting, with the effects
+  landing in the same places.
+
 ### Fixed
 
 - 2026-08-27 — **Escape closed every open sheet at once.** Each modal listened for

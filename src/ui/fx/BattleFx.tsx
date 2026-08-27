@@ -95,6 +95,17 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
   }, [reduced]);
   /* Shots that resolve on a timer instead of flying; cancelled on unmount. */
   const timers = useRef<Set<number>>(new Set());
+  /*
+   * The canvas's context and its position, held rather than asked for.
+   *
+   * `getContext` every frame and `getBoundingClientRect` on every emit were the
+   * layer's biggest cost in a CPU profile of a real fight: a beat fires four emits,
+   * and each rect read forces a synchronous layout of a screen that is mid-animation.
+   * Neither answer changes unless the canvas resizes or the page scrolls, so both
+   * are recomputed then and only then.
+   */
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const box = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const particles = useRef<Particle[]>([]);
   const numbers = useRef<FloatingNumber[]>([]);
   const waves = useRef<Shockwave[]>([]);
@@ -107,21 +118,32 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
     raf.current = requestAnimationFrame(tick);
   }
 
+  /** Re-reads where the canvas is and how big, after a resize or a scroll. */
+  function measure() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    box.current = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(rect.width * dpr);
+    const h = Math.round(rect.height * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+  }
+
   function tick() {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = ctxRef.current ?? canvas?.getContext('2d') ?? null;
     if (!canvas || !ctx) {
       raf.current = null;
       return;
     }
+    ctxRef.current = ctx;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-    }
+    const { width, height } = box.current;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
@@ -240,7 +262,7 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
     burst(x, y, color, count = 12, force = 1) {
       const canvas = canvasRef.current;
       if (!canvas || reducedRef.current) return;
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.current;
       for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
         const speed = (1.8 + Math.random() * 3.4) * force;
@@ -265,7 +287,7 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
     spray(x, y, angle, color, count = 10) {
       const canvas = canvasRef.current;
       if (!canvas || reducedRef.current) return;
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.current;
       for (let i = 0; i < count; i++) {
         // A cone along the blow, not a sphere: a strike throws debris forward.
         const spread = angle + (Math.random() - 0.5) * 1.1;
@@ -288,7 +310,7 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
     shockwave(x, y, color, force = 1) {
       const canvas = canvasRef.current;
       if (!canvas || reducedRef.current) return;
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.current;
       waves.current.push({
         x: x - rect.left,
         y: y - rect.top,
@@ -318,7 +340,7 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
           timers.current.add(id);
         });
       }
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.current;
       const shot: Projectile = {
         x: from.x - rect.left,
         y: from.y - rect.top,
@@ -339,7 +361,7 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
     float(x, y, text, color, big) {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.current;
       numbers.current.push({
         x: x - rect.left,
         y: y - rect.top,
@@ -358,9 +380,21 @@ export function BattleFx({ handleRef }: { handleRef: Ref<BattleFxHandle> }) {
 
   useEffect(() => {
     const pending = timers.current;
+    const canvas = canvasRef.current;
+    measure();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    if (canvas && observer) observer.observe(canvas);
+    // Scrolling moves the canvas without resizing it, so page coordinates handed in
+    // from the DOM would land in the wrong place on the layer.
+    window.addEventListener('scroll', measure, true);
+    window.addEventListener('resize', measure);
     return () => {
       if (raf.current !== null) cancelAnimationFrame(raf.current);
       raf.current = null;
+      observer?.disconnect();
+      window.removeEventListener('scroll', measure, true);
+      window.removeEventListener('resize', measure);
+      ctxRef.current = null;
       for (const id of pending) clearTimeout(id);
       pending.clear();
     };
