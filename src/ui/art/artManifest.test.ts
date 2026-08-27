@@ -5,6 +5,8 @@ import {
   artCoverage,
   cardArtKeys,
   hasFinalArt,
+  mapWallpaper,
+  mapWallpaperKeys,
   resolveCardArt,
 } from './artManifest';
 
@@ -42,5 +44,36 @@ describe('card art', () => {
     // A portrait named `card.embr_drake.png` would sit in the folder doing nothing.
     const keys = new Set(cards.map((c) => c.artKey));
     expect(cardArtKeys().filter((k) => !keys.has(k))).toEqual([]);
+  });
+});
+
+/**
+ * The map-wallpaper drop-in contract.
+ *
+ * A file in `src/ui/art/map/` named after a region's `themeToken` becomes that
+ * biome's backdrop; one named `default` covers every biome without its own. As with
+ * portraits, the mistake worth catching is a name that matches nothing — it lands,
+ * it is inlined, and the map keeps its gradient with no clue why.
+ */
+describe('map wallpaper', () => {
+  const themes = [...new Set([...CONTENT.regions.values()].map((r) => r.themeToken))];
+
+  it('has a theme token for every authored region', () => {
+    expect(themes.length).toBeGreaterThan(0);
+  });
+
+  it('falls back to the shared wallpaper, then to the painted gradient', () => {
+    const unknown = mapWallpaper('theme.not_a_region');
+    if (mapWallpaperKeys().includes('default')) {
+      expect(unknown).toBe(mapWallpaper('default'));
+    } else {
+      expect(unknown).toBeNull();
+    }
+  });
+
+  it('has no wallpaper that belongs to no region', () => {
+    // `theme-isle.jpg` for `theme-isles` would sit in the folder doing nothing.
+    const allowed = new Set([...themes, 'default']);
+    expect(mapWallpaperKeys().filter((k) => !allowed.has(k))).toEqual([]);
   });
 });
