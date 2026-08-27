@@ -130,7 +130,8 @@ export function BattleScreen({ stage }: { stage: number }) {
    * it replaces: a retry is a convenience, not a discount, and a free rematch would
    * quietly undo the pacing the energy system exists to set (Q14b).
    */
-  const kind = useRunStore((s) => s.window).find((w) => w.number === stage)?.kind ?? 'battle';
+  const here = useRunStore((s) => s.window).find((w) => w.number === stage);
+  const kind = here?.kind ?? 'battle';
   const energyCost = ENERGY_CONFIG.costs[kind] ?? 0;
   // Subscribed to the save, not to `canEnterStage` — the energy the store reports is
   // derived from it, and a selector that recomputes would re-render forever
@@ -583,6 +584,7 @@ export function BattleScreen({ stage }: { stage: number }) {
 
       {result ? (
         <ResultSheet
+          title={here?.name ?? `Stage ${stage}`}
           victory={result.outcome === 'victory'}
           stars={result.stars}
           rewards={result.rewards}
@@ -790,6 +792,7 @@ function StageBanner({ stage }: { stage: number }) {
 }
 
 function ResultSheet({
+  title,
   victory,
   stars,
   rewards,
@@ -798,6 +801,15 @@ function ResultSheet({
   energyCost,
   canRetry,
 }: {
+  /**
+   * Which fight this was.
+   *
+   * The banner said "Victory" directly above a "Victory!" in the body — the same
+   * word twice, on the sheet a player sees after every single battle. The stage's
+   * name goes there instead: it says something, and it is short enough for the bar
+   * on a narrow phone, which "Stage 1 · Shallow Reach" was not.
+   */
+  title: string;
   victory: boolean;
   stars: 0 | 1 | 2 | 3;
   rewards: RewardBundle;
@@ -809,7 +821,7 @@ function ResultSheet({
   canRetry: boolean;
 }) {
   return (
-    <Modal title={victory ? 'Victory' : 'Defeat'} onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <div className={styles.resultBody}>
         <h2 className={`${styles.resultTitle} ${victory ? styles.victory : styles.defeat}`}>
           {victory ? 'Victory!' : 'Defeated'}

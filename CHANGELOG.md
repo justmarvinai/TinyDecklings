@@ -106,6 +106,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   slots. Audited across every screen at 390×844 and 360×640: nothing player-facing
   is under the floor.
 
+- 2026-08-27 — The battle result sheet said "Victory" in its banner directly above
+  "Victory!" in its body — the same word twice, on the sheet a player sees after
+  every single fight. The banner carries the stage's name instead, which says
+  something. Titles are held to one line there, so a long one grows the bar and
+  crowds the close button no more.
+
 - 2026-08-27 — Settings toggles left dead rail: the two halves were content-sized
   inside a full-width track, so ON sat in a corner of a mostly empty control. They
   split it evenly now, and battle speed is the same twin control (×1/×2) rather than
