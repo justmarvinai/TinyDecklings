@@ -6,6 +6,7 @@ import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
 import { CARD_RARITY_VAR } from '@/ui/design/rarity';
 import { Button, IconChip, Ribbon, StarRow } from '@/ui/design/primitives';
+import { TitleBanner } from '@/ui/design/primitives';
 import { CardFrame } from '@/ui/components/CardFrame';
 import { useSfx } from '@/ui/audio/audioContext';
 import styles from './SummonScreen.module.css';
@@ -48,6 +49,7 @@ export function SummonScreen() {
 
   return (
     <div className={styles.screen}>
+      <TitleBanner title="Summon" />
       <div className={styles.pools}>
         {POOL_ORDER.map((id) => {
           const p = CONTENT.summonPools.get(id);

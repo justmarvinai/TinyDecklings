@@ -1,9 +1,10 @@
 .screen {
+  composes: u-ground from global;
+
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, var(--bg-app), var(--bg-app-deep));
 }
 
 .header {

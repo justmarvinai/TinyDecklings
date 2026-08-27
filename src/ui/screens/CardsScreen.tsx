@@ -8,6 +8,7 @@ import { ascensionFodderFor, computeCardStats, usePlayerStore } from '@/state/pl
 import type { OwnedCard } from '@/services/saves';
 import { gearRarityColor } from '@/ui/design/rarity';
 import { Button, IconChip, Modal, Panel, StarRow, Tabs } from '@/ui/design/primitives';
+import { TitleBanner } from '@/ui/design/primitives';
 import { GearSlotIcon, Icon } from '@/ui/icons/Icon';
 import { CardFrame } from '@/ui/components/CardFrame';
 import { DeckScreen } from './DeckScreen';
@@ -68,6 +69,7 @@ export function CardsScreen() {
 
   return (
     <div className={styles.screen}>
+      <TitleBanner title="Cards" />
       <Tabs
         items={[
           { id: 'units', label: 'Units', count: `${cards.length - heroCount}` },

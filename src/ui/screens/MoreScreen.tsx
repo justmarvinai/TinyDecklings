@@ -38,63 +38,64 @@ export function MoreScreen() {
   const open = (screen: Screen) => push(screen);
 
   return (
-    <div className={`${styles.screen} u-scroll-y`}>
+    <div className={styles.screen}>
       <TitleBanner title="More" />
-
-      {/* Informational: the rows below are the navigation, so this stays a panel
+      <div className={`${styles.body} u-scroll-y`}>
+        {/* Informational: the rows below are the navigation, so this stays a panel
           rather than a second tappable target for the same screen. */}
-      <Panel className={styles.identity}>
-        <img className={styles.avatar} src={PLACEHOLDER_AVATAR} alt="" />
-        <div className={styles.identityText}>
-          <span className={styles.name}>{save.player.profile.name}</span>
-          <span className={styles.muted}>
-            Level {commanderLevel(totalStarsOf(save))} · {totalStarsOf(save)} stars earned
-          </span>
-        </div>
-        <IconChip name="profile.player" size={34} shape="square" />
-      </Panel>
+        <Panel className={styles.identity}>
+          <img className={styles.avatar} src={PLACEHOLDER_AVATAR} alt="" />
+          <div className={styles.identityText}>
+            <span className={styles.name}>{save.player.profile.name}</span>
+            <span className={styles.muted}>
+              Level {commanderLevel(totalStarsOf(save))} · {totalStarsOf(save)} stars earned
+            </span>
+          </div>
+          <IconChip name="profile.player" size={34} shape="square" />
+        </Panel>
 
-      <div className={styles.rows}>
-        <Row
-          icon="record.progress"
-          label="Profile"
-          hint="Your record, and what you have earned"
-          badge={waiting > 0 ? waiting : undefined}
-          onClick={() => open({ kind: 'profile' })}
-        />
-        <Row
-          icon="ui.settings"
-          label="Settings"
-          hint="Audio, battle speed, motion and language"
-          onClick={() => open({ kind: 'settings' })}
-        />
-      </div>
-
-      <section className={styles.group}>
-        <h2 className={styles.groupTitle}>Not in this release</h2>
-        <p className={styles.muted}>
-          These were cut on purpose. Tap one to see what it would have been.
-        </p>
         <div className={styles.rows}>
-          {DEFERRED_HERE.map((id) => (
-            <Row
-              key={id}
-              icon={DEFERRED_FEATURES[id].icon}
-              label={DEFERRED_FEATURES[id].name}
-              hint={DEFERRED_FEATURES[id].blurb}
-              locked
-              onClick={() => setLocked(id)}
-            />
-          ))}
+          <Row
+            icon="record.progress"
+            label="Profile"
+            hint="Your record, and what you have earned"
+            badge={waiting > 0 ? waiting : undefined}
+            onClick={() => open({ kind: 'profile' })}
+          />
+          <Row
+            icon="ui.settings"
+            label="Settings"
+            hint="Audio, battle speed, motion and language"
+            onClick={() => open({ kind: 'settings' })}
+          />
         </div>
-      </section>
 
-      <p className={styles.footnote}>
-        TinyDecklings is single-player and offline. Your progress lives on this device, there are no
-        accounts, and nothing here costs real money.
-      </p>
+        <section className={styles.group}>
+          <h2 className={styles.groupTitle}>Not in this release</h2>
+          <p className={styles.muted}>
+            These were cut on purpose. Tap one to see what it would have been.
+          </p>
+          <div className={styles.rows}>
+            {DEFERRED_HERE.map((id) => (
+              <Row
+                key={id}
+                icon={DEFERRED_FEATURES[id].icon}
+                label={DEFERRED_FEATURES[id].name}
+                hint={DEFERRED_FEATURES[id].blurb}
+                locked
+                onClick={() => setLocked(id)}
+              />
+            ))}
+          </div>
+        </section>
 
-      {locked ? <LockedFeatureSheet feature={locked} onClose={() => setLocked(null)} /> : null}
+        <p className={styles.footnote}>
+          TinyDecklings is single-player and offline. Your progress lives on this device, there are
+          no accounts, and nothing here costs real money.
+        </p>
+
+        {locked ? <LockedFeatureSheet feature={locked} onClose={() => setLocked(null)} /> : null}
+      </div>
     </div>
   );
 }

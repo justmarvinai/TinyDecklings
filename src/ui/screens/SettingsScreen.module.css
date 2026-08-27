@@ -1,9 +1,21 @@
 .screen {
+  composes: u-ground from global;
+
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  --ground-lit: var(--ground-azure-lit);
+  --ground: var(--ground-azure);
+  --ground-deep: var(--ground-azure-deep);
+}
+
+/* The band runs edge to edge; only what is under it is inset. */
+.body {
   flex: 1;
   min-height: 0;
   padding: var(--space-4);
   padding-bottom: var(--space-7);
-  background: linear-gradient(180deg, var(--bg-app), var(--bg-app-deep));
 }
 
 .group {

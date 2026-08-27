@@ -76,75 +76,76 @@ export function ProfileScreen() {
   };
 
   return (
-    <div className={`${styles.screen} u-scroll-y`}>
+    <div className={styles.screen}>
       <TitleBanner title="Profile" />
-
-      <Panel className={styles.identity}>
-        <img className={styles.avatar} src={PLACEHOLDER_AVATAR} alt="" />
-        <div className={styles.identityText}>
-          <button type="button" className={styles.name} onClick={() => setRenaming(true)}>
-            {record.name}
-            <IconChip name="ui.settings" size={16} />
-          </button>
-          <span className={styles.levelRow}>
-            <span className={styles.level}>Level {record.level}</span>
-            <span className={styles.muted}>
-              {record.starsIntoLevel}/{STARS_PER_LEVEL} stars to the next
+      <div className={`${styles.body} u-scroll-y`}>
+        <Panel className={styles.identity}>
+          <img className={styles.avatar} src={PLACEHOLDER_AVATAR} alt="" />
+          <div className={styles.identityText}>
+            <button type="button" className={styles.name} onClick={() => setRenaming(true)}>
+              {record.name}
+              <IconChip name="ui.settings" size={16} />
+            </button>
+            <span className={styles.levelRow}>
+              <span className={styles.level}>Level {record.level}</span>
+              <span className={styles.muted}>
+                {record.starsIntoLevel}/{STARS_PER_LEVEL} stars to the next
+              </span>
             </span>
-          </span>
-          <div className={styles.levelBar} aria-hidden="true">
-            <span style={{ width: `${(record.starsIntoLevel / STARS_PER_LEVEL) * 100}%` }} />
+            <div className={styles.levelBar} aria-hidden="true">
+              <span style={{ width: `${(record.starsIntoLevel / STARS_PER_LEVEL) * 100}%` }} />
+            </div>
+            <span className={styles.muted}>
+              Walking the road since {formatDate(record.createdAtMs)}
+            </span>
           </div>
-          <span className={styles.muted}>
-            Walking the road since {formatDate(record.createdAtMs)}
-          </span>
-        </div>
-      </Panel>
+        </Panel>
 
-      <Journey record={record} />
-      <Collection record={record} />
+        <Journey record={record} />
+        <Collection record={record} />
 
-      <section className={styles.group}>
-        <h2 className={styles.groupTitle}>
-          Achievements
-          <span className={styles.groupCount}>
-            {earnedCount(achievements)}/{achievements.length}
-          </span>
-        </h2>
-        {claimable.length > 0 ? (
-          <p className={styles.claimHint}>
-            {claimable.length} reward{claimable.length === 1 ? '' : 's'} waiting to be taken.
-          </p>
+        <section className={styles.group}>
+          <h2 className={styles.groupTitle}>
+            Achievements
+            <span className={styles.groupCount}>
+              {earnedCount(achievements)}/{achievements.length}
+            </span>
+          </h2>
+          {claimable.length > 0 ? (
+            <p className={styles.claimHint}>
+              {claimable.length} reward{claimable.length === 1 ? '' : 's'} waiting to be taken.
+            </p>
+          ) : null}
+
+          {groups.map(({ group, states }) => (
+            <div key={group} className={styles.achievementGroup}>
+              <h3 className={styles.subTitle}>{GROUP_LABELS[group]}</h3>
+              {states.map((state) => (
+                <AchievementRow key={state.def.id} state={state} onClaim={() => claim(state)} />
+              ))}
+            </div>
+          ))}
+        </section>
+
+        <p className={styles.footnote}>
+          Everything above is read from your save as it stands. There are no accounts and no
+          leaderboards — this record is yours, on this device.
+        </p>
+
+        {renaming ? <RenameSheet current={record.name} onClose={() => setRenaming(false)} /> : null}
+
+        {claimed ? (
+          <Modal title={claimed.name} onClose={() => setClaimed(null)} placement="centered">
+            <div className={styles.claimSheet}>
+              <IconChip name="award.trophy" size={44} background="var(--accent-warning)" />
+              <RewardList rewards={claimed.rewards} />
+              <Button variant="positive" block onClick={() => setClaimed(null)}>
+                Nice
+              </Button>
+            </div>
+          </Modal>
         ) : null}
-
-        {groups.map(({ group, states }) => (
-          <div key={group} className={styles.achievementGroup}>
-            <h3 className={styles.subTitle}>{GROUP_LABELS[group]}</h3>
-            {states.map((state) => (
-              <AchievementRow key={state.def.id} state={state} onClaim={() => claim(state)} />
-            ))}
-          </div>
-        ))}
-      </section>
-
-      <p className={styles.footnote}>
-        Everything above is read from your save as it stands. There are no accounts and no
-        leaderboards — this record is yours, on this device.
-      </p>
-
-      {renaming ? <RenameSheet current={record.name} onClose={() => setRenaming(false)} /> : null}
-
-      {claimed ? (
-        <Modal title={claimed.name} onClose={() => setClaimed(null)} placement="centered">
-          <div className={styles.claimSheet}>
-            <IconChip name="award.trophy" size={44} background="var(--accent-warning)" />
-            <RewardList rewards={claimed.rewards} />
-            <Button variant="positive" block onClick={() => setClaimed(null)}>
-              Nice
-            </Button>
-          </div>
-        </Modal>
-      ) : null}
+      </div>
     </div>
   );
 }

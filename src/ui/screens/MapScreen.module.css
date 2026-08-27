@@ -12,37 +12,48 @@
  * not a new screen.
  */
 .screen {
-  --glow-low: rgb(90 30 30 / 0.6);
-  --glow-high: rgb(40 60 110 / 0.55);
-  --ground: var(--bg-app-warm);
+  composes: u-ground from global;
 
   flex: 1;
   min-height: 0;
   position: relative;
   display: flex;
   flex-direction: column;
+}
+
+/* Sunlight on water — two soft breaks so the biome is not one flat sheet. */
+.screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Behind the content: an absolutely-positioned pseudo otherwise paints over
+     every in-flow child and tints the whole screen. */
+  z-index: -1;
   background:
-    radial-gradient(circle at 20% 90%, var(--glow-low), transparent 45%),
-    radial-gradient(circle at 80% 20%, var(--glow-high), transparent 50%),
-    linear-gradient(180deg, var(--bg-app-deep), var(--bg-app) 40%, var(--ground));
+    radial-gradient(circle at 78% 16%, rgb(255 255 255 / 0.2), transparent 42%),
+    radial-gradient(circle at 14% 64%, rgb(255 255 255 / 0.16), transparent 36%);
+  pointer-events: none;
 }
 
+/* Sunken Isles — the brilliant cyan ocean of Map.png. */
 .screen[data-theme='theme-isles'] {
-  --glow-low: rgb(24 78 110 / 0.65);
-  --glow-high: rgb(60 120 160 / 0.45);
-  --ground: #16222e;
+  --ground-lit: var(--ground-isles-lit);
+  --ground: var(--ground-isles);
+  --ground-deep: var(--ground-isles-deep);
 }
 
+/* Ashfall — volcanic rock lit from below by lava. */
 .screen[data-theme='theme-ashfall'] {
-  --glow-low: rgb(150 48 18 / 0.6);
-  --glow-high: rgb(90 40 30 / 0.55);
-  --ground: #2a1712;
+  --ground-lit: var(--ground-ashfall-lit);
+  --ground: var(--ground-ashfall);
+  --ground-deep: var(--ground-ashfall-deep);
 }
 
+/* Verdant — jungle canopy. */
 .screen[data-theme='theme-verdant'] {
-  --glow-low: rgb(36 96 44 / 0.6);
-  --glow-high: rgb(70 110 50 / 0.45);
-  --ground: #17251a;
+  --ground-lit: var(--ground-verdant-lit);
+  --ground: var(--ground-verdant);
+  --ground-deep: var(--ground-verdant-deep);
 }
 
 .scroll {
@@ -88,7 +99,7 @@
   height: 84px;
   flex: none;
   padding: 0;
-  border: 5px solid var(--ring, var(--surface-slot));
+  border: 5px solid var(--ring, var(--medallion-ring));
   border-radius: 50%;
   background: var(--surface-panel);
   overflow: hidden;
@@ -124,8 +135,19 @@
   height: 96px;
 }
 
+/*
+ * Locked stages dim their art, never their ring.
+ *
+ * Dimming the whole medallion put a wash of grey over most of the road, which is
+ * the opposite of what the reference looks like — there every ring is the same
+ * bright periwinkle and only the portrait behind it is unlit.
+ */
 .locked {
-  filter: grayscale(0.7) brightness(0.55);
+  --ring: #a8a4cc;
+}
+
+.locked .medallionArt {
+  filter: grayscale(0.55) brightness(0.72);
 }
 
 .plate {
@@ -170,14 +192,20 @@
   background: rgb(255 255 255 / 0.35);
 }
 
+/*
+ * The purple band every reference screen wears under the HUD, carrying the region
+ * instead of a screen title — the map has somewhere to be, and saying where you
+ * are is worth more than saying "MAP".
+ */
 .header {
   padding: var(--space-2) var(--space-4);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  background: rgb(0 0 0 / 0.35);
-  border-bottom: var(--outline-width-thin) solid var(--outline-dark);
+  background: linear-gradient(var(--accent-header-bright), var(--accent-header));
+  border-bottom: var(--outline-width) solid var(--outline-dark);
+  box-shadow: var(--bevel-top), var(--shadow-drop);
 }
 
 .headerText {
@@ -199,6 +227,8 @@
   font-weight: var(--fw-black);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
+  paint-order: stroke fill;
+  -webkit-text-stroke: 4px var(--outline-dark);
   text-shadow: var(--text-shadow-hard);
   white-space: nowrap;
   overflow: hidden;
@@ -207,7 +237,7 @@
 
 .tagline {
   font-size: var(--fs-label);
-  color: var(--text-secondary);
+  color: rgb(255 255 255 / 0.85);
   text-transform: none;
   white-space: nowrap;
   overflow: hidden;
