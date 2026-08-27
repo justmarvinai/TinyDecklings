@@ -59,7 +59,7 @@ export const BEATS: readonly Beat[] = [
     id: 'auto',
     screen: 'battle',
     anchor: 'auto',
-    text: 'Or let AUTO play it out and watch. You can switch back mid-fight, and ×2 doubles the speed.',
+    text: 'Or let AUTO play it out and watch. You can switch back mid-fight, and ×2 runs it quicker.',
     done: acknowledged,
   },
   {

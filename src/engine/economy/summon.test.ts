@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { CONTENT } from '@/content';
 import type { CardRarity } from '@/content/schemas';
 import { createRng } from '../rng';
-import { pityProgress, summonCost, summonMany, summonOnce, type PityCounters } from './summon';
+import {
+  pityProgress,
+  poolOdds,
+  summonCost,
+  summonMany,
+  summonOnce,
+  type PityCounters,
+  type PoolLike,
+} from './summon';
 
 const rarityOf = (cardId: string): CardRarity | undefined => CONTENT.cards.get(cardId)?.rarity;
 const pool = (id: string) => CONTENT.summonPools.get(id)!;
@@ -148,5 +156,56 @@ describe('batches', () => {
     expect(summonCost(t2, 1)).toBe(t2.cost);
     expect(summonCost(t2, 10)).toBeLessThan(t2.cost * 10);
     expect(summonCost(t2, 10)).toBeGreaterThan(0);
+  });
+});
+
+describe('poolOdds', () => {
+  const fakeRarity = (id: string): CardRarity | undefined =>
+    ({ a: 'common', b: 'common', c: 'legendary' })[id] as CardRarity | undefined;
+
+  const fake: PoolLike = {
+    entries: [
+      { cardId: 'a', weight: 60 },
+      { cardId: 'b', weight: 30 },
+      { cardId: 'c', weight: 10 },
+    ],
+    pity: [],
+  };
+
+  it('splits the pool by rarity, rarest first', () => {
+    const odds = poolOdds(fake, fakeRarity);
+    expect(odds.map((o) => o.rarity)).toEqual(['legendary', 'common']);
+    expect(odds[0].chance).toBeCloseTo(0.1);
+    expect(odds[1].chance).toBeCloseTo(0.9);
+  });
+
+  it('counts how many different cards carry each rarity', () => {
+    expect(poolOdds(fake, fakeRarity).map((o) => o.cards)).toEqual([1, 2]);
+  });
+
+  it('sums to one, so nothing in the pool goes unaccounted for', () => {
+    const total = poolOdds(fake, fakeRarity).reduce((sum, o) => sum + o.chance, 0);
+    expect(total).toBeCloseTo(1);
+  });
+
+  it('ignores entries whose card it cannot resolve rather than skewing the rest', () => {
+    const odds = poolOdds(
+      { ...fake, entries: [...fake.entries, { cardId: '?', weight: 900 }] },
+      fakeRarity,
+    );
+    expect(odds.reduce((sum, o) => sum + o.chance, 0)).toBeCloseTo(1);
+    expect(odds[0].chance).toBeCloseTo(0.1);
+  });
+
+  it('has nothing to say about an empty pool', () => {
+    expect(poolOdds({ entries: [], pity: [] }, fakeRarity)).toEqual([]);
+  });
+
+  it('matches what the real content pools actually roll', () => {
+    for (const real of CONTENT.summonPools.values()) {
+      const odds = poolOdds(real, rarityOf);
+      expect(odds.length).toBeGreaterThan(0);
+      expect(odds.reduce((sum, o) => sum + o.chance, 0)).toBeCloseTo(1);
+    }
   });
 });

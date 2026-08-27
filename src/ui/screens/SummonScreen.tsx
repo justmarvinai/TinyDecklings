@@ -1,6 +1,7 @@
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { CONTENT } from '@/content';
 import { CARD_RARITY_LABEL, type CardRarity } from '@/content/schemas';
+import { poolOdds } from '@/engine/economy/summon';
 import type { SummonOutcome } from '@/state/economyStore';
 import { useEconomyStore } from '@/state/economyStore';
 import { usePlayerStore } from '@/state/playerStore';
@@ -30,6 +31,12 @@ export function SummonScreen() {
   void save; // re-render when tokens or pity change
 
   const pool = CONTENT.summonPools.get(poolId);
+  // Above the early return: hooks cannot be skipped, and an unknown pool is a
+  // content bug rather than a state the player can reach.
+  const odds = useMemo(
+    () => (pool ? poolOdds(pool, (id) => CONTENT.cards.get(id)?.rarity) : []),
+    [pool],
+  );
   if (!pool) return null;
 
   const meters = economy.pityMeters(poolId);
@@ -103,10 +110,7 @@ export function SummonScreen() {
 
       <div className={styles.stage}>
         {revealed.length === 0 ? (
-          <p className={styles.emptyStage}>
-            Spend tokens to summon from the {pool.name} pool. Tokens come from battles and the shop
-            — this game never asks for money.
-          </p>
+          <PoolContents name={pool.name} odds={odds} />
         ) : revealed.length === 1 ? (
           <SingleReveal outcome={revealed[0]} />
         ) : (
@@ -145,6 +149,63 @@ export function SummonScreen() {
       </p>
     </div>
   );
+}
+
+/**
+ * What is in the pool, before a token is spent on it.
+ *
+ * The screen's centre was an empty field with one sentence in it, on the one screen
+ * where the player is deciding whether to spend. The pity meters above already
+ * promise a ceiling on bad luck; these are the other half of the same honesty —
+ * what a single pull is worth. Both are derived from the pool's own weights, so a
+ * stated chance cannot drift from the one the game rolls.
+ */
+function PoolContents({
+  name,
+  odds,
+}: {
+  name: string;
+  odds: readonly { rarity: CardRarity; chance: number; cards: number }[];
+}) {
+  return (
+    <div className={styles.contents}>
+      <span className={styles.contentsTitle}>What {name} holds</span>
+      <div className={styles.oddsList}>
+        {odds.map((entry) => (
+          <div
+            key={entry.rarity}
+            className={styles.odds}
+            style={{ '--tone': `var(${CARD_RARITY_VAR[entry.rarity]})` } as CSSProperties}
+          >
+            <span className={styles.oddsRarity}>{CARD_RARITY_LABEL[entry.rarity]}</span>
+            <span className={styles.oddsTrack}>
+              <span className={styles.oddsFill} style={{ width: `${entry.chance * 100}%` }} />
+            </span>
+            <span className={styles.oddsChance}>{formatChance(entry.chance)}</span>
+            <span className={styles.oddsCards}>
+              {entry.cards} card{entry.cards === 1 ? '' : 's'}
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className={styles.emptyStage}>
+        Tokens come from battles and the shop — this game never asks for money.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * A chance the player can act on.
+ *
+ * Rounded to a whole percent where that is honest, and to one decimal below 10%
+ * where rounding a 0.4% legendary to "0%" would be a lie about a number they are
+ * about to spend on.
+ */
+function formatChance(chance: number): string {
+  const percent = chance * 100;
+  if (percent >= 10) return `${Math.round(percent)}%`;
+  return `${percent.toFixed(1).replace(/\.0$/, '')}%`;
 }
 
 function SingleReveal({ outcome }: { outcome: SummonOutcome }) {

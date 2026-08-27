@@ -7,6 +7,11 @@ export interface ToggleProps {
   offLabel?: string;
   /** Label for assistive tech — the visible label usually sits above the control. */
   ariaLabel: string;
+  /**
+   * `switch` is on/off — green when on, red when off. `choice` is two equal options
+   * where neither is a negative, so the active side takes the info accent instead.
+   */
+  tone?: 'switch' | 'choice';
   className?: string;
 }
 
@@ -20,8 +25,11 @@ export function Toggle({
   onLabel = 'On',
   offLabel = 'Off',
   ariaLabel,
+  tone = 'switch',
   className,
 }: ToggleProps) {
+  const onTone = tone === 'choice' ? styles.choiceActive : styles.onActive;
+  const offTone = tone === 'choice' ? styles.choiceActive : styles.offActive;
   return (
     <div
       className={[styles.group, className ?? ''].filter(Boolean).join(' ')}
@@ -30,7 +38,7 @@ export function Toggle({
     >
       <button
         type="button"
-        className={[styles.option, value ? `${styles.active} ${styles.onActive}` : '']
+        className={[styles.option, value ? `${styles.active} ${onTone}` : '']
           .filter(Boolean)
           .join(' ')}
         aria-pressed={value}
@@ -40,7 +48,7 @@ export function Toggle({
       </button>
       <button
         type="button"
-        className={[styles.option, !value ? `${styles.active} ${styles.offActive}` : '']
+        className={[styles.option, !value ? `${styles.active} ${offTone}` : '']
           .filter(Boolean)
           .join(' ')}
         aria-pressed={!value}

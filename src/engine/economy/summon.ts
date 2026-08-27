@@ -126,3 +126,39 @@ export function pityProgress(
     threshold: rule.threshold,
   }));
 }
+
+/** A rarity's share of a pool, and how many different cards carry it. */
+export interface PoolOdds {
+  rarity: CardRarity;
+  /** 0–1 share of the pool's total weight. */
+  chance: number;
+  /** How many distinct cards in the pool are this rarity. */
+  cards: number;
+}
+
+/**
+ * What the pool is actually made of, rarest first.
+ *
+ * The pity meters promise a ceiling on bad luck; this is the other half of the same
+ * honesty — what a pull is worth before it is spent. Derived from the weights the
+ * pool is authored with rather than published separately, so a stated chance cannot
+ * drift from the one the game rolls (CLAUDE.md: derive, don't tally).
+ */
+export function poolOdds(pool: PoolLike, rarityOf: RarityOf): PoolOdds[] {
+  const weight = new Map<CardRarity, number>();
+  const cards = new Map<CardRarity, number>();
+  let total = 0;
+
+  for (const entry of pool.entries) {
+    const rarity = rarityOf(entry.cardId);
+    if (!rarity) continue;
+    weight.set(rarity, (weight.get(rarity) ?? 0) + entry.weight);
+    cards.set(rarity, (cards.get(rarity) ?? 0) + 1);
+    total += entry.weight;
+  }
+  if (total === 0) return [];
+
+  return [...weight.entries()]
+    .map(([rarity, sum]) => ({ rarity, chance: sum / total, cards: cards.get(rarity) ?? 0 }))
+    .sort((a, b) => RARITY_ORDER.indexOf(b.rarity) - RARITY_ORDER.indexOf(a.rarity));
+}

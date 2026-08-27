@@ -182,6 +182,8 @@
   --shadow-drop-sm: 0 2px 0 rgb(0 0 0 / 0.5);
   --shadow-panel: 0 5px 0 rgb(0 0 0 / 0.45), 0 8px 18px rgb(0 0 0 / 0.35);
   --shadow-float: 0 8px 24px rgb(0 0 0 / 0.5);
+  /* The white a struck card is washed with for one frame, blended to screen. */
+  --impact-flash: #ffffff;
   --text-shadow-hard: 0 2px 0 rgb(0 0 0 / 0.75);
 
   /* --------------------------------------------------------------- spacing */
@@ -225,4 +227,20 @@
     --dur-ceremony: 1ms;
     --ease-spring: linear;
   }
+}
+
+/*
+ * The same answer, asked the other way.
+ *
+ * The in-game motion switch (Q28) cannot set a media query, so `App` stamps the
+ * merged preference — the setting or the device's — onto the root as
+ * `data-motion`. Every rule that honours `prefers-reduced-motion` honours this
+ * too, and the two are kept side by side so neither can be updated alone.
+ */
+:root[data-motion='reduced'] {
+  --dur-micro: 1ms;
+  --dur-standard: 1ms;
+  --dur-screen: 1ms;
+  --dur-ceremony: 1ms;
+  --ease-spring: linear;
 }

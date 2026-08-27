@@ -147,8 +147,17 @@
   gap: var(--space-2);
 }
 
+/*
+ * Fills its column. The tile is a button inside the grid item, not the grid item
+ * itself, so it was sizing to its icon — 36px squares floating in 76px columns,
+ * under the touch floor (rule 1) and nothing like the chunky slots in the
+ * reference.
+ */
 .gearSlot {
   position: relative;
+  width: 100%;
+  min-width: 48px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;

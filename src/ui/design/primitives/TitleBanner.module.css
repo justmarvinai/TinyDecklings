@@ -10,7 +10,18 @@
   box-shadow: var(--bevel-top), var(--shadow-drop);
 }
 
+/*
+ * One line, always. The bar is fixed chrome with a close button pinned to its right
+ * edge; a title that wraps grows the bar and crowds the button. Every real title is
+ * short, so the ellipsis is a floor rather than something a player should meet — the
+ * padding is there so the outline stroke is not shaved off at the edges.
+ */
 .title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 3px;
   font-size: var(--fs-title);
   font-weight: var(--fw-black);
   text-transform: uppercase;

@@ -7,7 +7,9 @@
   box-shadow: var(--shadow-drop);
 }
 
+/* The two halves split the track evenly; a stretched group left dead rail before. */
 .option {
+  flex: 1;
   min-height: var(--touch-min);
   min-width: 72px;
   padding: 0 var(--space-4);
@@ -33,4 +35,13 @@
 
 .offActive {
   background: var(--accent-danger);
+}
+
+/*
+ * For a pair that is a choice rather than a switch — battle speed is ×1 or ×2, and
+ * neither of them is the "off" one. Red on a side that is simply the other option
+ * reads as a warning about a setting that carries none.
+ */
+.choiceActive {
+  background: var(--accent-info);
 }

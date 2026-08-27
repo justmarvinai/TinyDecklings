@@ -143,12 +143,14 @@ export function SettingsScreen({ saves }: { saves: SaveService }) {
 
           <div className={styles.row}>
             <span className={styles.label}>Speed</span>
-            <Button
-              variant="info"
-              onClick={() => settings.setBattleSpeed(settings.battleSpeed === 1 ? 2 : 1)}
-            >
-              <span className={styles.value}>×{settings.battleSpeed}</span>
-            </Button>
+            <Toggle
+              value={settings.battleSpeed === 1}
+              onChange={(one) => settings.setBattleSpeed(one ? 1 : 2)}
+              onLabel="×1"
+              offLabel="×2"
+              tone="choice"
+              ariaLabel="Battle speed"
+            />
             <span className={styles.hint}>Also switchable from the battle screen.</span>
           </div>
 

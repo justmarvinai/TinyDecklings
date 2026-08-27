@@ -73,7 +73,7 @@ export function TopHud({
         {resources.map((r) => (
           <Pill
             key={r.key}
-            leading={<IconChip name={r.icon} size={24} background={r.color} title={r.label} />}
+            leading={<IconChip name={r.icon} size={22} background={r.color} title={r.label} />}
             value={r.value}
           />
         ))}

@@ -6,6 +6,28 @@
 }
 
 /*
+ * Stars that fit whatever they are put in.
+ *
+ * Six fixed-size icons are the widest thing on a deck slot, and nothing else on the
+ * card can shrink past them — on a 360px phone they spilled into the next column,
+ * and on a narrower one they would have spilled further. Equal-share columns and a
+ * width-driven SVG make the row exactly as wide as its container and never wider;
+ * `size` becomes the ceiling rather than the size.
+ */
+.fluid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  justify-items: center;
+  width: 100%;
+}
+
+.fluid svg {
+  width: 100%;
+  height: auto;
+}
+
+/*
  * Stars sit straight on the ground — cyan ocean, rust, blue — so an unearned one
  * needs its own dark outline rather than relying on contrast with what is behind.
  */

@@ -8,6 +8,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
 
 ### Added
 
+- 2026-08-27 — **Something on screen while the game loads.** Every pixel here is
+  drawn by React, so `#root` was empty until the bundle had downloaded and parsed —
+  measured at ~5.6s of blank screen on slow 3G with a throttled CPU, which reads as
+  a broken app rather than a loading one. `index.html` now carries a small boot
+  screen inline: the wordmark and a loading bar on the ember ground, in the game's
+  own outline-and-bevel language rather than a browser spinner. It costs no request,
+  waits on no stylesheet, and React replaces it on mount. First paint on slow 3G
+  drops from 5.6s to 2.3s, and on fast 4G from 2.0s to 1.5s. A test guards it,
+  because the app would keep working if it were deleted — it would just look broken
+  for the first few seconds of someone's first visit.
+
+- 2026-08-27 — **The summon screen says what is in the pool.** Its centre was an
+  empty field with one sentence in it, on the one screen where the player is
+  deciding whether to spend. It now shows each rarity's share with a bar, the
+  percentage, and how many different cards carry it. `poolOdds` derives this from
+  the weights the pool is authored with rather than from a second published table,
+  so a stated chance cannot drift from the one the game rolls — the same honesty the
+  pity meters above it already promise, for the other half of the question.
+
+- 2026-08-27 — **The battle animates like a fight now.**
+  - **Strikes travel.** An attacker used to nudge in place; it now crosses the real
+    distance to its target — the strike animation is handed `--dx`/`--dy` measured
+    between the two cards — and a ranged attacker fires a trailed projectile along
+    that same line instead. Contact is a hit-stop: the white impact flash holds for
+    ~90ms with everything else frozen, which is the thing that makes a hit feel like
+    it landed rather than like it was drawn.
+  - **Impacts have weight.** A shockwave ring, a directional spray of sparks thrown
+    along the blow, knockback and spin on the struck card, screen shake scaled to
+    the damage (six keyframes with rotation, not three), and a damage number that
+    overshoots and settles. Deaths spin and fall; deployments drop in.
+  - **×1 is a pace, not a rush, and ×2 is 1.7× rather than double.** Beats roughly
+    half again as long as before (strike 520ms, cast 600ms, death 520ms). Past 1.7×
+    the animation stops being watchable and the toggle quietly becomes a skip
+    button, which is not what it is for.
+  - **`compactNumber`** in `ui/text/labels.ts`: strength and attack capped at five
+    characters (`9999`, `12.3K`, `1.4M`). The road never ends, so no fixed layout
+    survives an unbounded digit count.
+
 - 2026-08-27 — **Gear and status tooltips, and a retry on defeat.**
   - **Gear says what it gives.** A gear tile is one of nine identical slot icons
     told apart by a rarity colour; the numbers that decide whether to equip it were
@@ -27,7 +65,101 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
     and not a discount: a free rematch would quietly undo the pacing the energy
     system exists to set (Q14b).
 
+### Changed
+
+- 2026-08-27 — **The battle effects layer costs about half what it did.** A CPU
+  profile of a real fight on the production build (4–6× throttle, roughly a
+  mid-range phone) put the canvas loop at the top of everything the app itself ran:
+  it asked for the drawing context on every frame and read the canvas's position
+  from the DOM on every emit — four times a beat, each one forcing a synchronous
+  layout of a screen that is mid-animation. Both answers only change when the canvas
+  resizes or the page scrolls, so they are computed then instead. Measured across
+  three runs: 627ms → ~350ms of CPU over six seconds of fighting, with the effects
+  landing in the same places.
+
 ### Fixed
+
+- 2026-08-27 — **Escape closed every open sheet at once.** Each modal listened for
+  it on the window, so backing out of the gear picker took the card sheet under it
+  too. The modal stack tracks identity rather than a bare depth count, and only the
+  frontmost sheet answers a dismiss.
+
+- 2026-08-27 — **Every modal was laid out inside the screen that opened it.** The
+  screen-transition keyframes ended on `transform: translate3d(0, 0, 0)` and filled
+  forwards, so an identity transform stayed on the element — and any transform makes
+  its element the containing block for `position: fixed` descendants. A sheet sized
+  against the viewport (`88svh`) was therefore taller than the box it was trapped in
+  and overflowed upward under the HUD, slicing its own title bar off. The final
+  keyframe no longer declares a transform, and modals portal to the body, so a
+  future transformed ancestor cannot do it again.
+
+- 2026-08-27 — **A currency you could not read.** Three pills, an avatar and the shop
+  shortcut did not fit a 360px phone, and the row silently scrolled — with no
+  affordance, so gems just looked cut off mid-number. Values run through
+  `compactNumber` (`10K`, not `10000`), the pill chrome is trimmed, and the row now
+  fits with room for a seven-figure gold total.
+
+- 2026-08-27 — **Deck slot 8 was off the side of a 360px phone.** The four unit
+  columns cannot shrink past their star rows — six fixed-size icons apiece — so the
+  leader card's 38% share pushed the fourth column clean off the screen, and with it
+  the slot the player would tap to fill it. The leader takes 34% now, both grid
+  tracks are `minmax(0, …)`, and `StarRow` gained a `fluid` mode that sizes its
+  stars from the container so the row can never be the thing that overflows again.
+  Checked at 430, 390, 360 and 320px.
+
+- 2026-08-27 — **More targets below the floor (rule 1).** The deck selector's six
+  dots were 12×12 buttons — a quarter of the floor, on the control that switches
+  between the player's decks; they keep the reference's small dot inside a full-size
+  target now. The volume sliders were 28px bands, and the onboarding Skip was 42px
+  wide.
+
+- 2026-08-27 — **Touch targets below the floor (rule 1).** The eight gear slots on a
+  card were 36px buttons floating inside 76px columns — the tile was sizing to its
+  icon rather than filling its cell — and the HUD's avatar and `+` were 44 and 40.
+  All of them are ≥48px now, and the gear grid reads like the reference's chunky
+  slots. Audited across every screen at 390×844 and 360×640: nothing player-facing
+  is under the floor.
+
+- 2026-08-27 — The tutorial told new players "×2 doubles the speed", which stopped
+  being true the moment ×2 became 1.7×. It says "runs it quicker" now — prose that
+  quotes no constant cannot drift from one. Walked the whole guided opening to find
+  it: seven beats, no errors, and the coach still steps aside whenever a sheet is up.
+
+- 2026-08-27 — The battle result sheet said "Victory" in its banner directly above
+  "Victory!" in its body — the same word twice, on the sheet a player sees after
+  every single fight. The banner carries the stage's name instead, which says
+  something. Titles are held to one line there, so a long one grows the bar and
+  crowds the close button no more.
+
+- 2026-08-27 — Settings toggles left dead rail: the two halves were content-sized
+  inside a full-width track, so ON sat in a corner of a mostly empty control. They
+  split it evenly now, and battle speed is the same twin control (×1/×2) rather than
+  a button that cycled — in the info accent, because neither speed is the "off" one
+  and red on a plain choice reads as a warning about a setting that carries none.
+
+- 2026-08-27 — **The enemy's front row was drawn behind its back row.** Slots 0–2 are
+  the melee rank on both sides, and both boards were laid out top-left to
+  bottom-right — which put the player's front line nearest the divider and the
+  enemy's furthest from it, so the two melee ranks were not facing each other. The
+  enemy's rows render in reverse order now; the fight reads the way it resolves.
+
+- 2026-08-27 — **The damage number sat on top of the strength.** They were pinned to
+  opposite bottom corners, which collides as soon as either number grows. They share
+  a flex row now, so they cannot overlap at any value, and when the row genuinely
+  runs out of room it is the attack pill that yields — first its slot icon (which the
+  card's row on the board and its hold-tip both already say), then, far past any
+  reachable number, the pill itself. Strength never shrinks. Measured across both
+  cards' widths: 108px on a 390×844 phone and 71px on a 360×640 one, where the icon
+  drops out on its own.
+
+- 2026-08-27 — **The in-game reduced-motion switch only calmed the screen shake.**
+  It is a setting, so no media query could see it, and every CSS keyframe and the
+  whole canvas FX layer were listening for `prefers-reduced-motion` alone — which
+  mattered much more once the battle animation got this much louder. The merged
+  preference is stamped on the document root as `data-motion`, so one selector
+  covers the app, and the canvas stops throwing particles, rings and projectiles.
+  The damage number still rises and a ranged attack still waits out its flight, so
+  the round keeps its shape and its information (Q28).
 
 - 2026-08-27 — A card's tooltip could run off the bottom of the screen when it
   carried statuses and a full skill ladder. The bubble has a height ceiling now, and

@@ -121,7 +121,7 @@ function DeckCard({ uid, small, onClick }: { uid: string; small?: boolean; onCli
         onClick={onClick}
         ariaLabel={`${def.name}, level ${card.level}`}
       />
-      <StarRow value={card.stars} max={6} size={small ? 7 : 10} />
+      <StarRow value={card.stars} max={6} size={small ? 7 : 10} fluid={small} />
     </>
   );
 }

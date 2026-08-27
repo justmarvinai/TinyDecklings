@@ -9,6 +9,14 @@ export interface StarRowProps {
   size?: number;
   /** Card-sheet ascension styling (magenta) versus the default gold. */
   variant?: 'gold' | 'ascension';
+  /**
+   * Fill the container rather than measuring a fixed width.
+   *
+   * For rows in a grid cell that has no room to spare — the deck builder's slots —
+   * where a fixed row is the one thing on the card that cannot shrink. `size`
+   * becomes a maximum instead of an exact width.
+   */
+  fluid?: boolean;
   label?: string;
   className?: string;
 }
@@ -18,10 +26,16 @@ export function StarRow({
   max = 3,
   size = 14,
   variant = 'gold',
+  fluid = false,
   label,
   className,
 }: StarRowProps) {
-  const classes = [styles.row, variant === 'ascension' ? styles.ascension : '', className ?? '']
+  const classes = [
+    styles.row,
+    fluid ? styles.fluid : '',
+    variant === 'ascension' ? styles.ascension : '',
+    className ?? '',
+  ]
     .filter(Boolean)
     .join(' ');
   return (
@@ -31,6 +45,7 @@ export function StarRow({
           key={i}
           name="ui.star"
           size={size}
+          style={fluid ? { maxWidth: size } : undefined}
           className={[styles.star, i < value ? styles.filled : ''].filter(Boolean).join(' ')}
         />
       ))}

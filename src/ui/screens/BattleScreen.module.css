@@ -169,53 +169,134 @@
 }
 
 /* A card lunges toward its target when it strikes. */
-.lungeUp {
-  animation: lungeUp 320ms var(--ease-out);
+/**
+ * The strike.
+ *
+ * A card used to nudge 14px toward the enemy half and come back. It now crouches,
+ * crosses most of the distance to the card it is actually hitting, and recovers —
+ * `--dx` / `--dy` are set per attack from the two cards' measured positions, so a
+ * swing at the far column travels further than one at the card opposite, and you
+ * can see who is hitting whom without reading the numbers.
+ *
+ * `--reach` shortens the trip so the attacker stops *on* its target rather than
+ * inside it, and the whole thing sits above its neighbours while it moves.
+ */
+.strike {
+  z-index: 2;
+  animation: strike var(--strike-ms, 460ms) cubic-bezier(0.3, 0, 0.2, 1) both;
 }
 
-.lungeDown {
-  animation: lungeDown 320ms var(--ease-out);
-}
-
-.hitShake {
-  animation: hitShake 240ms var(--ease-out);
-}
-
-@keyframes lungeUp {
-  40% {
-    transform: translateY(-14px) scale(1.06);
+@keyframes strike {
+  /* Wind-up: pull back from the target, squash, gather. */
+  18% {
+    transform: translate3d(calc(var(--dx) * -0.14), calc(var(--dy) * -0.14), 0) scale(0.92);
+  }
+  /* Contact: the fastest part of the move, and the furthest. */
+  46% {
+    transform: translate3d(calc(var(--dx) * 0.82), calc(var(--dy) * 0.82), 0) scale(1.12);
+  }
+  /* Follow-through, then settle back into the slot. */
+  62% {
+    transform: translate3d(calc(var(--dx) * 0.62), calc(var(--dy) * 0.62), 0) scale(1.06);
   }
   100% {
     transform: none;
   }
 }
 
-@keyframes lungeDown {
-  40% {
-    transform: translateY(14px) scale(1.06);
+/**
+ * Taking a hit.
+ *
+ * Knocked along the blow rather than jittered sideways: `--kx` / `--ky` come from
+ * the attacker, so a hit from the left throws you right. The white flash is a
+ * separate overlay on the card itself (`CardFrame`), because a filter here would
+ * take the outline and the numbers with it.
+ */
+.recoil {
+  z-index: 1;
+  animation: recoil var(--recoil-ms, 300ms) var(--ease-out) both;
+}
+
+@keyframes recoil {
+  0% {
+    transform: none;
+  }
+  22% {
+    transform: translate3d(var(--kx), var(--ky), 0) scale(0.94) rotate(var(--kr, 0deg));
+  }
+  55% {
+    transform: translate3d(calc(var(--kx) * -0.3), calc(var(--ky) * -0.3), 0) scale(1.03);
   }
   100% {
     transform: none;
   }
 }
 
-@keyframes hitShake {
-  0%,
+/** Casting: gather, flare, release — the wind-up a spell needs to feel spent. */
+.cast {
+  z-index: 2;
+  animation: cast var(--cast-ms, 560ms) var(--ease-out) both;
+}
+
+@keyframes cast {
+  30% {
+    transform: scale(0.9) translateY(4px);
+  }
+  55% {
+    transform: scale(1.18) translateY(-8px);
+  }
   100% {
     transform: none;
+  }
+}
+
+/** Dying: struck out of the slot rather than fading politely. */
+.dying {
+  z-index: 3;
+  animation: dying var(--death-ms, 520ms) var(--ease-out) both;
+}
+
+@keyframes dying {
+  0% {
+    transform: none;
+    opacity: 1;
   }
   25% {
-    transform: translateX(-5px);
+    transform: translate3d(var(--kx, 0), var(--ky, 0), 0) scale(1.08) rotate(-6deg);
+    opacity: 1;
   }
-  75% {
-    transform: translateX(5px);
+  100% {
+    transform: translate3d(calc(var(--kx, 0px) * 1.6), 46px, 0) scale(0.7) rotate(-28deg);
+    opacity: 0;
+  }
+}
+
+/** Arriving: dropped in, not faded in. */
+.deploying {
+  animation: deploying 420ms var(--ease-spring) both;
+}
+
+@keyframes deploying {
+  0% {
+    transform: translateY(-30px) scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lungeUp,
-  .lungeDown,
-  .hitShake {
+  .strike,
+  .recoil,
+  .cast,
+  .dying,
+  .deploying {
     animation: none;
   }
 }

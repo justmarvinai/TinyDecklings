@@ -75,10 +75,17 @@
   min-height: 48px;
 }
 
+/*
+ * The whole 48px band is grabbable, not just the 28px the track drew into.
+ *
+ * A range input is only as tappable as its own box, and a thumb the thickness of a
+ * fingernail on a phone is a miss waiting to happen (rule 1). The visible track
+ * stays slim; the input around it is full height.
+ */
 .slider input[type='range'] {
   flex: 1;
   min-width: 0;
-  height: 28px;
+  height: var(--touch-min);
   accent-color: var(--accent-positive);
   background: transparent;
 }

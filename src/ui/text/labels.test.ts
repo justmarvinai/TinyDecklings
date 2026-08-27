@@ -9,6 +9,7 @@ import {
 } from '@/content/schemas';
 import {
   cardRarityLabel,
+  compactNumber,
   currencyLabel,
   elementLabel,
   gearRarityLabel,
@@ -83,5 +84,31 @@ describe('shipped content is written for a player, not a parser', () => {
     for (const def of CONTENT.stageModifiers.values()) {
       expect(def.description.endsWith('.'), def.id).toBe(true);
     }
+  });
+});
+
+describe('compactNumber', () => {
+  it('leaves anything that already fits exactly alone', () => {
+    expect(compactNumber(0)).toBe('0');
+    expect(compactNumber(720)).toBe('720');
+    expect(compactNumber(9999)).toBe('9999');
+  });
+
+  it('rounds past the point where every digit is legible', () => {
+    expect(compactNumber(10_000)).toBe('10K');
+    expect(compactNumber(12_340)).toBe('12.3K');
+    expect(compactNumber(184_000)).toBe('184K');
+    expect(compactNumber(1_400_000)).toBe('1.4M');
+    expect(compactNumber(999_999)).toBe('1M');
+  });
+
+  it('never exceeds the five characters the card corner has room for', () => {
+    for (const n of [0, 9, 99, 9999, 10_000, 99_999, 999_999, 1e6, 9.99e8, 1e12]) {
+      expect(compactNumber(n).length).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('keeps a negative sign, for the numbers that can carry one', () => {
+    expect(compactNumber(-45)).toBe('-45');
   });
 });
