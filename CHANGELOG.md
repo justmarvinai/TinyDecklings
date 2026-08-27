@@ -99,6 +99,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   `compactNumber` (`10K`, not `10000`), the pill chrome is trimmed, and the row now
   fits with room for a seven-figure gold total.
 
+- 2026-08-27 — **Deck slot 8 was off the side of a 360px phone.** The four unit
+  columns cannot shrink past their star rows — six fixed-size icons apiece — so the
+  leader card's 38% share pushed the fourth column clean off the screen, and with it
+  the slot the player would tap to fill it. The leader takes 34% now, both grid
+  tracks are `minmax(0, …)`, and `StarRow` gained a `fluid` mode that sizes its
+  stars from the container so the row can never be the thing that overflows again.
+  Checked at 430, 390, 360 and 320px.
+
+- 2026-08-27 — **More targets below the floor (rule 1).** The deck selector's six
+  dots were 12×12 buttons — a quarter of the floor, on the control that switches
+  between the player's decks; they keep the reference's small dot inside a full-size
+  target now. The volume sliders were 28px bands, and the onboarding Skip was 42px
+  wide.
+
 - 2026-08-27 — **Touch targets below the floor (rule 1).** The eight gear slots on a
   card were 36px buttons floating inside 76px columns — the tile was sizing to its
   icon rather than filling its cell — and the HUD's avatar and `+` were 44 and 40.
