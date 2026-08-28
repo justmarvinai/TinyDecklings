@@ -33,10 +33,20 @@
  * entirely by the browser rather than laid out and painted (ARCHITECTURE.md §9).
  * `contain-intrinsic-size` is the height of one card tile, so the scrollbar stays
  * honest for what has not been rendered yet.
+ *
+ * The padding is not decoration. `content-visibility` brings paint containment with
+ * it, which clips everything a tile draws to the tile's own box — and a card draws
+ * its dark outline and its drop shadow *outside* that box. Clipped, they vanished
+ * on the straight edges and survived only in the corner cut-outs, which is why
+ * every card wore a little black notch at each corner and sat flat with no shadow.
+ * The padding gives those few pixels somewhere to live inside the contained box,
+ * and the matching negative margin means nothing on screen moves.
  */
 .gridItem {
   content-visibility: auto;
-  contain-intrinsic-size: auto 132px;
+  contain-intrinsic-size: auto 146px;
+  padding: 4px 4px 8px;
+  margin: -4px -4px -8px;
 }
 
 .grid {

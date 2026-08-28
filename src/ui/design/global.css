@@ -44,8 +44,10 @@ body {
   color: var(--text-primary);
   /*
    * Chrome colour, not game colour: this is what shows in the safe areas and behind
-   * an overscroll, where it should read as the HUD rather than as a seam. It also
-   * matches <meta name="theme-color">, so the frame is one colour edge to edge.
+   * an overscroll, where it should read as the HUD rather than as a seam. The
+   * `theme-color` meta and the manifest carry this same value — in an installed app
+   * the system paints the strip behind the gesture bar with it, and a near-miss
+   * reads as a black bar under the tab bar rather than as part of the app.
    */
   background: var(--bg-hud);
   -webkit-font-smoothing: antialiased;

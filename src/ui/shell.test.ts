@@ -34,3 +34,38 @@ describe('the boot shell', () => {
     expect(html).toMatch(/prefers-reduced-motion[\s\S]*?boot-bar/);
   });
 });
+
+/**
+ * The chrome colour, in the three places that have to agree.
+ *
+ * In an installed app the system paints the status bar and the strip behind the
+ * gesture bar with `theme_color`. The tab bar directly above that strip is painted
+ * with `--bg-hud`. When the two drift apart — they had, by one shade — the result is
+ * a band of slightly different dark along the bottom edge, which reads as the app
+ * failing to fill the screen. Nothing in a build or a browser complains about it,
+ * so this does.
+ */
+describe('the chrome colour', () => {
+  const tokens = readFileSync(resolve(process.cwd(), 'src/ui/design/tokens.css'), 'utf8');
+  const manifest = JSON.parse(
+    readFileSync(resolve(process.cwd(), 'public/manifest.webmanifest'), 'utf8'),
+  ) as { theme_color: string; background_color: string };
+
+  const bgHud = /--bg-hud:\s*(#[0-9a-fA-F]{3,8})/.exec(tokens)?.[1];
+  const meta = /<meta name="theme-color" content="(#[0-9a-fA-F]{3,8})"/.exec(html)?.[1];
+
+  it('is the HUD colour in the document', () => {
+    expect(bgHud).toBeTruthy();
+    expect(meta?.toLowerCase()).toBe(bgHud?.toLowerCase());
+  });
+
+  it('is the same colour in the manifest', () => {
+    expect(manifest.theme_color.toLowerCase()).toBe(bgHud?.toLowerCase());
+  });
+
+  it('splashes on the ground the boot screen paints, so the two do not jump', () => {
+    const boot = /linear-gradient\(180deg,\s*(#[0-9a-fA-F]{6}),\s*(#[0-9a-fA-F]{6})/.exec(html);
+    expect(boot).toBeTruthy();
+    expect(manifest.background_color.toLowerCase()).toBe(boot![2].toLowerCase());
+  });
+});
