@@ -99,6 +99,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the pro
   `compactNumber` (`10K`, not `10000`), the pill chrome is trimmed, and the row now
   fits with room for a seven-figure gold total.
 
+- 2026-08-28 — **The black notch at every card's corners.** `content-visibility: auto`
+  on a collection tile — there to skip painting off-screen cards — brings paint
+  containment with it, which clips everything the tile draws to the tile's own box.
+  A card draws its dark outline and its drop shadow _outside_ that box, so both were
+  cut: the outline vanished along the straight edges and survived only in the corner
+  cut-outs, leaving a small black wedge at each corner and a card with no shadow
+  under it. The tile now carries a few pixels of padding for them to live inside,
+  with a matching negative margin so nothing on screen moves.
+
+- 2026-08-28 — **A band of the wrong dark under the tab bar.** `theme-color` was
+  `#141417` while the HUD and the tab bar above it are `#101014` — and in an
+  installed app the system paints the strip behind the gesture bar with
+  `theme-color`. One shade out is enough to read as the app not filling the screen.
+  The document, the manifest and the token now carry one value, and a test holds
+  them together; the manifest's splash colour is the boot screen's ground, so the
+  splash flows into it rather than jumping.
+
 - 2026-08-27 — **Deck slot 8 was off the side of a 360px phone.** The four unit
   columns cannot shrink past their star rows — six fixed-size icons apiece — so the
   leader card's 38% share pushed the fourth column clean off the screen, and with it
